@@ -9,6 +9,7 @@ Claude Code skills for interacting with Obsidian sales notes. These skills integ
   - [`/sales-git`](#sales-git)
   - [`/sales-gong`](#sales-gong)
   - [`/sales-meeting`](#sales-meeting)
+  - [`/sales-review-learnings`](#sales-review-learnings)
   - [`/sales-salesforce`](#sales-salesforce)
   - [`/sales-setup`](#sales-setup)
   - [`/sales-summarize-account`](#sales-summarize-account)
@@ -37,6 +38,7 @@ Claude Code skills for interacting with Obsidian sales notes. These skills integ
 | `/sales-git` | Commit and push skill changes and auto-regenerate the README |
 | `/sales-gong` | Import Gong calls or Granola meetings into Obsidian meeting notes, or bulk import all calls for an account |
 | `/sales-meeting` | Create meeting notes for a sales account and link them in the daily note |
+| `/sales-review-learnings` | Review patterns and insights discovered by skills -- competitors, objections, feature requests, model performance, and template drift |
 | `/sales-salesforce` | Push SE Status to Salesforce, scan accounts for opportunities and deal context, or discover all your open opportunities |
 | `/sales-setup` | Post-clone setup -- configure vault path, name, role, company, symlinks, and optional integrations |
 | `/sales-summarize-account` | Summarize all meeting notes, update MEDDPICC/TECHMAPS/CoM, enrich contacts, refresh business context |
@@ -52,7 +54,7 @@ Creates a new account folder with the full directory structure (meetings, contac
 
 **Usage:** `/sales-git`
 
-Commits and pushes changes to the skills GitHub repo. Pulls latest upstream updates first, scans all SKILL.md files for proprietary information (customer names, staff names, contact names, hardcoded paths, Salesforce credentials) and auto-fixes any leaks before committing. Regenerates the README.md from skill frontmatter.
+Commits and pushes changes to the skills GitHub repo. Pulls latest upstream updates first, scans all SKILL.md files for proprietary information (customer names, staff names, contact names, hardcoded paths, Salesforce credentials) and auto-fixes any leaks before committing. Regenerates the README.md from skill frontmatter. Syncs changes to the public repo with naming conventions applied.
 
 ### `/sales-gong`
 
@@ -65,6 +67,12 @@ Imports call recordings into Obsidian meeting notes using Playwright MCP. Suppor
 **Usage:** `/sales-meeting <account> [topic] [date]`
 
 Creates a meeting note file for a sales account and links it in today's daily note with a standard checklist (Gong transcript, summarize account, push to Salesforce, send stakeholder update). Supports creating multiple meetings at once with freeform date/topic input. Defaults topic to "Call" if not specified.
+
+### `/sales-review-learnings`
+
+**Usage:** `/sales-review-learnings`
+
+Reviews and acts on patterns discovered by `/sales-summarize-account` and `/sales-weekly`. Shows pending discoveries grouped by category (competitors, objections, feature requests, technical patterns, portfolio insights) and lets you keep, act on, or dismiss each item. Also surfaces model performance alerts (high failure rates by task type) and template drift (sections users frequently edit post-generation, suggesting the prompt should be updated).
 
 ### `/sales-salesforce`
 
@@ -82,13 +90,13 @@ Guided onboarding that walks through configuration: role, company, name, vault p
 
 **Usage:** `/sales-summarize-account <account name>`
 
-Processes all unsummarized meeting notes via parallel subagents, then aggregates findings into the main account file: deal ledger, MEDDPICC, Command of the Message, TECHMAPS, tech stack, architecture diagram, and Salesforce-ready updates. Enriches contacts with LinkedIn profiles. Auto-grows the competitor list in config when new competitors appear in transcripts.
+Processes all unsummarized meeting notes via parallel subagents, then aggregates findings into the main account file: deal ledger, MEDDPICC, Command of the Message, TECHMAPS, tech stack, architecture diagram, and Salesforce-ready updates. Enriches contacts with LinkedIn profiles. Includes self-improvement features: adaptive model selection based on past performance, pattern discovery (competitors, objections, feature requests), and template drift detection.
 
 ### `/sales-weekly`
 
 **Usage:** `/sales-weekly`
 
-Portfolio-wide sweep of all accounts with open Salesforce opportunities. Pulls current deal context, auto-summarizes meetings that have transcripts but no summary, adds status ledger entries, and pushes updates to Salesforce. Designed to run autonomously at the end of the week -- start it and walk away.
+Portfolio-wide sweep of all accounts with open Salesforce opportunities. Pulls current deal context, auto-summarizes meetings that have transcripts but no summary, adds status ledger entries, and pushes updates to Salesforce. Includes a weekly retro phase that analyzes run quality, surfaces cross-account patterns (common competitors, objections, tech stacks), and queues discoveries for daily review. Designed to run autonomously at the end of the week -- start it and walk away.
 
 ## Prerequisites
 
