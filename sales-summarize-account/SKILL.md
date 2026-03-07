@@ -53,7 +53,7 @@ Read the `competitors` array from `~/.claude/skills/sales-config.md`. Each compe
 
 ### Phase 2: Process Each Meeting Note via Subagents
 
-**Pre-check: Adaptive model selection.** Read `~/.claude/skills/sales-learnings.md` and check the `## Model Performance` table. If "meeting-summary" has >30% failure rate on the current model, escalate to the next tier (haiku→sonnet). Default is sonnet for meeting subagents and haiku for contact enrichment subagents.
+**Pre-check: Adaptive model selection.** Read `~/.claude/skills/sales-config.md` and check the `## Model Performance` table. If "meeting-summary" has >30% failure rate on the current model, escalate to the next tier (haiku→sonnet). Default is sonnet for meeting subagents and haiku for contact enrichment subagents.
 
 **Pre-check: Skip already-summarized meetings.** Before launching subagents, read the first ~30 lines of each meeting file to check if the `## Summary` section has content (not just the heading). Only launch subagents for meetings where the Summary section is empty or missing — these are the meetings that haven't been processed yet. Previously summarized meetings already had their data incorporated into the account file during prior runs, so re-processing them is wasteful.
 
@@ -494,7 +494,7 @@ After completing all account updates, perform these learning steps:
 
 #### 6a: Log Run Diagnostics
 
-Read `~/.claude/skills/sales-learnings.md`. Append observations to the appropriate sections:
+Read `~/.claude/skills/sales-config.md`. Append observations to the appropriate sections:
 
 **Model Performance:** For each subagent that ran, log whether it succeeded or failed and what model was used. Update the `## Model Performance` table — increment success/failure counts for the task type + model combination. If a haiku subagent failed (produced garbled output, missed critical fields, or had to be retried), note the failure reason. If a task type has >30% failure rate on haiku, add a note under `## Recurring Issues` recommending sonnet for that task.
 
@@ -526,7 +526,7 @@ This helps identify when the skill's output style doesn't match user preferences
 
 #### 6c: Adaptive Model Selection
 
-Before launching subagents at the START of Phase 2, read `~/.claude/skills/sales-learnings.md` and check the `## Model Performance` table:
+Before launching subagents at the START of Phase 2, read `~/.claude/skills/sales-config.md` and check the `## Model Performance` table:
 
 - If "meeting-summary" task type has >30% failure rate on haiku → use sonnet instead
 - If "contact-enrichment" task type has >50% failure rate on haiku → use sonnet instead

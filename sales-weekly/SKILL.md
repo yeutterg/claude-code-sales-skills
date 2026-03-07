@@ -298,7 +298,7 @@ After all subagents complete and the report is assembled, perform a self-review.
 
 #### 4a: Analyze Run Quality
 
-Read `~/.claude/skills/sales-learnings.md` and update it with this week's observations:
+Read `~/.claude/skills/sales-config.md` and update it with this week's observations:
 
 **Model Performance:** For each subagent, log success/failure by model and task type in the `## Model Performance` table. Common failure modes to watch for:
 - Subagent returned empty or malformed structured output
