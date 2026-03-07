@@ -197,6 +197,9 @@ UNSUMMARIZED_MEETINGS: {list of filenames that still need input, or "none"}
 LEDGER_ENTRY: {the status entry that was added/updated}
 SF_PUSH: {success count}/{total count} or "skipped"
 CLOSED_OPPS: {any opps that were found to be closed, or "none"}
+NEW_COMPETITORS: {any new competitors found during auto-summarization, or "none"}
+NEW_OBJECTIONS: {recurring objections or blockers across this account's meetings, or "none"}
+FEATURE_REQUESTS: {product gaps or feature requests from this account, or "none"}
 NOTES: {any issues, warnings, or notable changes}
 ---END WEEKLY REVIEW---
 ```
@@ -285,6 +288,71 @@ Bad opp URLs fixed: {N} accounts
 Next steps:
 1. Add transcripts/briefs to flagged meetings
 2. Re-run /sales-weekly after completing the above
+```
+
+---
+
+### Phase 4: Weekly Retro (Self-Improvement)
+
+After all subagents complete and the report is assembled, perform a self-review.
+
+#### 4a: Analyze Run Quality
+
+Read `~/.claude/skills/sales-learnings.md` and update it with this week's observations:
+
+**Model Performance:** For each subagent, log success/failure by model and task type in the `## Model Performance` table. Common failure modes to watch for:
+- Subagent returned empty or malformed structured output
+- Salesforce push failed (auth, field name, network)
+- Contact enrichment returned "not found" for most contacts
+- Auto-summarization produced low-quality summaries
+
+**Recurring Issues:** Look across ALL account results for patterns:
+- Which accounts consistently have unsummarized meetings? (user may not be adding transcripts)
+- Which accounts have stale data? (no activity in 30+ days)
+- Are any Salesforce pushes consistently failing? (field name issue, auth expiry)
+- Did any subagents take unusually long or use excessive tokens?
+
+Add new observations under `## Recurring Issues` with format:
+```
+- [{date}] {observation} — {accounts affected}
+```
+
+#### 4b: Surface Discoveries for Daily Review
+
+Read `## Discovered Patterns > ### Pending Review` in the learnings file. If there are pending items that haven't been surfaced yet, add a task to tomorrow's daily note:
+
+1. Determine tomorrow's date
+2. Check if `{config.vault_path}/Daily/{tomorrow}.md` exists
+3. If it exists, add under `## LaunchDarkly` (or create the section if missing):
+   ```
+   - [ ] Review skill learnings — {N} new patterns discovered (run `/sales-review-learnings`)
+   ```
+4. If it doesn't exist, the next `/today` run will pick it up — add a flag in the learnings file: `pending_daily_surface: true`
+
+#### 4c: Portfolio-Level Insights
+
+After processing all accounts, look for cross-account patterns:
+
+- **Common competitors:** Which competitors appear most frequently? Are any new ones emerging?
+- **Common objections:** Are multiple accounts raising the same concerns?
+- **Common tech stacks:** Are there patterns in what customers use?
+- **Deal velocity:** Which accounts moved stages this week vs. stalled?
+
+Log any notable cross-account insights under `## Discovered Patterns > ### Pending Review` with tag `[portfolio]`.
+
+#### 4d: Retro Summary
+
+Add to the final report:
+
+```
+## Self-Improvement Notes
+
+- Subagent success rate: {N}/{total} ({percentage}%)
+- Model escalations: {any haiku→sonnet escalations this run}
+- New patterns discovered: {count} (queued for daily review)
+- Recurring issues: {any new issues identified}
+- Stale accounts (30+ days no activity): {list}
+- Portfolio trends: {1-2 sentence summary of cross-account patterns}
 ```
 
 ---

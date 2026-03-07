@@ -53,6 +53,8 @@ Read the `competitors` array from `~/.claude/skills/sales-config.md`. Each compe
 
 ### Phase 2: Process Each Meeting Note via Subagents
 
+**Pre-check: Adaptive model selection.** Read `~/.claude/skills/sales-learnings.md` and check the `## Model Performance` table. If "meeting-summary" has >30% failure rate on the current model, escalate to the next tier (haiku→sonnet). Default is sonnet for meeting subagents and haiku for contact enrichment subagents.
+
 **Pre-check: Skip already-summarized meetings.** Before launching subagents, read the first ~30 lines of each meeting file to check if the `## Summary` section has content (not just the heading). Only launch subagents for meetings where the Summary section is empty or missing — these are the meetings that haven't been processed yet. Previously summarized meetings already had their data incorporated into the account file during prior runs, so re-processing them is wasteful.
 
 For each **unsummarized** meeting file, launch a subagent using the Task tool (`subagent_type: "general-purpose"`). Run all meeting subagents **in parallel** (send all Task tool calls in a single message).
@@ -145,6 +147,9 @@ TECH_VALIDATION_PLAN: {POV, workshop, demo plans}
 SUPPORT: {post-sale needs}
 TECH_STACK: {languages, frameworks, cloud, infra, AI/ML, data, observability, CI/CD, feature flags, other tools}
 ARCHITECTURE_NOTES: {client apps, platforms, infrastructure, data flows}
+NEW_COMPETITORS: {any competitors or alternative solutions mentioned that are NOT in the known competitors list, with context — or "none"}
+NEW_OBJECTIONS: {recurring objections, blockers, or concerns raised by the customer — or "none"}
+FEATURE_REQUESTS: {product gaps or feature requests mentioned by the customer — or "none"}
 ---END EXTRACTION---
 
 For any field where no relevant information was found, write "none".
@@ -483,6 +488,52 @@ After completing all account updates:
 - No blank line between last bullet and next heading
 - Sections flow directly into each other
 
+### Phase 6: Self-Improvement
+
+After completing all account updates, perform these learning steps:
+
+#### 6a: Log Run Diagnostics
+
+Read `~/.claude/skills/sales-learnings.md`. Append observations to the appropriate sections:
+
+**Model Performance:** For each subagent that ran, log whether it succeeded or failed and what model was used. Update the `## Model Performance` table — increment success/failure counts for the task type + model combination. If a haiku subagent failed (produced garbled output, missed critical fields, or had to be retried), note the failure reason. If a task type has >30% failure rate on haiku, add a note under `## Recurring Issues` recommending sonnet for that task.
+
+**Discovered Patterns:** Check the meeting extractions for:
+- **New competitors** not in `~/.claude/skills/sales-config.md` — if found, add them to the config (existing behavior) AND log under `## Discovered Patterns > ### Pending Review` with format: `- [competitor] {Name}: {context from meeting} ({Account}, {date})`
+- **New objections or blockers** that appear across multiple accounts — log as: `- [objection] {pattern}: {details} ({Account}, {date})`
+- **Technical patterns** (common tech stacks, integration requests, architecture patterns) — log as: `- [tech] {pattern}: {details} ({Account}, {date})`
+- **Product gaps or feature requests** mentioned by customers — log as: `- [feature] {request}: {context} ({Account}, {date})`
+
+These pending items will be surfaced in the daily note for review.
+
+#### 6b: Detect Template Drift
+
+After writing the account file, compare what you wrote against what was there before (if this is a re-run, not a first run):
+
+1. Read the account file one more time
+2. Check if the user has manually edited any sections since the LAST run by looking for content that doesn't match the expected template patterns:
+   - MEDDPICC fields reworded or restructured
+   - Salesforce Updates reformatted
+   - Sections reordered
+   - Summary style changed (e.g., user consistently writes shorter/longer summaries)
+
+3. If edits are detected, log under `## Template Feedback`:
+   - Which section was edited
+   - What kind of change (rewording, restructuring, removing content, adding content)
+   - The account name
+
+This helps identify when the skill's output style doesn't match user preferences.
+
+#### 6c: Adaptive Model Selection
+
+Before launching subagents at the START of Phase 2, read `~/.claude/skills/sales-learnings.md` and check the `## Model Performance` table:
+
+- If "meeting-summary" task type has >30% failure rate on haiku → use sonnet instead
+- If "contact-enrichment" task type has >50% failure rate on haiku → use sonnet instead
+- Log which model was selected and why in the run output
+
+---
+
 ### Output
 
 After completing all phases, provide a summary of:
@@ -498,3 +549,4 @@ After completing all phases, provide a summary of:
 10. **Full contact roster table** showing ALL contacts with: Name | Role | LinkedIn | Status
 11. Next call information (if any)
 12. **Daily note checkbox marked complete**
+13. **Learnings logged** — new patterns discovered, model performance, template drift detected
