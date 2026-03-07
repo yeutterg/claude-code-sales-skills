@@ -11,14 +11,15 @@ Commit and push any changes to the skills GitHub repo.
 ### Pre-check: Read Config
 
 Read `~/.claude/skills/sales-config.md` and extract from the YAML frontmatter:
-- `repo_path` — the local repo path
-- `company` — the company name
-- `company_folder` — the company folder name in the vault
-- `vault_path` — the vault path
-- `name` — the user's name
-- `initials` — the user's initials
-- `salesforce_username` — the SF username
-- `salesforce_instance_url` — the SF instance URL
+- `repo_path` -- the local repo path
+- `public_repo_path` -- the public sales-* repo path (optional)
+- `company` -- the company name
+- `company_folder` -- the company folder name in the vault
+- `vault_path` -- the vault path
+- `name` -- the user's name
+- `initials` -- the user's initials
+- `salesforce_username` -- the SF username
+- `salesforce_instance_url` -- the SF instance URL
 
 If the config doesn't exist, use the current working directory as the repo path.
 
@@ -43,8 +44,8 @@ Build a list of proprietary patterns to check from the config:
 1. **User identity:** `{config.name}`, `{config.initials}` (as standalone word in examples), `{config.salesforce_username}`
 2. **Company-specific paths:** `{config.vault_path}` (the full path), `{config.company_folder}/Accounts` (only flag if `{config.company_folder}` is NOT a generic placeholder like `{config.company_folder}`)
 3. **Salesforce URLs:** `{config.salesforce_instance_url}` (if set)
-4. **Real customer names:** List all folder names in `{config.vault_path}/{config.company_folder}/Accounts/` — any of these appearing in SKILL.md files are proprietary
-5. **Named persons from deal notes:** Scan all contact files in `{config.vault_path}/{config.company_folder}/Accounts/*/contacts/` to build a list of real person names. Any of these names appearing in SKILL.md files (in examples, prompts, or instructions) are proprietary. Skills should reference deal contacts via `{config.name}` or generic placeholder names — never real contact names.
+4. **Real customer names:** List all folder names in `{config.vault_path}/{config.company_folder}/Accounts/` -- any of these appearing in SKILL.md files are proprietary
+5. **Named persons from deal notes:** Scan all contact files in `{config.vault_path}/{config.company_folder}/Accounts/*/contacts/` to build a list of real person names. Any of these names appearing in SKILL.md files (in examples, prompts, or instructions) are proprietary. Skills should reference deal contacts via `{config.name}` or generic placeholder names -- never real contact names.
 
 Also check for these hardcoded patterns regardless of config:
 - Email addresses matching `*@*.com` that aren't in generic examples
@@ -59,8 +60,8 @@ Proprietary information found in SKILL.md files:
 
 | File | Line | Type | Value | Suggested Fix |
 |------|------|------|-------|---------------|
-| sales-meeting/SKILL.md | 32 | Customer name | "DriveTime" | Replace with generic example |
-| sales-salesforce/SKILL.md | 106 | SF username | "user@company.com" | Use {config.salesforce_username} |
+| ld-meeting/SKILL.md | 32 | Customer name | "DriveTime" | Replace with generic example |
+| ld-salesforce/SKILL.md | 106 | SF username | "user@company.com" | Use {config.salesforce_username} |
 ...
 ```
 
@@ -74,9 +75,10 @@ Proprietary information found in SKILL.md files:
 Report what was fixed.
 
 **Important:** Do NOT flag these as proprietary:
-- Skill command names (`/sales-meeting`, `/sales-salesforce`, etc.) — these are the skill identifiers, not proprietary info
+- Skill command names (`/sales-meeting`, `/sales-salesforce`, etc.) -- these are the skill identifiers, not proprietary info
 - Generic examples already using placeholder names (Acme Corp, Jane Smith, etc.)
-- Config variable references like `{config.vault_path}` — these ARE the correct pattern
+- Config variable references like `{config.vault_path}` -- these ARE the correct pattern
+- The word "LaunchDarkly" when it appears as a default value suggestion (e.g., "default: LaunchDarkly") in ld-setup only
 
 ### Step 3: Check Git Status
 
@@ -102,7 +104,7 @@ Claude Code skills for interacting with Obsidian sales notes. These skills integ
 - [Obsidian Vault Setup](#obsidian-vault-setup)
 - [Getting Started](#getting-started)
   - [1. Install the skills](#1-install-the-skills)
-  - [2. Run `/sales-setup`](#2-run-sales-setup)
+  - [2. Run `/sales-setup`](#2-run-ld-setup)
 - [Workflow](#workflow)
   - [New account onboarding](#new-account-onboarding)
   - [Ongoing usage](#ongoing-usage)
@@ -130,8 +132,9 @@ Brief paragraph describing what the skill does, its inputs, and key behaviors. G
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (CLI)
 - [Obsidian](https://obsidian.md) with the [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin enabled
-  - In Dataview settings, enable **Enable Inline Queries** — this is required for inline expressions like `` `= this.ae` `` to render in account files
+  - In Dataview settings, enable **Enable Inline Queries** -- this is required for inline expressions like `` `= this.ae` `` to render in account files
 - *Optional, for `/sales-salesforce`:* [Homebrew](https://brew.sh) and [Salesforce CLI](https://developer.salesforce.com/tools/salesforcecli) (`brew install sf`)
+- *Optional, for `/sales-gong`:* [Homebrew](https://brew.sh) and [Playwright MCP](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md) (`claude mcp add playwright -- npx @playwright/mcp@latest --browser chromium`)
 
 ## Obsidian Vault Setup
 
@@ -161,7 +164,7 @@ Vault/
 >             └── contacts/             # Contact cards ({Person Name}.md)
 > ```
 
-You can add additional folders under `{Company}/` as you see fit — for example, `Resources/` for shared collateral, competitive intel, or internal templates. The skills only read from `Accounts/` and `Daily/`.
+You can add additional folders under `{Company}/` as you see fit -- for example, `Resources/` for shared collateral, competitive intel, or internal templates. The skills only read from `Accounts/` and `Daily/`.
 
 ## Getting Started
 
@@ -178,7 +181,7 @@ You can add additional folders under `{Company}/` as you see fit — for example
    git remote add upstream https://github.com/<original-author>/claude-code-obsidian-commands.git
    ```
 
-To pull upstream updates later, just run `/sales-setup` — it checks for updates automatically.
+To pull upstream updates later, just run `/sales-setup` -- it checks for updates automatically.
 
 ### 2. Run `/sales-setup`
 
@@ -201,7 +204,7 @@ Run `/sales-setup` in Claude Code. It will:
    This creates the full folder structure, populates business context from the web, and sets up template files.
 
 2. **Import historical calls from Gong:**
-   Search for the account in Gong, go to the Activity tab, and check "Calls Only." Then run `/sales-meeting` with all the call dates and descriptions. The input is freeform — Claude is pretty smart at figuring out what you mean, so just list them however is fastest:
+   Search for the account in Gong, go to the Activity tab, and check "Calls Only." Then run `/sales-meeting` with all the call dates and descriptions. The input is freeform -- Claude is pretty smart at figuring out what you mean, so just list them however is fastest:
    ```
    /sales-meeting Acme Corp
 
@@ -230,7 +233,7 @@ Run `/sales-setup` in Claude Code. It will:
    ```
    /sales-salesforce Acme Corp
    ```
-   This pushes the Salesforce Updates section to all linked Opportunities. Export the main account file as a PDF to share with stakeholders (AEs, CSMs) — it doubles as an executive summary to bring anyone up to speed.
+   This pushes the Salesforce Updates section to all linked Opportunities. Export the main account file as a PDF to share with stakeholders (AEs, CSMs) -- it doubles as an executive summary to bring anyone up to speed.
 
 ### Ongoing usage
 
@@ -243,7 +246,7 @@ After each new meeting:
 
 2. **Take your own notes** during the call in the meeting file.
 
-3. **Add external transcripts** once Gong (or other tools) finish processing — paste the summary and transcript into the meeting note.
+3. **Add external transcripts** once Gong (or other tools) finish processing -- paste the summary and transcript into the meeting note.
 
 4. **Re-summarize:**
    ```
@@ -258,7 +261,7 @@ After each new meeting:
 
 ### Asking questions about a deal
 
-Beyond the skills, you can use Claude Code to interact with your account data conversationally. Just ask whatever's on your mind — Claude has access to all the meeting notes, contacts, and account context in your vault.
+Beyond the skills, you can use Claude Code to interact with your account data conversationally. Just ask whatever's on your mind -- Claude has access to all the meeting notes, contacts, and account context in your vault.
 
 **Deal strategy:**
 ```
@@ -286,16 +289,16 @@ How far along is the Globex POV?
 If something in an account file doesn't look quite right in Obsidian, just tell Claude what's off and it'll fix it:
 
 ```
-The MEDDPICC summary callout in Acme Corp is collapsed — it should be open.
+The MEDDPICC summary callout in Acme Corp is collapsed -- it should be open.
 The ledger entries in Globex are out of order, newest should be first.
-The contacts table in Initech isn't rendering — can you check the base file?
+The contacts table in Initech isn't rendering -- can you check the base file?
 Move the architecture diagram above the Salesforce Updates section in Acme Corp.
 The ledger is calling her Kathy, but she spells it with a C.
 ```
 
 ## Customizing and creating skills
 
-These skills are a starting point — you should customize them for your own workflow. Skills are just markdown files with instructions and optional frontmatter, and Claude Code is great at editing them for you.
+These skills are a starting point -- you should customize them for your own workflow. Skills are just markdown files with instructions and optional frontmatter, and Claude Code is great at editing them for you.
 
 ### Updating existing skills
 
@@ -316,22 +319,22 @@ Create a new skill called /sales-prep that reads the account file and upcoming m
 then generates a one-page prep doc with talking points, open questions, and recent news.
 ```
 
-Claude will create a `SKILL.md` file in a new directory under `~/.claude/skills/` (or in your repo if you tell it to). Skills are just natural language instructions with optional YAML frontmatter — no code required.
+Claude will create a `SKILL.md` file in a new directory under `~/.claude/skills/` (or in your repo if you tell it to). Skills are just natural language instructions with optional YAML frontmatter -- no code required.
 
 ### Ideas for improvements
 
 Here are some directions you could take this:
 
-- **Gong API integration** — Use an [MCP server](https://modelcontextprotocol.io/) or API calls to pull transcripts and briefings directly from Gong instead of copy-pasting
-- **Google Calendar integration** — Connect a [Google Calendar MCP server](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md) to automatically fetch upcoming meetings and create meeting notes for calls matching an account name — no manual `/sales-meeting` needed
-- **Competitive intelligence** — Add a skill that searches for competitor mentions across all account meetings and builds a comparison matrix
-- **Pipeline dashboard** — Create a skill that reads all account files and generates a summary table with deal stage, next call, and MEDDPICC completeness
-- **POV tracking** — Add a skill for managing proof-of-value timelines, success criteria, and milestone tracking
-- **Email drafts** — Generate follow-up emails or internal updates from the latest meeting summary and next steps
-- **Email and Slack context** — Pull in relevant email threads and Slack messages as additional context for account summaries, using MCP servers for [Gmail](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md) and [Slack](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md)
-- **Static site hosting** — Publish account files as static pages (e.g., via [Obsidian Publish](https://obsidian.md/publish), [Quartz](https://quartz.jzhao.xyz/), or GitHub Pages) so stakeholders can view live account summaries in a browser instead of receiving PDF exports
+- **Gong API integration** -- Use an [MCP server](https://modelcontextprotocol.io/) or API calls to pull transcripts and briefings directly from Gong instead of copy-pasting
+- **Google Calendar integration** -- Connect a [Google Calendar MCP server](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md) to automatically fetch upcoming meetings and create meeting notes for calls matching an account name -- no manual `/sales-meeting` needed
+- **Competitive intelligence** -- Add a skill that searches for competitor mentions across all account meetings and builds a comparison matrix
+- **Pipeline dashboard** -- Create a skill that reads all account files and generates a summary table with deal stage, next call, and MEDDPICC completeness
+- **POV tracking** -- Add a skill for managing proof-of-value timelines, success criteria, and milestone tracking
+- **Email drafts** -- Generate follow-up emails or internal updates from the latest meeting summary and next steps
+- **Email and Slack context** -- Pull in relevant email threads and Slack messages as additional context for account summaries, using MCP servers for [Gmail](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md) and [Slack](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md)
+- **Static site hosting** -- Publish account files as static pages (e.g., via [Obsidian Publish](https://obsidian.md/publish), [Quartz](https://quartz.jzhao.xyz/), or GitHub Pages) so stakeholders can view live account summaries in a browser instead of receiving PDF exports
 
-If you build something useful, consider contributing it back — see [Contributing](#contributing) below.
+If you build something useful, consider contributing it back -- see [Contributing](#contributing) below.
 
 ## Contributing
 
@@ -353,10 +356,10 @@ Contributions are welcome! If you've built a new skill, improved an existing one
    ```
 
 **Guidelines:**
-- Keep skill instructions clear and self-contained — another user should be able to use your skill without extra context
-- If your skill adds a new `sales-*` directory, `/sales-git` will automatically pick it up for the README
+- Keep skill instructions clear and self-contained -- another user should be able to use your skill without extra context
+- If your skill adds a new `ld-*` directory, `/sales-git` will automatically pick it up for the README
 - Test your skill on at least one real account before submitting
-- Don't include vault-specific paths, company names, or personal info — use `{config.*}` references and `/sales-setup` handles personalization
+- Don't include vault-specific paths, company names, or personal info -- use `{config.*}` references and `/sales-setup` handles personalization
 - `/sales-git` will check for proprietary information before committing and auto-fix any leaks
 ```
 
@@ -366,3 +369,55 @@ Contributions are welcome! If you've built a new skill, improved an existing one
 2. Generate a concise commit message describing what changed
 3. Commit and push to origin
 4. If there were no changes before the README update and the README also didn't change, inform the user that everything is up to date
+
+### Step 6: Sync to Public Repo
+
+After successfully committing and pushing the private repo, sync changes to the public `sales-*` repo.
+
+1. **Check if the public repo exists:**
+   If `{config.public_repo_path}` is empty or not set, skip this step silently. Otherwise:
+   ```bash
+   test -d "{config.public_repo_path}/.git"
+   ```
+   If the directory doesn't exist, warn: "Public repo not found at {config.public_repo_path}. Skipping sync." and stop.
+
+2. **Copy and rename each SKILL.md:**
+   For each `ld-*/SKILL.md` in the private repo, copy it to the corresponding `sales-*/SKILL.md` in the public repo:
+   ```bash
+   for d in {config.repo_path}/sales-*/; do
+     skill_name=$(basename "$d")
+     sales_name="sales-${skill_name#ld-}"
+     mkdir -p "{config.public_repo_path}/$sales_name"
+     cp "$d/SKILL.md" "{config.public_repo_path}/$sales_name/SKILL.md"
+   done
+   ```
+
+3. **Replace `ld-` references with `sales-` in all copied files:**
+   ```bash
+   cd {config.public_repo_path}
+   # Replace /sales- skill references with /sales-
+   sed -i '' 's|/sales-|/sales-|g' sales-*/SKILL.md
+   # Replace sales-config.md with sales-config.md
+   sed -i '' 's|ld-config\.md|sales-config.md|g' sales-*/SKILL.md
+   # Replace ld-* directory patterns (in symlink loops, file scans, etc.)
+   sed -i '' 's|/sales-\*/|/sales-*/|g' sales-*/SKILL.md
+   sed -i '' 's|ld-\*\.md|sales-*.md|g' sales-*/SKILL.md
+   ```
+
+4. **Regenerate the public README.md** using the same logic as Step 4, but:
+   - Use `sales-*` skill names throughout
+   - Use `sales-config.md` instead of `sales-config.md`
+   - Use `sales-setup` instead of `ld-setup`
+   - Reference `https://github.com/yeutterg/claude-code-sales-skills` as the upstream
+   - Keep the same structure (table of contents, skills table, detailed subsections, prerequisites, vault setup, workflow, customization, contributing)
+
+5. **Commit and push the public repo:**
+   ```bash
+   cd {config.public_repo_path}
+   git add -A
+   ```
+   If there are changes:
+   - Use the same commit message as the private repo, prefixed with "sync: "
+   - Commit and push to origin
+
+6. Report: "Public repo synced: {N} skill files updated."

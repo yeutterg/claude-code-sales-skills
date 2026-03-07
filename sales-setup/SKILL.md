@@ -3,7 +3,7 @@ description: Post-clone setup — configure vault path, name, role, company, sym
 argument-hint: [salesforce | playwright]
 ---
 
-# Sales Skills Setup
+# LD Skills Setup
 
 Guided onboarding for the Obsidian sales skills. Walks the user through configuration, creates a persistent config file, and sets up integrations. Re-run anytime to pull upstream updates — your config is preserved.
 
@@ -28,9 +28,9 @@ Check `$ARGUMENTS`:
 
 ### Step 1: Detect Repo and Check for Updates
 
-Determine the repo path by finding where this skill file lives. The repo root is the parent directory of the `sales-setup/` folder — e.g., if this skill is at `~/repos/claude-code-sales-skills/sales-setup/SKILL.md`, the repo root is `~/repos/claude-code-sales-skills/`.
+Determine the repo path by finding where this skill file lives. The repo root is the parent directory of the `ld-setup/` folder — e.g., if this skill is at `~/repos/claude-code-obsidian-commands/sales-setup/SKILL.md`, the repo root is `~/repos/claude-code-obsidian-commands/`.
 
-Verify the repo root contains `sales-*/SKILL.md` files. If not, report an error and stop.
+Verify the repo root contains `ld-*/SKILL.md` files. If not, report an error and stop.
 
 **Check for upstream updates:**
 
@@ -131,9 +131,16 @@ If a default exists from config: "What is the absolute path to your Obsidian vau
 **Question 6 — Company Folder:**
 Propose a folder name derived from the company name: "Your account notes will be stored under `{vault_path}/{Company}/Accounts/`. Would you like a different folder name?"
 
-The default should be the company name as entered (e.g., "Acme Corp"). Accept any alternative.
+The default should be the company name as entered (e.g., "LaunchDarkly", "Acme Corp"). Accept any alternative.
 
 If a default exists from config: "Company folder name? (current: {company_folder})"
+
+**Question 7 — Public Repo Path (optional):**
+"Do you have a public sales skills repo for sharing generic versions of your skills? If so, provide the absolute path (e.g., `~/repos/claude-code-sales-skills`). `/sales-git` will automatically sync changes to it."
+
+- If provided, store the path
+- If the user says no or skips, leave empty
+- If a default exists from config: "Public repo path? (current: {public_repo_path}, or press Enter to keep)"
 
 ### Step 4: Research Company Products
 
@@ -162,8 +169,8 @@ Also ask: "Are there any competitors you'd like to track? For each, provide the 
 
 Example format:
 ```
-- Competitor A: Description of competitor (misspellings: Misspelling1, Misspelling2)
-- Competitor B: Description of competitor (misspellings: Misspelling1)
+- Kameleoon: Experimentation and personalization platform (misspellings: Chameleon, Kameleon)
+- Eppo: Feature flagging and experimentation (misspellings: Epo)
 ```
 
 If the user doesn't want to add competitors now, that's fine — they can be added later or will auto-grow as they appear in deal notes.
@@ -182,6 +189,7 @@ company_description: {generated company description}
 company_folder: {COMPANY_FOLDER}
 vault_path: {VAULT_PATH}
 repo_path: {REPO_ROOT}
+public_repo_path: {PUBLIC_REPO_PATH or empty}
 salesforce_username: {SF_USERNAME or empty}
 salesforce_instance_url: {SF_INSTANCE_URL or empty}
 salesforce_se_status_field: {SF_SE_STATUS_FIELD or empty}
@@ -214,11 +222,11 @@ It is read by skills at runtime and survives repo updates.
 To reconfigure or pull updates, run `/sales-setup` again.
 ```
 
-If the config already existed, preserve the `salesforce_username`, `salesforce_instance_url`, `salesforce_se_status_field`, `salesforce_se_lookup_fields`, `salesforce_custom_fields`, `salesforce_configured`, `playwright_configured`, `gong_workspace_id`, and `setup_date` values from the old config. Update `last_updated` to today.
+If the config already existed, preserve the `salesforce_username`, `salesforce_instance_url`, `salesforce_se_status_field`, `salesforce_se_lookup_fields`, `salesforce_custom_fields`, `salesforce_configured`, `playwright_configured`, `gong_workspace_id`, `public_repo_path`, and `setup_date` values from the old config. Update `last_updated` to today.
 
 ### Step 6: Create Symlinks
 
-Create symlinks from `~/.claude/skills/` to each `sales-*` directory in the repo:
+Create symlinks from `~/.claude/skills/` to each `ld-*` directory in the repo:
 
 ```bash
 mkdir -p ~/.claude/skills

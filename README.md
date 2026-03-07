@@ -38,9 +38,9 @@ Claude Code skills for interacting with Obsidian sales notes. These skills integ
 | `/sales-gong` | Import Gong calls or Granola meetings into Obsidian meeting notes, or bulk import all calls for an account |
 | `/sales-meeting` | Create meeting notes for a sales account and link them in the daily note |
 | `/sales-salesforce` | Push SE Status to Salesforce, scan accounts for opportunities and deal context, or discover all your open opportunities |
-| `/sales-setup` | Post-clone setup — configure vault path, name, role, company, symlinks, and optional integrations |
+| `/sales-setup` | Post-clone setup -- configure vault path, name, role, company, symlinks, and optional integrations |
 | `/sales-summarize-account` | Summarize all meeting notes, update MEDDPICC/TECHMAPS/CoM, enrich contacts, refresh business context |
-| `/sales-weekly` | Weekly review of all accounts with open Salesforce opportunities — pulls deal context, summarizes activity, updates ledgers |
+| `/sales-weekly` | Weekly review of all accounts with open Salesforce opportunities -- pulls deal context, summarizes activity, updates ledgers |
 
 ### `/sales-create-account`
 
@@ -88,14 +88,15 @@ Processes all unsummarized meeting notes via parallel subagents, then aggregates
 
 **Usage:** `/sales-weekly`
 
-Portfolio-wide sweep of all accounts with open Salesforce opportunities. Pulls current deal context, auto-summarizes meetings that have transcripts but no summary, adds status ledger entries, and pushes updates to Salesforce. Designed to run autonomously at the end of the week — start it and walk away.
+Portfolio-wide sweep of all accounts with open Salesforce opportunities. Pulls current deal context, auto-summarizes meetings that have transcripts but no summary, adds status ledger entries, and pushes updates to Salesforce. Designed to run autonomously at the end of the week -- start it and walk away.
 
 ## Prerequisites
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (CLI)
 - [Obsidian](https://obsidian.md) with the [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin enabled
-  - In Dataview settings, enable **Enable Inline Queries** — this is required for inline expressions like `` `= this.ae` `` to render in account files
+  - In Dataview settings, enable **Enable Inline Queries** -- this is required for inline expressions like `` `= this.ae` `` to render in account files
 - *Optional, for `/sales-salesforce`:* [Homebrew](https://brew.sh) and [Salesforce CLI](https://developer.salesforce.com/tools/salesforcecli) (`brew install sf`)
+- *Optional, for `/sales-gong`:* [Homebrew](https://brew.sh) and [Playwright MCP](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md) (`claude mcp add playwright -- npx @playwright/mcp@latest --browser chromium`)
 
 ## Obsidian Vault Setup
 
@@ -125,7 +126,7 @@ Vault/
 >             └── contacts/             # Contact cards ({Person Name}.md)
 > ```
 
-You can add additional folders under `{Company}/` as you see fit — for example, `Resources/` for shared collateral, competitive intel, or internal templates. The skills only read from `Accounts/` and `Daily/`.
+You can add additional folders under `{Company}/` as you see fit -- for example, `Resources/` for shared collateral, competitive intel, or internal templates. The skills only read from `Accounts/` and `Daily/`.
 
 ## Getting Started
 
@@ -142,7 +143,7 @@ You can add additional folders under `{Company}/` as you see fit — for example
    git remote add upstream https://github.com/yeutterg/claude-code-sales-skills.git
    ```
 
-To pull upstream updates later, just run `/sales-setup` — it checks for updates automatically.
+To pull upstream updates later, just run `/sales-setup` -- it checks for updates automatically.
 
 ### 2. Run `/sales-setup`
 
@@ -165,7 +166,7 @@ Run `/sales-setup` in Claude Code. It will:
    This creates the full folder structure, populates business context from the web, and sets up template files.
 
 2. **Import historical calls from Gong:**
-   Search for the account in Gong, go to the Activity tab, and check "Calls Only." Then run `/sales-meeting` with all the call dates and descriptions. The input is freeform — Claude is pretty smart at figuring out what you mean, so just list them however is fastest:
+   Search for the account in Gong, go to the Activity tab, and check "Calls Only." Then run `/sales-meeting` with all the call dates and descriptions. The input is freeform -- Claude is pretty smart at figuring out what you mean, so just list them however is fastest:
    ```
    /sales-meeting Acme Corp
 
@@ -194,7 +195,7 @@ Run `/sales-setup` in Claude Code. It will:
    ```
    /sales-salesforce Acme Corp
    ```
-   This pushes the Salesforce Updates section to all linked Opportunities. Export the main account file as a PDF to share with stakeholders (AEs, CSMs) — it doubles as an executive summary to bring anyone up to speed.
+   This pushes the Salesforce Updates section to all linked Opportunities. Export the main account file as a PDF to share with stakeholders (AEs, CSMs) -- it doubles as an executive summary to bring anyone up to speed.
 
 ### Ongoing usage
 
@@ -207,7 +208,7 @@ After each new meeting:
 
 2. **Take your own notes** during the call in the meeting file.
 
-3. **Add external transcripts** once Gong (or other tools) finish processing — paste the summary and transcript into the meeting note.
+3. **Add external transcripts** once Gong (or other tools) finish processing -- paste the summary and transcript into the meeting note.
 
 4. **Re-summarize:**
    ```
@@ -222,7 +223,7 @@ After each new meeting:
 
 ### Asking questions about a deal
 
-Beyond the skills, you can use Claude Code to interact with your account data conversationally. Just ask whatever's on your mind — Claude has access to all the meeting notes, contacts, and account context in your vault.
+Beyond the skills, you can use Claude Code to interact with your account data conversationally. Just ask whatever's on your mind -- Claude has access to all the meeting notes, contacts, and account context in your vault.
 
 **Deal strategy:**
 ```
@@ -250,16 +251,16 @@ How far along is the Globex POV?
 If something in an account file doesn't look quite right in Obsidian, just tell Claude what's off and it'll fix it:
 
 ```
-The MEDDPICC summary callout in Acme Corp is collapsed — it should be open.
+The MEDDPICC summary callout in Acme Corp is collapsed -- it should be open.
 The ledger entries in Globex are out of order, newest should be first.
-The contacts table in Initech isn't rendering — can you check the base file?
+The contacts table in Initech isn't rendering -- can you check the base file?
 Move the architecture diagram above the Salesforce Updates section in Acme Corp.
 The ledger is calling her Kathy, but she spells it with a C.
 ```
 
 ## Customizing and creating skills
 
-These skills are a starting point — you should customize them for your own workflow. Skills are just markdown files with instructions and optional frontmatter, and Claude Code is great at editing them for you.
+These skills are a starting point -- you should customize them for your own workflow. Skills are just markdown files with instructions and optional frontmatter, and Claude Code is great at editing them for you.
 
 ### Updating existing skills
 
@@ -280,22 +281,22 @@ Create a new skill called /sales-prep that reads the account file and upcoming m
 then generates a one-page prep doc with talking points, open questions, and recent news.
 ```
 
-Claude will create a `SKILL.md` file in a new directory under `~/.claude/skills/` (or in your repo if you tell it to). Skills are just natural language instructions with optional YAML frontmatter — no code required.
+Claude will create a `SKILL.md` file in a new directory under `~/.claude/skills/` (or in your repo if you tell it to). Skills are just natural language instructions with optional YAML frontmatter -- no code required.
 
 ### Ideas for improvements
 
 Here are some directions you could take this:
 
-- **Gong API integration** — Use an [MCP server](https://modelcontextprotocol.io/) or API calls to pull transcripts and briefings directly from Gong instead of copy-pasting
-- **Google Calendar integration** — Connect a [Google Calendar MCP server](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md) to automatically fetch upcoming meetings and create meeting notes for calls matching an account name — no manual `/sales-meeting` needed
-- **Competitive intelligence** — Add a skill that searches for competitor mentions across all account meetings and builds a comparison matrix
-- **Pipeline dashboard** — Create a skill that reads all account files and generates a summary table with deal stage, next call, and MEDDPICC completeness
-- **POV tracking** — Add a skill for managing proof-of-value timelines, success criteria, and milestone tracking
-- **Email drafts** — Generate follow-up emails or internal updates from the latest meeting summary and next steps
-- **Email and Slack context** — Pull in relevant email threads and Slack messages as additional context for account summaries, using MCP servers for [Gmail](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md) and [Slack](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md)
-- **Static site hosting** — Publish account files as static pages (e.g., via [Obsidian Publish](https://obsidian.md/publish), [Quartz](https://quartz.jzhao.xyz/), or GitHub Pages) so stakeholders can view live account summaries in a browser instead of receiving PDF exports
+- **Gong API integration** -- Use an [MCP server](https://modelcontextprotocol.io/) or API calls to pull transcripts and briefings directly from Gong instead of copy-pasting
+- **Google Calendar integration** -- Connect a [Google Calendar MCP server](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md) to automatically fetch upcoming meetings and create meeting notes for calls matching an account name -- no manual `/sales-meeting` needed
+- **Competitive intelligence** -- Add a skill that searches for competitor mentions across all account meetings and builds a comparison matrix
+- **Pipeline dashboard** -- Create a skill that reads all account files and generates a summary table with deal stage, next call, and MEDDPICC completeness
+- **POV tracking** -- Add a skill for managing proof-of-value timelines, success criteria, and milestone tracking
+- **Email drafts** -- Generate follow-up emails or internal updates from the latest meeting summary and next steps
+- **Email and Slack context** -- Pull in relevant email threads and Slack messages as additional context for account summaries, using MCP servers for [Gmail](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md) and [Slack](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md)
+- **Static site hosting** -- Publish account files as static pages (e.g., via [Obsidian Publish](https://obsidian.md/publish), [Quartz](https://quartz.jzhao.xyz/), or GitHub Pages) so stakeholders can view live account summaries in a browser instead of receiving PDF exports
 
-If you build something useful, consider contributing it back — see [Contributing](#contributing) below.
+If you build something useful, consider contributing it back -- see [Contributing](#contributing) below.
 
 ## Contributing
 
@@ -317,8 +318,8 @@ Contributions are welcome! If you've built a new skill, improved an existing one
    ```
 
 **Guidelines:**
-- Keep skill instructions clear and self-contained — another user should be able to use your skill without extra context
+- Keep skill instructions clear and self-contained -- another user should be able to use your skill without extra context
 - If your skill adds a new `sales-*` directory, `/sales-git` will automatically pick it up for the README
 - Test your skill on at least one real account before submitting
-- Don't include vault-specific paths, company names, or personal info — use `{config.*}` references and `/sales-setup` handles personalization
+- Don't include vault-specific paths, company names, or personal info -- use `{config.*}` references and `/sales-setup` handles personalization
 - `/sales-git` will check for proprietary information before committing and auto-fix any leaks
