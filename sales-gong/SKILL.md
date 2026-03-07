@@ -212,7 +212,7 @@ If no "Go to call" button exists:
 
 1. Click the **"Transcript"** tab on the call page
 2. The transcript snapshot will be very large (200-600KB+) and auto-saved to a tool-results file automatically when it exceeds the token limit
-3. **Launch a background subagent** (`run_in_background: true`) to handle reading the transcript file and writing everything to the meeting file. For bulk imports, this allows you to continue navigating to the next call while the subagent processes.
+3. **Launch a background subagent** (`run_in_background: true`, `model: "haiku"`) to handle reading the transcript file and writing everything to the meeting file. For bulk imports, this allows you to continue navigating to the next call while the subagent processes.
 
 **Brief storage for subagent:** Save the brief text to a temp file (e.g., `/tmp/gong_{date}_{topic}_brief.md`) before launching the subagent. This keeps the main agent's context clean and gives the subagent a reliable file to read.
 
@@ -277,7 +277,7 @@ The **"Briefs"** tab is selected by default on the call page.
 
 1. Click the **"Transcript"** tab on the call page
 2. The transcript snapshot will be very large (200-600KB+) and auto-saved to a tool-results file automatically when it exceeds the token limit
-3. **Launch a subagent** to handle reading the transcript file and writing everything to the meeting file
+3. **Launch a subagent** (`model: "haiku"`) to handle reading the transcript file and writing everything to the meeting file
 
 **Brief storage for subagent:** Save the brief text to a temp file (e.g., `/tmp/gong_{date}_{topic}_brief.md`) before launching the subagent.
 

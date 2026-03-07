@@ -278,12 +278,12 @@ Save all raw query results to a temp JSON file at `/tmp/sf_scan_{account}.json` 
 
 ### Step 5S: Enrich Opportunities via Subagents
 
-Launch subagents to process the raw Salesforce data into deal history narratives. Use the Task tool with `subagent_type: "general-purpose"` and `model: "sonnet"`.
+Launch subagents to process the raw Salesforce data into deal history narratives. Use the Task tool with `subagent_type: "general-purpose"`.
 
-**Group opportunities by era** to control granularity:
-- **Recent** (last 12 months): Individual subagent per opportunity — extract detailed milestones
-- **Older** (12-36 months ago): Batch into one subagent — extract key milestones only
-- **Historical** (3+ years ago): Batch into one subagent — one-line summary per opportunity
+**Group opportunities by era** to control granularity and model choice:
+- **Recent** (last 12 months): Individual subagent per opportunity (`model: "sonnet"`) — extract detailed milestones
+- **Older** (12-36 months ago): Batch into one subagent (`model: "haiku"`) — extract key milestones only
+- **Historical** (3+ years ago): Batch into one subagent (`model: "haiku"`) — one-line summary per opportunity
 
 Launch all subagents in parallel. Each subagent receives the relevant slice of the raw data from Step 4S.
 
