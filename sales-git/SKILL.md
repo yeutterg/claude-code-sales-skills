@@ -408,7 +408,7 @@ After successfully committing and pushing the private repo, sync changes to the 
    - Use `sales-*` skill names throughout
    - Use `sales-config.md` instead of `sales-config.md`
    - Use `sales-setup` instead of `ld-setup`
-   - Reference `https://github.com/yeutterg/claude-code-sales-skills` as the upstream
+   - Reference the public repo's GitHub URL as the upstream (derive from `git remote get-url origin` in the public repo)
    - Keep the same structure (table of contents, skills table, detailed subsections, prerequisites, vault setup, workflow, customization, contributing)
 
 5. **Commit and push the public repo:**

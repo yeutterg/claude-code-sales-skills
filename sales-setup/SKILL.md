@@ -1,6 +1,6 @@
 ---
-description: Post-clone setup — configure vault path, name, role, company, symlinks, and optional Salesforce CLI / Playwright MCP. Re-run anytime to pull upstream updates and re-apply your config.
-argument-hint: [salesforce | playwright]
+description: Post-clone setup — configure vault path, name, role, company, symlinks, and optional Salesforce CLI / Playwright MCP / Google Calendar. Re-run anytime to pull upstream updates and re-apply your config.
+argument-hint: [salesforce | playwright | calendar]
 ---
 
 # LD Skills Setup
@@ -20,6 +20,7 @@ You are helping a seller set up the Obsidian sales skills on their machine.
 Check `$ARGUMENTS`:
 - If `$ARGUMENTS` is `salesforce`, skip to **Salesforce CLI Setup** below.
 - If `$ARGUMENTS` is `playwright`, skip to **Playwright MCP Setup** below.
+- If `$ARGUMENTS` is `calendar`, skip to **Google Calendar Setup** below.
 - Otherwise, run the **Full Setup** flow.
 
 ---
@@ -199,6 +200,11 @@ salesforce_custom_fields:
   - {list of custom SOQL field names}
 salesforce_configured: {true/false}
 playwright_configured: {true/false}
+calendar_accounts: [{list of Google Calendar account IDs}]
+calendar_user_emails: [{list of user's own email addresses}]
+calendar_mode: {all or deals}
+calendar_include_prep: {true/false}
+calendar_configured: {true/false}
 gong_workspace_id: {workspace ID or empty}
 products:
   - name: {Product Name}
@@ -222,7 +228,7 @@ It is read by skills at runtime and survives repo updates.
 To reconfigure or pull updates, run `/sales-setup` again.
 ```
 
-If the config already existed, preserve the `salesforce_username`, `salesforce_instance_url`, `salesforce_se_status_field`, `salesforce_se_lookup_fields`, `salesforce_custom_fields`, `salesforce_configured`, `playwright_configured`, `gong_workspace_id`, `public_repo_path`, and `setup_date` values from the old config. Update `last_updated` to today.
+If the config already existed, preserve the `salesforce_username`, `salesforce_instance_url`, `salesforce_se_status_field`, `salesforce_se_lookup_fields`, `salesforce_custom_fields`, `salesforce_configured`, `playwright_configured`, `calendar_accounts`, `calendar_user_emails`, `calendar_mode`, `calendar_include_prep`, `calendar_configured`, `gong_workspace_id`, `public_repo_path`, and `setup_date` values from the old config. Update `last_updated` to today.
 
 ### Step 6: Create Symlinks
 
@@ -291,7 +297,15 @@ Options:
 - **Yes** — Run the **Salesforce CLI Setup** flow below
 - **No** — Skip
 
-### Step 11: Playwright MCP (Optional)
+### Step 11: Google Calendar (Optional)
+
+Ask the user: "Would you like to set up Google Calendar integration? This lets `/sales-calendar` scan your calendar and auto-create meeting notes for upcoming calls. (Optional — you can always run `/sales-setup calendar` later.)"
+
+Options:
+- **Yes** — Run the **Google Calendar Setup** flow below
+- **No** — Skip
+
+### Step 12: Playwright MCP (Optional)
 
 Ask the user: "Would you like to set up Playwright MCP for automatic Gong call imports? (This is optional — you can always run `/sales-setup playwright` later.)"
 
@@ -299,7 +313,7 @@ Options:
 - **Yes** — Run the **Playwright MCP Setup** flow below
 - **No** — Skip
 
-### Step 12: Report
+### Step 13: Report
 
 Output a summary of everything that was done:
 
@@ -319,6 +333,7 @@ Setup complete!
   Competitors: {N} competitors configured
   Skills:     {N} skills linked
   Salesforce: {configured/not configured}
+  Calendar:   {configured/not configured}
   Playwright: {configured/not configured}
 
 To pull updates and re-apply your config, just run /sales-setup again.
@@ -434,6 +449,76 @@ Update `~/.claude/skills/sales-config.md` frontmatter:
 
 - If successful: "Salesforce CLI is authenticated and ready. You can now use `/sales-salesforce` to push SE notes."
 - If failed: Show the error and suggest re-running `/sales-setup salesforce`.
+
+---
+
+## Google Calendar Setup
+
+### Step 1: Discover Calendar Accounts
+
+Call `mcp__google-calendar__list-calendars` to see all available calendar accounts.
+
+Present the accounts to the user:
+```
+Found these Google Calendar accounts:
+- personal (user@gmail.com)
+- work (user@company.com)
+- ...
+
+Which accounts should /sales-calendar scan for meetings? (comma-separated, or "all")
+```
+
+Accept one or more account IDs. Store as `calendar_accounts` list.
+
+### Step 2: Identify User Emails
+
+Ask: "What email addresses are yours? These will be excluded from meeting attendee lists. (comma-separated)"
+
+Pre-fill with any email addresses found as primary calendars in the discovered accounts. Let the user confirm or modify.
+
+Store as `calendar_user_emails` list.
+
+### Step 3: Meeting Mode
+
+Ask: "What types of meetings should `/sales-calendar` create notes for?"
+
+Options:
+- **All meetings** (deal meetings + internal meetings like standups, 1:1s): Store `calendar_mode: all`
+- **Deal meetings only** (only meetings that match an existing account): Store `calendar_mode: deals`
+
+Default: `all`
+
+### Step 4: Prep Meeting Preference
+
+Ask: "Should `/sales-calendar` also create notes for internal deal prep/debrief meetings? (meetings that match an account name but have no external attendees)"
+
+- **Yes**: Store `calendar_include_prep: true`
+- **No**: Store `calendar_include_prep: false`
+
+Default: `true`
+
+### Step 5: Update Config
+
+Update `~/.claude/skills/sales-config.md` frontmatter:
+- `calendar_accounts: [{selected accounts}]`
+- `calendar_user_emails: [{user emails}]`
+- `calendar_mode: {all or deals}`
+- `calendar_include_prep: {true/false}`
+- `calendar_configured: true`
+- `last_updated: {today}`
+
+### Step 6: Report
+
+"Google Calendar is configured. You can now use `/sales-calendar` to scan your calendar and auto-create meeting notes."
+
+Show a quick usage guide:
+```
+Usage:
+  /sales-calendar              — Today (morning) or tomorrow (afternoon)
+  /sales-calendar week         — This week's meetings
+  /sales-calendar next week    — Next week's meetings
+  /sales-calendar 2026-03-15   — Specific date
+```
 
 ---
 

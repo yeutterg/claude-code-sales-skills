@@ -207,7 +207,7 @@ WHERE !completed
 ## Salesforce Updates
 
 ```
-- M/DD GY: [Most recent ledger entry]
+- M/DD {config.initials}: [Most recent ledger entry]
 
 MEDDPICC:
 [Summary when populated]

@@ -5,6 +5,7 @@ Claude Code skills for interacting with Obsidian sales notes. These skills integ
 ## Table of Contents
 
 - [Skills](#skills)
+  - [`/sales-calendar`](#sales-calendar)
   - [`/sales-create-account`](#sales-create-account)
   - [`/sales-git`](#sales-git)
   - [`/sales-gong`](#sales-gong)
@@ -34,15 +35,22 @@ Claude Code skills for interacting with Obsidian sales notes. These skills integ
 
 | Skill | Description |
 |-------|-------------|
+| `/sales-calendar` | Scan Google Calendar for upcoming meetings, match them to accounts, and auto-create meeting notes via /sales-meeting |
 | `/sales-create-account` | Create a new account folder structure with template files and business context |
 | `/sales-git` | Commit and push skill changes and auto-regenerate the README |
 | `/sales-gong` | Import Gong calls or Granola meetings into Obsidian meeting notes, or bulk import all calls for an account |
 | `/sales-meeting` | Create meeting notes for a sales account and link them in the daily note |
-| `/sales-review-learnings` | Review patterns and insights discovered by skills -- competitors, objections, feature requests, model performance, and template drift |
-| `/sales-salesforce` | Push SE Status to Salesforce, scan accounts for opportunities and deal context, or discover all your open opportunities |
-| `/sales-setup` | Post-clone setup -- configure vault path, name, role, company, symlinks, and optional integrations |
+| `/sales-review-learnings` | Review patterns and insights discovered by skills -- competitors, objections, feature requests, model performance, and template drift. Use when the daily note flags new skill learnings for review. |
+| `/sales-salesforce` | Push SE Status to Salesforce, scan accounts for opportunities and deal context, or discover all your open opportunities across Salesforce. Use this skill whenever the user mentions Salesforce, opportunities, deal updates, SE status, or wants to see all their accounts. |
+| `/sales-setup` | Post-clone setup -- configure vault path, name, role, company, symlinks, and optional Salesforce CLI / Playwright MCP / Google Calendar. Re-run anytime to pull upstream updates and re-apply your config. |
 | `/sales-summarize-account` | Summarize all meeting notes, update MEDDPICC/TECHMAPS/CoM, enrich contacts, refresh business context |
-| `/sales-weekly` | Weekly review of all accounts with open Salesforce opportunities -- pulls deal context, summarizes activity, updates ledgers |
+| `/sales-weekly` | Weekly review of all accounts with open Salesforce opportunities -- pulls deal context, summarizes activity, updates ledgers and Salesforce |
+
+### `/sales-calendar`
+
+**Usage:** `/sales-calendar [week | next week | YYYY-MM-DD]`
+
+Scans Google Calendar for upcoming meetings, identifies which ones map to existing accounts, and automatically creates meeting notes and daily note entries. Classifies events as deal meetings, deal prep, internal meetings, or unrecognized external meetings, and suggests account creation for unrecognized companies. Supports scanning today, tomorrow, a specific date, or an entire week. Requires Google Calendar to be configured via `/sales-setup calendar`.
 
 ### `/sales-create-account`
 
@@ -54,7 +62,7 @@ Creates a new account folder with the full directory structure (meetings, contac
 
 **Usage:** `/sales-git`
 
-Commits and pushes changes to the skills GitHub repo. Pulls latest upstream updates first, scans all SKILL.md files for proprietary information (customer names, staff names, contact names, hardcoded paths, Salesforce credentials) and auto-fixes any leaks before committing. Regenerates the README.md from skill frontmatter. Syncs changes to the public repo with naming conventions applied.
+Commits and pushes changes to the skills GitHub repo. Pulls latest upstream updates first, scans all SKILL.md files for proprietary information (customer names, staff names, contact names, hardcoded paths, Salesforce credentials) and auto-fixes any leaks before committing. Regenerates the README.md from skill frontmatter. Syncs changes to the public repo with `sales-` renaming.
 
 ### `/sales-gong`
 
@@ -82,9 +90,9 @@ Four modes: **Push** pushes the Salesforce Updates section to linked Opportuniti
 
 ### `/sales-setup`
 
-**Usage:** `/sales-setup [salesforce | playwright]`
+**Usage:** `/sales-setup [salesforce | playwright | calendar]`
 
-Guided onboarding that walks through configuration: role, company, name, vault path, and company folder. Searches the web for your company's products and lets you review them. Creates a persistent config file at `~/.claude/skills/sales-config.md` that all other skills read at runtime. Optionally configures the Salesforce CLI (with custom field discovery) and Playwright MCP. Re-run anytime to pull upstream updates.
+Guided onboarding that walks through configuration: role, company, name, vault path, and company folder. Searches the web for your company's products and lets you review them. Creates a persistent config file at `~/.claude/skills/sales-config.md` that all other skills read at runtime. Optionally configures the Salesforce CLI (with custom field discovery), Playwright MCP, and Google Calendar integration. Re-run anytime to pull upstream updates.
 
 ### `/sales-summarize-account`
 
@@ -105,6 +113,7 @@ Portfolio-wide sweep of all accounts with open Salesforce opportunities. Pulls c
   - In Dataview settings, enable **Enable Inline Queries** -- this is required for inline expressions like `` `= this.ae` `` to render in account files
 - *Optional, for `/sales-salesforce`:* [Homebrew](https://brew.sh) and [Salesforce CLI](https://developer.salesforce.com/tools/salesforcecli) (`brew install sf`)
 - *Optional, for `/sales-gong`:* [Homebrew](https://brew.sh) and [Playwright MCP](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md) (`claude mcp add playwright -- npx @playwright/mcp@latest --browser chromium`)
+- *Optional, for `/sales-calendar`:* Google Calendar integration (configured via `/sales-setup calendar`)
 
 ## Obsidian Vault Setup
 
@@ -161,7 +170,7 @@ Run `/sales-setup` in Claude Code. It will:
 - Create a persistent config file at `~/.claude/skills/sales-config.md`
 - Create symlinks in `~/.claude/skills/`
 - Set up your vault folder structure
-- Optionally configure the Salesforce CLI (with custom field auto-discovery) and Playwright MCP
+- Optionally configure the Salesforce CLI (with custom field auto-discovery), Google Calendar, and Playwright MCP
 
 ## Workflow
 
@@ -296,7 +305,7 @@ Claude will create a `SKILL.md` file in a new directory under `~/.claude/skills/
 Here are some directions you could take this:
 
 - **Gong API integration** -- Use an [MCP server](https://modelcontextprotocol.io/) or API calls to pull transcripts and briefings directly from Gong instead of copy-pasting
-- **Google Calendar integration** -- Connect a [Google Calendar MCP server](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md) to automatically fetch upcoming meetings and create meeting notes for calls matching an account name -- no manual `/sales-meeting` needed
+- ~~**Google Calendar integration**~~
 - **Competitive intelligence** -- Add a skill that searches for competitor mentions across all account meetings and builds a comparison matrix
 - **Pipeline dashboard** -- Create a skill that reads all account files and generates a summary table with deal stage, next call, and MEDDPICC completeness
 - **POV tracking** -- Add a skill for managing proof-of-value timelines, success criteria, and milestone tracking
