@@ -1,0 +1,81 @@
+{
+  "skill_name": "sales-setup",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/sales-setup",
+      "expected_output": "Full initial setup: asks for role, company, name, vault path, creates config and symlinks",
+      "files": [],
+      "expectations": [
+        "Asks for user's role (e.g., Solutions Engineer)",
+        "Asks for company name",
+        "Asks for SE name and initials",
+        "Asks for Obsidian vault path",
+        "Searches the web for company products and presents for review",
+        "Creates config file at ~/.claude/skills/sales-config.md with all values",
+        "Creates symlinks in ~/.claude/skills/ for each ld-* skill directory",
+        "Creates vault folder structure (Daily/, {config.company_folder}/Accounts/)",
+        "Checks for old commands in ~/.claude/commands/ and migrates if found",
+        "Offers optional Salesforce CLI setup",
+        "Offers optional Playwright CLI setup",
+        "Offers optional Google Calendar setup",
+        "Reports summary of all actions taken"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/sales-setup salesforce",
+      "expected_output": "Salesforce CLI setup only, does not ask for name/vault/company",
+      "files": [],
+      "expectations": [
+        "Checks if sf CLI is installed with 'which sf'",
+        "If not installed, offers to install via Homebrew",
+        "Runs sf org login web with instance URL",
+        "Verifies authentication with sf org list",
+        "Discovers custom Salesforce fields for SE status",
+        "Updates config with salesforce_username, instance_url, se_status_field, custom_fields",
+        "Sets salesforce_configured to true in config",
+        "Does NOT ask for SE name or vault path"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "/sales-setup playwright",
+      "expected_output": "Playwright CLI setup only",
+      "files": [],
+      "expectations": [
+        "Checks if playwright-cli is installed with 'which playwright-cli'",
+        "If not installed, runs npm install -g @playwright/cli@latest",
+        "Runs playwright-cli install to download browser binaries",
+        "Sets playwright_configured to true in config",
+        "Does NOT ask for SE name or vault path"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "/sales-setup calendar",
+      "expected_output": "Google Calendar setup only",
+      "files": [],
+      "expectations": [
+        "Lists available Google Calendar accounts via MCP tool",
+        "User selects which calendar to use",
+        "Updates config with calendar_id, calendar_user_emails, calendar_mode, calendar_include_prep",
+        "Sets calendar_configured to true in config",
+        "Does NOT ask for SE name or vault path"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "/sales-setup (re-run with existing config)",
+      "expected_output": "Re-running setup preserves existing config values and pulls upstream updates",
+      "files": [],
+      "expectations": [
+        "Existing config file detected and read",
+        "Upstream updates pulled if upstream remote exists",
+        "Symlinks re-created or verified",
+        "Existing config values preserved (not re-prompted)",
+        "Reports what was updated vs. already current"
+      ]
+    }
+  ]
+}

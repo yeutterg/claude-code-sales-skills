@@ -1,0 +1,77 @@
+{
+  "skill_name": "sales-today",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/sales-today morning",
+      "expected_output": "Morning workflow: scan today's calendar, handle new accounts, process outstanding items from previous days",
+      "files": [],
+      "expectations": [
+        "Config read and calendar_configured checked",
+        "Mode forced to morning",
+        "Current date and day of week determined",
+        "/sales-calendar invoked with no arguments (defaults to today in morning)",
+        "Unrecognized external meetings trigger /sales-create-account for each new company",
+        "New accounts get URL-paste checklist items in daily note (NOT auto-processed)",
+        "Past daily note entries with unchecked items processed: Gong scan, summarize, Salesforce push",
+        "Accounts missing salesforce_opportunity or gong_url URLs skipped (not auto-processed)",
+        "Multiple accounts processed in parallel via subagents",
+        "Report shows calendar setup count, catch-up actions, and pending items needing user URLs"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/sales-today evening",
+      "expected_output": "Evening workflow: process today's meetings, scan tomorrow's calendar, handle new accounts",
+      "files": [],
+      "expectations": [
+        "Mode forced to evening",
+        "Today's daily note read for unchecked deal meeting items",
+        "/sales-gong scan run for accounts with unchecked Gong transcript items",
+        "/sales-summarize-account run for accounts with unchecked summarize items",
+        "/sales-salesforce run for accounts with unchecked Salesforce items",
+        "/sales-calendar tomorrow invoked to set up tomorrow's meetings",
+        "Unrecognized external meetings handled with /sales-create-account",
+        "Report shows today's processing results and tomorrow's calendar setup"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "/sales-today (Friday evening)",
+      "expected_output": "Evening workflow plus weekly review triggered by Friday detection",
+      "files": [],
+      "expectations": [
+        "Day of week detected as Friday (5) with evening mode",
+        "run_weekly flag set to true",
+        "Normal evening workflow runs first",
+        "/sales-weekly runs AFTER all daily processing completes",
+        "Weekly review summary included in final report"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "/sales-today (no calendar configured)",
+      "expected_output": "Warns about missing calendar config but continues with non-calendar steps",
+      "files": [],
+      "expectations": [
+        "calendar_configured is not true in config",
+        "Warning issued: 'Google Calendar is not configured'",
+        "Calendar scan skipped",
+        "Outstanding items from previous days still processed",
+        "Does NOT stop execution"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "/sales-today (no Playwright configured)",
+      "expected_output": "Skips Gong imports when Playwright CLI is not configured",
+      "files": [],
+      "expectations": [
+        "playwright_configured is not true in config",
+        "Gong import steps skipped for all accounts",
+        "Report notes: 'Gong imports skipped: Playwright CLI not configured'",
+        "Other steps (summarize, Salesforce) still run normally"
+      ]
+    }
+  ]
+}

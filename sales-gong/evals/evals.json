@@ -1,0 +1,99 @@
+{
+  "skill_name": "sales-gong",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/sales-gong Acme Corp https://app.gong.io/call?id=1234567890&account-id=9876543210",
+      "expected_output": "Imports a single Gong call: opens browser, extracts brief and transcript, writes to meeting file",
+      "files": [],
+      "expectations": [
+        "Mode detected as Single Gong Import from gong.io/call URL",
+        "Config read and vault path verified",
+        "Session name derived from account name (gong_acme_corp)",
+        "Playwright CLI used to open browser with --headed --persistent flags",
+        "Login check performed (snapshot or URL check for sign-in page)",
+        "Call date, title, duration, and attendees extracted from the call page",
+        "Existing meeting file matched by date and topic, or new one created via /sales-meeting",
+        "Brief extracted from Briefs tab BEFORE clicking Transcript",
+        "Video/audio elements paused immediately after page load",
+        "Transcript tab clicked and content extracted via eval",
+        "Subagent launched to write brief and transcript to meeting file",
+        "gong_url set in meeting file frontmatter",
+        "Attendees set as [[wiki-link]] format in frontmatter",
+        "Brief appended under ## External Summary following Append Rules",
+        "Transcript appended under ## Transcript following Append Rules",
+        "Browser session closed after completion",
+        "Report shows file path, attendee count, summary word count, transcript word count"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/sales-gong Acme Corp https://app.gong.io/account/activity?id=123456",
+      "expected_output": "Bulk imports all calls from the Gong activity page using parallel tab processing",
+      "files": [],
+      "expectations": [
+        "Mode detected as Bulk Import from gong.io/account/activity URL",
+        "Activity page opened and Calls Only filter checked",
+        "gong_url saved to account file frontmatter",
+        "All call entries extracted from DOM using eval (not snapshot parsing)",
+        "Voicemail and missed calls auto-skipped",
+        "Call URLs extracted by clicking each entry and reading the Go to call link",
+        "Meeting files pre-created for all calls before starting extraction",
+        "Parallel tab pipeline used: up to 3 tabs open at once",
+        "Videos paused on every tab after loading",
+        "Each tab verified as loaded before extracting content",
+        "Briefs extracted from all tabs before switching to Transcript tabs",
+        "Transcripts extracted with wait/retry for empty content",
+        "Extra tabs closed between batches to prevent stale data",
+        "Background subagents launched for file writing while browser continues",
+        "Summary table shows all imported calls with status"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "/sales-gong Acme Corp",
+      "expected_output": "Scan mode: matches existing meetings without gong_url to Gong recordings by date",
+      "files": [],
+      "expectations": [
+        "Mode detected as Scan (no URL provided)",
+        "Account file read to get gong_url (activity page URL)",
+        "All meeting files listed and frontmatter checked for empty gong_url",
+        "Candidates presented in a table",
+        "Activity page opened and calls-only filter applied",
+        "Calls matched to meeting files by date",
+        "Matched calls processed and written to existing meeting files",
+        "Proceeds automatically without asking for confirmation"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "/sales-gong Acme Corp https://notes.granola.ai/t/abcd1234-5678-efgh-ijkl-mnopqrstuvwx",
+      "expected_output": "Imports a Granola summary into an existing or new meeting file",
+      "files": [],
+      "expectations": [
+        "Mode detected as Granola Import from granola.ai URL",
+        "Browser opened with --headed flag (no --persistent needed)",
+        "Download Granola dialog dismissed if shown",
+        "Meeting title and date extracted from the page",
+        "Summary content extracted preserving markdown hierarchy",
+        "Existing meeting file matched by date, or new one created",
+        "Granola URL NOT stored in frontmatter",
+        "Summary appended under ## External Summary following Append Rules",
+        "No transcript extraction attempted (Granola shares don't include transcripts)"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "/sales-gong Acme Corp https://app.gong.io/call?id=999 (non-recorded call)",
+      "expected_output": "Handles non-recorded calls by updating attendees and gong_url only",
+      "files": [],
+      "expectations": [
+        "Call page opened and no Briefs tab or Go to call button detected",
+        "Attendees still extracted from participant list",
+        "Meeting file frontmatter updated with gong_url and attendees",
+        "No brief or transcript extraction attempted",
+        "Logged as 'no recording' in the report"
+      ]
+    }
+  ]
+}

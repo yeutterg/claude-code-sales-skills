@@ -1,0 +1,69 @@
+{
+  "skill_name": "sales-weekly",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/sales-weekly",
+      "expected_output": "Full weekly review: discovers accounts with open opps, processes each via subagents, reports results, runs retro",
+      "files": [],
+      "expectations": [
+        "Config read and vault/Salesforce CLI verified",
+        "All account directories scanned for salesforce_opportunity fields",
+        "Accounts categorized: active (set up), needs setup, bad opp URL",
+        "Bad opp URLs auto-fixed by querying Salesforce for open opps on the Account ID",
+        "Account URLs in salesforce_opportunity fields moved to salesforce_account",
+        "Subagents launched in parallel for all active accounts",
+        "Each subagent pulls deal context via Salesforce REST API",
+        "Closed opportunities detected and salesforce_opportunity fields cleared",
+        "Unsummarized meetings with transcripts/briefs auto-summarized via /sales-summarize-account",
+        "Weekly (status) ledger entry added or updated (only one per account)",
+        "Salesforce Updates section updated with status line at top of code block",
+        "SE status pushed to Salesforce via PATCH REST API for each open opportunity",
+        "Report table shows account, stage, amount, close date, forecast, status entry, SF push",
+        "Accounts needing setup listed with prompt to create them",
+        "Phase 4 retro: model performance logged, cross-account patterns discovered",
+        "Portfolio insights added to Pending Review with [portfolio] tag",
+        "Learnings surfaced in tomorrow's daily note if pending items exist"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/sales-weekly (account with all closed opps)",
+      "expected_output": "Detects closed opportunities, clears frontmatter fields, skips remaining steps for that account",
+      "files": [],
+      "expectations": [
+        "Subagent queries Salesforce and finds IsClosed=true for all opportunities",
+        "salesforce_opportunity fields cleared in account frontmatter",
+        "Account reported as 'no_open_opps' status",
+        "Remaining steps (ledger, SF push) skipped for this account",
+        "Closed opportunity listed in Newly Closed Opportunities report section"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "/sales-weekly (account with unsummarized meetings)",
+      "expected_output": "Auto-summarizes meetings that have transcripts but no summary before continuing",
+      "files": [],
+      "expectations": [
+        "Meeting files scanned for empty ## Summary sections",
+        "Meetings with External Summary or Transcript content identified as summarizable",
+        "/sales-summarize-account run for the account before adding ledger entry",
+        "Account file and Ledger.md re-read after summarization",
+        "Report shows which accounts were auto-summarized and how many meetings"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "/sales-weekly (status entry lifecycle)",
+      "expected_output": "Only one (status) entry exists per account in the ledger",
+      "files": [],
+      "expectations": [
+        "Existing (status) entry in ledger found and replaced (not duplicated)",
+        "New (status) entry placed at top of ledger if none existed",
+        "Status entry format: '- M/D INITIALS (status): concise update'",
+        "Status entry is max ~20 words, includes stage and what's next",
+        "No deal amounts, close dates, or forecast in status entry"
+      ]
+    }
+  ]
+}

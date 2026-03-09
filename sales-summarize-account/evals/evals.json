@@ -1,0 +1,35 @@
+{
+  "skill_name": "sales-summarize-account",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/sales-summarize-account Acme Corp",
+      "expected_output": "Processes all meetings via subagents, updates ledger, MEDDPICC, TECHMAPS, CoM, tech stack, architecture, contacts, Salesforce updates",
+      "files": [],
+      "expectations": [
+        "Account directory found and all meeting files listed",
+        "Subagents launched in parallel for each meeting file",
+        "Meeting summaries written to empty ## Summary sections",
+        "Attendees array in frontmatter uses [[wiki-link]] format",
+        "First-name-only attendees resolved to full names using contacts folder, account frontmatter (se/ae/csm), and other meeting attendees",
+        "Known contact names and LD team members passed to subagent prompts for name resolution",
+        "meeting_type inferred and set if missing",
+        "Ledger updated with entries for each meeting (newest first)",
+        "Every ledger entry ends with 'Next call: M/DD {type}' or 'Next call: TBD'",
+        "Business context updated with recent news if stale",
+        "MEDDPICC section uses single [!summary] callout (not collapsed) with all fields",
+        "Command of the Message sections populated from extracted data",
+        "TECHMAPS sections populated from extracted data",
+        "Tech Stack aggregated by category",
+        "Architecture diagram created/updated as ASCII art",
+        "Salesforce Updates section formatted with latest entry, MEDDPICC, TECHMAPS, tech stack, deal history",
+        "Missing contacts created with correct template",
+        "Contacts enriched with role and LinkedIn via subagents",
+        "Daily note checkbox marked complete",
+        "/sales-git skill invoked to commit and push",
+        "No blank line between heading and first bullet",
+        "Product names match config"
+      ]
+    }
+  ]
+}

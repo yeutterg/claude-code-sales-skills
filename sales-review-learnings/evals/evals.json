@@ -1,0 +1,36 @@
+{
+  "skill_name": "sales-review-learnings",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/sales-review-learnings",
+      "expected_output": "Shows pending discoveries grouped by category, asks for action, processes decisions, shows alerts",
+      "files": [],
+      "expectations": [
+        "Config read and Learnings section parsed",
+        "Pending Review items grouped by tag: Competitors, Objections, Feature Requests, Technical Patterns, Portfolio Insights",
+        "Each item shows context, source account, and date",
+        "User asked to keep, act, or dismiss each category",
+        "Keep moves items from Pending Review to Reviewed in config",
+        "Act creates tasks in today's daily note and moves to Reviewed",
+        "Dismiss removes items entirely",
+        "Model Performance table checked for >20% failure rates",
+        "Template Feedback table checked for sections with 3+ edits",
+        "Daily note task marked complete",
+        "pending_daily_surface flag cleared",
+        "Summary reports count of items reviewed, kept, actioned, dismissed"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/sales-review-learnings (no pending items)",
+      "expected_output": "Reports no pending learnings and stops",
+      "files": [],
+      "expectations": [
+        "Config read and Pending Review section found empty",
+        "Reports 'No pending learnings to review.' and stops",
+        "Does NOT show Model Performance or Template Drift sections"
+      ]
+    }
+  ]
+}

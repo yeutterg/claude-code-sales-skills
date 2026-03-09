@@ -1,0 +1,65 @@
+{
+  "skill_name": "sales-create-account",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/sales-create-account Globex",
+      "expected_output": "Creates full account folder structure with template files, business context from web research",
+      "files": [],
+      "expectations": [
+        "Directory created at /{config.company_folder}/Accounts/Globex/",
+        "meetings/ and contacts/ subdirectories created",
+        "Main account file Globex.md created with all sections: Deal Ledger, Open Tasks, Stakeholders, Meetings, Business Context, MEDDPICC, Command of the Message, TECHMAPS, Tech Stack, Architecture Diagram, Salesforce Updates",
+        "Frontmatter includes ae, se, csm, deal_type (Net New), salesforce_account, salesforce_opportunity, gong_url",
+        "Ledger.md created",
+        "meetings.base created with correct dataview config",
+        "contacts.base created with correct dataview config",
+        "Business Context populated with web research: About the Company and Recent News",
+        "Recent News items have direct article URLs (not profile pages)",
+        "No blank line between heading and first bullet"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/sales-create-account Meta",
+      "expected_output": "Creates Meta account with well-known company context",
+      "files": [],
+      "expectations": [
+        "Account folder structure created for Meta",
+        "About the Company section describes Meta accurately",
+        "Recent News includes items with verified article URLs only"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "/sales-create-account Initech https://app.gong.io/account/activity?id=123 https://launchdarkly.my.salesforce.com/lightning/r/Account/001ABC/view",
+      "expected_output": "Creates account with Gong and Salesforce URLs, triggers automatic imports and summarization",
+      "files": [],
+      "expectations": [
+        "Gong activity URL detected and saved to gong_url frontmatter field",
+        "Salesforce Account URL detected (contains /Account/) and saved to salesforce_account frontmatter field",
+        "Account folder structure created with all template files",
+        "Business context populated from web research",
+        "/sales-salesforce scan Initech invoked to discover all opportunities",
+        "/sales-gong Initech {gong_url} invoked for bulk historical import (if Playwright configured)",
+        "/sales-summarize-account Initech invoked after imports complete",
+        "Summarization skipped if no meeting files exist or no Gong import was performed",
+        "Report includes Salesforce import status, Gong import status, and summarization status"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "/sales-create-account Contoso https://launchdarkly.my.salesforce.com/lightning/r/Opportunity/006ABC/view",
+      "expected_output": "Creates account with Salesforce Opportunity URL, looks up parent account, discovers all opportunities",
+      "files": [],
+      "expectations": [
+        "Salesforce Opportunity URL detected (contains /Opportunity/) and saved to salesforce_opportunity frontmatter field",
+        "Opportunity ID extracted and parent Account ID looked up via REST API",
+        "salesforce_account field populated with constructed Account URL",
+        "/sales-salesforce scan Contoso invoked to discover all opportunities",
+        "No Gong import triggered (no gong_url provided)",
+        "Summarization skipped (no Gong import means no transcripts)"
+      ]
+    }
+  ]
+}

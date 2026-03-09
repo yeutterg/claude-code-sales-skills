@@ -1,0 +1,210 @@
+{
+  "skill_name": "sales-salesforce",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/sales-salesforce Acme Corp",
+      "expected_output": "Pushes SE Status to Salesforce — no deal context pull, just push",
+      "files": [],
+      "expectations": [
+        "Checks sf CLI is installed and authenticated",
+        "Account file read from {config.company_folder}/Accounts/Acme Corp/Acme Corp.md",
+        "Opportunity ID extracted from salesforce_opportunity frontmatter field",
+        "No deal context fields queried (push mode only pushes)",
+        "Salesforce Updates code block content extracted",
+        "Content written to temp file /tmp/sf_update.txt",
+        "Access token obtained via sf org display",
+        "JSON payload built with HTML formatting (newlines to <br>, bold headers)",
+        "REST API PATCH to /services/data/v62.0/sobjects/Opportunity/{id} with {config.salesforce_se_status_field} field",
+        "Temp files cleaned up after update",
+        "Daily note checkbox for /sales-salesforce Acme Corp marked complete",
+        "Success report includes Opportunity ID and content preview"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/sales-salesforce NonExistentAccount",
+      "expected_output": "Reports error when account file doesn't exist",
+      "files": [],
+      "expectations": [
+        "Error reported: account file not found",
+        "No REST API calls executed",
+        "No temp files created"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "/sales-salesforce AccountWithNoOpps",
+      "expected_output": "Warns user when no opportunity URLs are in frontmatter",
+      "files": [],
+      "expectations": [
+        "Account file read successfully",
+        "No salesforce_opportunity fields found or all empty",
+        "No push attempted",
+        "Warning message tells user to add salesforce_opportunity field"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "/sales-salesforce scan Initech",
+      "expected_output": "Imports all opportunities with historical deal context, creates files, builds Dataview table",
+      "files": [],
+      "expectations": [
+        "Checks sf CLI is installed and authenticated",
+        "Mode detected as scan from 'scan' prefix in arguments",
+        "Account file read from {config.company_folder}/Accounts/Initech/Initech.md",
+        "Salesforce Account ID extracted from salesforce_account frontmatter field",
+        "Access token obtained via sf org display",
+        "SOQL queries executed for Opportunities, OpportunityFieldHistory, Events, and Notes",
+        "Raw query results saved to temp JSON file for subagent consumption",
+        "Subagents launched in parallel to process opportunity history (grouped by era: recent/older/historical)",
+        "Recent opportunities (last 12 months) get individual subagents with detailed milestone extraction",
+        "Older opportunities (1-3 years) batched into one subagent with key milestones only",
+        "Historical opportunities (3+ years) batched into one subagent with one-line summaries",
+        "opportunities/ subdirectory created under account folder",
+        "Individual opportunity .md files created with correct frontmatter",
+        "Duplicate opportunity names disambiguated with close date or ID suffix",
+        "opportunities.base file created with Dataview table configuration",
+        "Opportunity History section added to account file with ![[opportunities.base]] embed",
+        "Salesforce Deal History narrative added under Opportunity History with chronological milestones",
+        "Deal Ledger updated with Salesforce History section at bottom",
+        "Overall pattern analysis included (e.g., noting all closed-lost but existing customer)",
+        "salesforce_account field preserved in frontmatter",
+        "Temp files cleaned up",
+        "Summary table output with opportunity count, open/won/lost breakdown, and deal history summary"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "/sales-salesforce scan AccountWithNoSalesforceUrl",
+      "expected_output": "Falls back to extracting Account ID from an existing opportunity URL when salesforce_account is missing",
+      "files": [],
+      "expectations": [
+        "Mode detected as scan",
+        "Account file read successfully",
+        "No salesforce_account field found in frontmatter",
+        "Falls back to salesforce_opportunity field to get an Opportunity ID",
+        "REST API call to /sobjects/Opportunity/{opp_id}?fields=AccountId to retrieve Account ID",
+        "Account ID used for SOQL queries",
+        "Proceeds with normal scan flow after obtaining Account ID"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "/sales-salesforce scan AccountWithNoIds",
+      "expected_output": "Asks user for Salesforce Account URL when no IDs can be determined",
+      "files": [],
+      "expectations": [
+        "Mode detected as scan",
+        "Account file read successfully",
+        "No salesforce_account field found",
+        "No salesforce_opportunity fields found",
+        "Prompts user for Salesforce Account URL",
+        "No SOQL query executed without Account ID"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "/sales-salesforce scan Initech",
+      "expected_output": "Handles account with all closed opportunities correctly — notes discrepancy if account is an existing customer",
+      "files": [],
+      "expectations": [
+        "All opportunities identified as closed (IsClosed = true)",
+        "Status correctly derived: Closed Won for IsWon=true, Closed Lost for IsWon=false",
+        "Opportunity files created for all closed opportunities",
+        "salesforce_opportunity fields left empty (no open opportunities to link)",
+        "Deal history notes that all opps are closed-lost but account appears to be existing customer",
+        "Summary reports 0 open opportunities"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "/sales-salesforce scan AccountWithMultipleOpenOpps",
+      "expected_output": "Multiple open opportunities are correctly linked in frontmatter with type-based suffixes",
+      "files": [],
+      "expectations": [
+        "First open opportunity set as salesforce_opportunity",
+        "Additional open opportunities set as salesforce_opportunity_{type} (e.g., salesforce_opportunity_renewal)",
+        "Type suffix derived from Opportunity Type field, lowercased",
+        "Existing salesforce_opportunity fields for open opps preserved",
+        "Summary lists all open opportunities linked in frontmatter"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "/sales-salesforce scan AccountWithMixedHistory",
+      "expected_output": "Granularity scales with recency — recent opps get detailed timelines, old opps get one-liners",
+      "files": [],
+      "expectations": [
+        "Opportunities grouped by era for subagent processing",
+        "Recent opportunity subagents extract detailed stage-by-stage timeline",
+        "Older opportunity subagents produce 2-4 bullet point summaries",
+        "Historical opportunity subagents produce single sentence summaries",
+        "Salesforce Deal History in account file organized by era with appropriate detail levels",
+        "Ledger Salesforce History section contains only meaningful milestones, not every activity"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "/sales-salesforce scan AccountWithDuplicateOppNames",
+      "expected_output": "Disambiguates opportunity files when multiple opps share the same name",
+      "files": [],
+      "expectations": [
+        "Duplicate names detected during file creation",
+        "First duplicate gets close date appended: Name (YYYY-MM-DD).md",
+        "If close dates also collide, falls back to ID suffix: Name (last8chars).md",
+        "All opportunity files have unique filenames",
+        "Frontmatter opportunity_name preserves the original Salesforce name"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "/sales-salesforce scan open Acme Corp",
+      "expected_output": "Pulls deal context from open opportunities, updates MEDDPICC and ledger, flags stale fields",
+      "files": [],
+      "expectations": [
+        "Checks sf CLI is installed and authenticated",
+        "Mode detected as 'scan open' from prefix",
+        "Account file read successfully",
+        "Opportunity IDs extracted from salesforce_opportunity frontmatter fields",
+        "Deal context fields queried for each open opportunity (MEDDPICC, notes, stage history, ARR, forecast)",
+        "Stage history queried for each opportunity",
+        "Raw results saved to /tmp/sf_deal_context.json",
+        "Subagent launched to process deal context",
+        "Subagent reads account file and Ledger.md for cross-referencing",
+        "New MEDDPICC info from Salesforce appended with (from Salesforce) attribution",
+        "Ledger updated if deal has progressed since last entry",
+        "Stale fields flagged (stage, close date, ARR, forecast changes)",
+        "AE/CSM activity summarized — milestones included, routine outreach filtered out",
+        "Temp files cleaned up",
+        "Report shows per-opportunity summary with stage, amount, forecast, days in stage"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "/sales-salesforce scan open AccountWithNoOpps",
+      "expected_output": "Warns user to run scan first when no opportunity URLs exist",
+      "files": [],
+      "expectations": [
+        "Mode detected as scan open",
+        "Account file read successfully",
+        "No salesforce_opportunity fields found or all empty",
+        "Warning tells user to run /sales-salesforce scan {Account} first",
+        "No SOQL queries executed"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "/sales-salesforce scan open Acme Corp",
+      "expected_output": "Filters noise from AE/CSM notes — includes milestones, excludes routine outreach",
+      "files": [],
+      "expectations": [
+        "Deal milestones, pricing discussions, POV status included in context summary",
+        "Competitive dynamics and risk factors captured",
+        "Routine outreach attempts filtered out (emailed X no response, cadence activity)",
+        "Recent activity (last 30 days) more granular than older activity",
+        "Existing manually-written MEDDPICC content preserved, not overwritten"
+      ]
+    }
+  ]
+}

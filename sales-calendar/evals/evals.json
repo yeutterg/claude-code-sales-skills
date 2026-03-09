@@ -1,0 +1,68 @@
+{
+  "skill_name": "sales-calendar",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/sales-calendar",
+      "expected_output": "Scans today or tomorrow's calendar (based on time of day), creates meeting notes for deal meetings, updates daily notes",
+      "files": [],
+      "expectations": [
+        "Config read from ld-config.md, calendar_configured checked",
+        "Current time determined to select today (morning) or tomorrow (afternoon)",
+        "Events fetched from Google Calendar via mcp__claude_ai_Google_Calendar__gcal_list_events",
+        "All-day events, declined events, cancelled events, and no-attendee events filtered out",
+        "Account folders listed and matched against event titles and attendee domains",
+        "Events classified as deal meeting, deal prep, internal, or external non-deal",
+        "Deal meeting files created under correct account meetings/ folder with full template",
+        "Attendees populated from calendar event display names, user's own email excluded",
+        "Daily note updated with full wiki-link paths and 4-item checklist",
+        "Existing meeting files not overwritten",
+        "Unrecognized external meetings listed with suggested /sales-create-account commands",
+        "Report table shows deal meetings, prep, internal, skipped, and unrecognized"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/sales-calendar week",
+      "expected_output": "Scans Monday through Friday of the current week, creates meeting notes for all days",
+      "files": [],
+      "expectations": [
+        "Date range covers Monday through Friday of the current week",
+        "Meeting files created for all matching events across the week",
+        "Daily notes only updated for today and future days (past days skipped)",
+        "Multiple events on the same day for the same account get separate files with distinguishing topics"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "/sales-calendar next week",
+      "expected_output": "Scans Monday through Friday of the following week",
+      "files": [],
+      "expectations": [
+        "Date range covers Monday through Friday of the FOLLOWING week",
+        "All meeting files created in advance",
+        "Daily notes updated for each future day"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "/sales-calendar 2026-04-15",
+      "expected_output": "Scans a specific date",
+      "files": [],
+      "expectations": [
+        "Date range covers only 2026-04-15",
+        "Events fetched for that single day"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "/sales-calendar tomorrow",
+      "expected_output": "Scans tomorrow regardless of time of day",
+      "files": [],
+      "expectations": [
+        "Target date is tomorrow regardless of current time",
+        "Events fetched for tomorrow only"
+      ]
+    }
+  ]
+}

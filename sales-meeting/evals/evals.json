@@ -1,0 +1,47 @@
+{
+  "skill_name": "sales-meeting",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/sales-meeting Acme Corp Experimentation Sync",
+      "expected_output": "Creates meeting file in Acme Corp account folder, updates daily note with full-path links and 4-item checklist",
+      "files": [],
+      "expectations": [
+        "Account name parsed as 'Acme Corp', topic as 'Experimentation Sync'",
+        "Topic capitalized to Title Case",
+        "Meeting file created at {config.company_folder}/Accounts/Acme Corp/meetings/YYYY-MM-DD Experimentation Sync.md",
+        "Frontmatter has account, date, gong_url, and empty attendees array",
+        "File contains all sections: Tasks, Summary, Attendees, New Customer Contacts, Notes, External Summary, Transcript",
+        "Daily note updated with FULL PATH links (not short links)",
+        "Account link format: [[{config.company_folder}/Accounts/Acme Corp/Acme Corp|Acme Corp]]",
+        "Meeting link format: [[{config.company_folder}/Accounts/Acme Corp/meetings/YYYY-MM-DD Experimentation Sync|YYYY-MM-DD Experimentation Sync]]",
+        "All 4 checklist items present: Gong Transcript, /sales-summarize-account, /sales-salesforce, stakeholders",
+        "Gong URL pulled from account frontmatter",
+        "AE and CSM names pulled from account frontmatter for stakeholders line",
+        "No blank line between heading and first bullet"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/sales-meeting Acme Corp",
+      "expected_output": "Creates meeting with default topic 'Call' when no topic specified",
+      "files": [],
+      "expectations": [
+        "Topic defaults to 'Call'",
+        "Meeting file named YYYY-MM-DD Call.md"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "/sales-meeting Acme Corp prep call 2026-01-15",
+      "expected_output": "Creates past meeting file, does NOT update daily note",
+      "files": [],
+      "expectations": [
+        "Topic 'prep call' capitalized to 'Prep Call'",
+        "Meeting date 2026-01-15 used in filename",
+        "Daily note NOT updated (past meeting)",
+        "Output confirms it was not added to daily note"
+      ]
+    }
+  ]
+}

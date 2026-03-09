@@ -230,7 +230,15 @@ You can add additional folders under `{Company}/` as you see fit (for example, `
    git remote add upstream https://github.com/<original-author>/claude-code-sales-skills.git
    ```
 
-To pull upstream updates later, just run `/sales-setup` (it checks for updates automatically).
+To pull upstream updates later, just run `/sales-setup` — it checks for updates automatically.
+
+> **Updating from an older version?** If your `/sales-setup` doesn't pull updates automatically, run this once to get current:
+> ```bash
+> cd ~/repos/claude-code-sales-skills
+> git fetch upstream
+> git merge upstream/main --no-edit
+> ```
+> Then run `/sales-setup` to re-apply your config. Future updates will be handled automatically.
 
 ### 2. Run `/sales-setup`
 

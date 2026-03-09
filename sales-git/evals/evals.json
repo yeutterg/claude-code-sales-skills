@@ -1,0 +1,34 @@
+{
+  "skill_name": "sales-git",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/sales-git",
+      "expected_output": "Pulls latest, scans for proprietary info, validates dependency diagram, regenerates README, commits and pushes",
+      "files": [],
+      "expectations": [
+        "Config read for repo_path, public_repo_path, and proprietary patterns",
+        "git pull or fetch upstream + merge performed",
+        "Stashed and popped if uncommitted changes would conflict",
+        "All */SKILL.md files scanned for proprietary information",
+        "Real customer names from Accounts/ folders checked against skill files",
+        "Contact names from Accounts/*/contacts/ checked against skill files",
+        "Proprietary findings auto-fixed: customer names replaced with Acme Corp/Globex/Initech",
+        "Config variable references ({config.*}) NOT flagged as proprietary",
+        "Skill dependency graph validated: SKILL.md files scanned for /sales-* invocations",
+        "Mermaid diagram edges compared against actual cross-skill references",
+        "Missing or extra edges updated in the diagram",
+        "README.md regenerated from skill frontmatter (descriptions, argument-hints)",
+        "README Skills table has correct skill names and descriptions from frontmatter",
+        "README follows the full template structure (TOC, Prerequisites, Setup, Workflow, Customizing)",
+        "All changed files staged",
+        "Commit message is concise and descriptive",
+        "Changes pushed to origin",
+        "Public repo synced: SKILL.md files copied with ld- to sales- renaming",
+        "Public README regenerated with sales-* naming",
+        "Public repo committed and pushed",
+        "If no changes (including README unchanged), reports everything up to date"
+      ]
+    }
+  ]
+}
