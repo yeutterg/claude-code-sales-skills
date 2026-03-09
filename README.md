@@ -22,8 +22,8 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 - [Getting Started](#getting-started)
   - [1. Install the skills](#1-install-the-skills)
   - [2. Run `/sales-setup`](#2-run-sales-setup)
+  - [3. Set up the daily scheduled task](#3-set-up-the-daily-scheduled-task)
 - [Workflow](#workflow)
-  - [Scheduled task setup](#scheduled-task-setup)
   - [New account onboarding](#new-account-onboarding)
   - [Ongoing usage](#ongoing-usage)
   - [Asking questions about a deal](#asking-questions-about-a-deal)
@@ -238,9 +238,7 @@ Run `/sales-setup` in Claude Code. It will:
 - Set up your vault folder structure
 - Optionally configure the Salesforce CLI (with custom field auto-discovery), Google Calendar, and Playwright CLI
 
-## Workflow
-
-### Scheduled task setup
+### 3. Set up the daily scheduled task
 
 The recommended way to use these skills is to run `/sales-today` as a daily scheduled task. It handles calendar scanning, Gong imports, account summaries, and Salesforce updates automatically.
 
@@ -250,10 +248,10 @@ The recommended way to use these skills is to run `/sales-today` as a daily sche
 2. Click the **Code** tab (bottom of the sidebar)
 3. Go to **Scheduled Tasks**
 4. Click **Add Task** and configure:
-   - **Name:** Daily Sales Workflow
-   - **Schedule:** Daily at **5:00 PM** (or whenever you typically finish your last call)
-   - **Working Directory:** Your home directory (e.g., `/Users/you`)
    - **Prompt:** `/sales-today`
+   - **Working Directory:** Your home directory (e.g., `/Users/you`)
+   - **Frequency:** Daily at **5:00 PM** (or whenever you typically finish your last call)
+   - **Ask permissions:** Bypass permissions
 5. Save the task
 
 **Why evening?** Gong typically needs 1-2 hours to process recordings. Running in the evening ensures today's calls are available for import. The evening run also scans tomorrow's calendar so your meeting notes are ready before the next day starts. On Fridays, it automatically triggers the weekly portfolio review.
@@ -267,6 +265,8 @@ The recommended way to use these skills is to run `/sales-today` as a daily sche
 - Runs `/sales-weekly` on Friday evenings
 
 You can also run `/sales-today` manually at any time. It detects morning vs. evening mode automatically.
+
+## Workflow
 
 ### New account onboarding
 
