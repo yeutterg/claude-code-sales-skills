@@ -89,7 +89,17 @@ git status
 
 ### Step 4: Regenerate README.md
 
-Read every `*/SKILL.md` file in subdirectories. For each skill, extract the first heading, the `description`, and `argument-hint` from its frontmatter. Then rewrite `README.md` using this template. For the Skills section, generate both the summary table AND a detailed subsection for each skill with usage (from argument-hint), a short paragraph describing what it does and what inputs it takes:
+Read every `*/SKILL.md` file in subdirectories. For each skill, extract the first heading, the `description`, and `argument-hint` from its frontmatter.
+
+**4a: Validate the Skill Dependency Graph**
+
+Before regenerating, scan each SKILL.md for references to other skills (patterns like `/sales-*` invocations). Build the actual dependency graph from these references and compare it to the `## Skill Dependency Graph` mermaid diagram in the current README.md. If there are missing or extra edges, update the diagram to match reality.
+
+For example, if `/sales-create-account` now invokes `/sales-summarize-account` but the diagram doesn't show that edge, add it.
+
+**4b: Regenerate content**
+
+Then rewrite `README.md` using this template. For the Skills section, generate both the summary table AND a detailed subsection for each skill with usage (from argument-hint), a short paragraph describing what it does and what inputs it takes:
 
 ```markdown
 # Claude Code Skills for Sales Teams
