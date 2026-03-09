@@ -26,7 +26,7 @@ Read `~/.claude/skills/sales-config.md` and extract:
 - `company_folder` -- folder name for the company
 - `name` -- user's full name
 - `initials` -- user's initials
-- `calendar_accounts` -- list of Google Calendar account IDs to scan (e.g., `["personal", "work"]`)
+- `calendar_id` -- Google Calendar ID to scan (e.g., `"user@company.com"`)
 - `calendar_user_emails` -- list of the user's own email addresses to exclude from attendee lists
 - `calendar_mode` -- `"all"` (deal + internal meetings), `"deals"` (deal meetings only)
 - `calendar_include_prep` -- whether to create notes for deal prep meetings (true/false)
@@ -34,9 +34,11 @@ Read `~/.claude/skills/sales-config.md` and extract:
 
 If `calendar_configured` is not `true`, stop: "Google Calendar is not configured. Run `/sales-setup calendar` to set it up."
 
+**Legacy config migration:** If the config has `calendar_accounts` (list) instead of `calendar_id` (string), use the first account in the list and note to the user that they should re-run `/sales-setup calendar` to update their config.
+
 ### Step 1: Determine Date Range
 
-Call `mcp__google-calendar__get-current-time` to get the current time and timezone.
+Get the current time and timezone by running `date` in the shell.
 
 **Default behavior (no arguments):**
 - If current time is **before 12:00 PM (noon)**: target = today
@@ -52,17 +54,18 @@ Report: "Scanning calendar for {date range description}..."
 
 ### Step 2: Fetch Events
 
-Call `mcp__google-calendar__list-events` for each account in `calendar_accounts`:
-- Set `timeMin` and `timeMax` to cover the target date range (full days, midnight to midnight)
-- Request all fields including attendees
-
-**Deduplicate** events across accounts: match by event summary + start time, keeping the version with the most attendee information.
+Call `mcp__claude_ai_Google_Calendar__gcal_list_events` with:
+- `calendarId`: the `calendar_id` from config
+- `timeMin` and `timeMax`: cover the target date range (full days, midnight to midnight), in RFC3339 format without timezone suffix
+- `timeZone`: the user's local timezone (from the `date` command)
+- `condenseEventDetails`: `false` (to get full attendee details)
 
 **Filter out:**
 - All-day events (these are not meetings)
 - Events with no attendees (personal blocks, focus time)
 - Events the user has declined (responseStatus = "declined")
 - Events that are cancelled
+- Events with summary "Busy" (Notion Calendar blocks)
 
 ### Step 3: Classify Each Event
 

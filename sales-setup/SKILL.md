@@ -200,7 +200,7 @@ salesforce_custom_fields:
   - {list of custom SOQL field names}
 salesforce_configured: {true/false}
 playwright_configured: {true/false}
-calendar_accounts: [{list of Google Calendar account IDs}]
+calendar_id: {Google Calendar ID, e.g., user@company.com}
 calendar_user_emails: [{list of user's own email addresses}]
 calendar_mode: {all or deals}
 calendar_include_prep: {true/false}
@@ -228,7 +228,7 @@ It is read by skills at runtime and survives repo updates.
 To reconfigure or pull updates, run `/sales-setup` again.
 ```
 
-If the config already existed, preserve the `salesforce_username`, `salesforce_instance_url`, `salesforce_se_status_field`, `salesforce_se_lookup_fields`, `salesforce_custom_fields`, `salesforce_configured`, `playwright_configured`, `calendar_accounts`, `calendar_user_emails`, `calendar_mode`, `calendar_include_prep`, `calendar_configured`, `gong_workspace_id`, `public_repo_path`, and `setup_date` values from the old config. Update `last_updated` to today.
+If the config already existed, preserve the `salesforce_username`, `salesforce_instance_url`, `salesforce_se_status_field`, `salesforce_se_lookup_fields`, `salesforce_custom_fields`, `salesforce_configured`, `playwright_configured`, `calendar_id`, `calendar_user_emails`, `calendar_mode`, `calendar_include_prep`, `calendar_configured`, `gong_workspace_id`, `public_repo_path`, and `setup_date` values from the old config. Update `last_updated` to today.
 
 ### Step 6: Create Symlinks
 
@@ -454,31 +454,57 @@ Update `~/.claude/skills/sales-config.md` frontmatter:
 
 ## Google Calendar Setup
 
-### Step 1: Discover Calendar Accounts
+`/sales-calendar` uses the **Claude.ai built-in Google Calendar integration** (`mcp__claude_ai_Google_Calendar__*` tools). This integration is managed through the Claude Desktop app and supports one Google account at a time. It uses Anthropic's verified OAuth, so it works with corporate Google Workspace accounts that block unverified third-party apps.
 
-Call `mcp__google-calendar__list-calendars` to see all available calendar accounts.
+### Step 1: Connect Google Calendar in Claude Desktop
 
-Present the accounts to the user:
+Check if the `mcp__claude_ai_Google_Calendar__gcal_list_calendars` tool is available by attempting to call it.
+
+**If the tool is available**, list the calendars and show the user which account is connected. Skip to Step 2.
+
+**If the tool is NOT available**, guide the user through setup:
+
 ```
-Found these Google Calendar accounts:
-- personal (user@gmail.com)
-- work (user@company.com)
-- ...
+To connect Google Calendar:
 
-Which accounts should /sales-calendar scan for meetings? (comma-separated, or "all")
+1. Open the Claude Desktop app
+2. Click the gear icon (top-right) to open Settings
+3. Navigate to "Integrations" (or "Connected Apps")
+4. Find "Google Calendar" and click "Connect"
+5. Sign in with your work Google account (e.g., user@company.com)
+6. Grant calendar access when prompted
+7. Return here and re-run `/sales-setup calendar`
+
+Note: The Claude.ai integration supports one Google account. Use your primary
+work account — you can still view other calendars shared with that account.
 ```
 
-Accept one or more account IDs. Store as `calendar_accounts` list.
+Stop and wait for the user to complete the setup in the Desktop app.
 
-### Step 2: Identify User Emails
+### Step 2: Identify Calendar and User Email
+
+Call `mcp__claude_ai_Google_Calendar__gcal_list_calendars` and find the primary calendar. Extract the user's email from the primary calendar ID.
+
+Present:
+```
+Connected Google Calendar account: user@company.com
+
+Calendar ID for scanning: user@company.com (primary)
+
+Is this the correct account for scanning meetings?
+```
+
+Store the calendar ID as `calendar_id` (single string, not a list).
+
+### Step 3: Identify User Emails
 
 Ask: "What email addresses are yours? These will be excluded from meeting attendee lists. (comma-separated)"
 
-Pre-fill with any email addresses found as primary calendars in the discovered accounts. Let the user confirm or modify.
+Pre-fill with the primary calendar email. The user may add additional personal emails. Let the user confirm or modify.
 
 Store as `calendar_user_emails` list.
 
-### Step 3: Meeting Mode
+### Step 4: Meeting Mode
 
 Ask: "What types of meetings should `/sales-calendar` create notes for?"
 
@@ -488,7 +514,7 @@ Options:
 
 Default: `all`
 
-### Step 4: Prep Meeting Preference
+### Step 5: Prep Meeting Preference
 
 Ask: "Should `/sales-calendar` also create notes for internal deal prep/debrief meetings? (meetings that match an account name but have no external attendees)"
 
@@ -497,19 +523,21 @@ Ask: "Should `/sales-calendar` also create notes for internal deal prep/debrief 
 
 Default: `true`
 
-### Step 5: Update Config
+### Step 6: Update Config
 
 Update `~/.claude/skills/sales-config.md` frontmatter:
-- `calendar_accounts: [{selected accounts}]`
+- `calendar_id: {primary calendar email}`
 - `calendar_user_emails: [{user emails}]`
 - `calendar_mode: {all or deals}`
 - `calendar_include_prep: {true/false}`
 - `calendar_configured: true`
 - `last_updated: {today}`
 
-### Step 6: Report
+Remove `calendar_accounts` if it exists from a previous setup (replaced by `calendar_id`).
 
-"Google Calendar is configured. You can now use `/sales-calendar` to scan your calendar and auto-create meeting notes."
+### Step 7: Report
+
+"Google Calendar is configured via the Claude.ai integration. You can now use `/sales-calendar` to scan your calendar and auto-create meeting notes."
 
 Show a quick usage guide:
 ```

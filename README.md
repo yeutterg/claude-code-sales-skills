@@ -50,7 +50,7 @@ Claude Code skills for interacting with Obsidian sales notes. These skills integ
 
 **Usage:** `/sales-calendar [week | next week | YYYY-MM-DD]`
 
-Scans Google Calendar for upcoming meetings, identifies which ones map to existing accounts, and automatically creates meeting notes and daily note entries. Classifies events as deal meetings, deal prep, internal meetings, or unrecognized external meetings, and suggests account creation for unrecognized companies. Supports scanning today, tomorrow, a specific date, or an entire week. Requires Google Calendar to be configured via `/sales-setup calendar`.
+Scans Google Calendar for upcoming meetings, identifies which ones map to existing accounts, and automatically creates meeting notes and daily note entries. Classifies events as deal meetings, deal prep, internal meetings, or unrecognized external meetings, and suggests account creation for unrecognized companies. With no arguments, defaults to today (if morning) or tomorrow (if afternoon). Also supports a specific date, or an entire week. Uses the Claude.ai built-in Google Calendar integration -- configure via `/sales-setup calendar`.
 
 ### `/sales-create-account`
 
@@ -62,7 +62,7 @@ Creates a new account folder with the full directory structure (meetings, contac
 
 **Usage:** `/sales-git`
 
-Commits and pushes changes to the skills GitHub repo. Pulls latest upstream updates first, scans all SKILL.md files for proprietary information (customer names, staff names, contact names, hardcoded paths, Salesforce credentials) and auto-fixes any leaks before committing. Regenerates the README.md from skill frontmatter. Syncs changes to the public repo with `sales-` renaming.
+Commits and pushes changes to the skills GitHub repo. Pulls latest upstream updates first, scans all SKILL.md files for proprietary information (customer names, staff names, contact names, hardcoded paths, Salesforce credentials) and auto-fixes any leaks before committing. Regenerates the README.md from skill frontmatter.
 
 ### `/sales-gong`
 
@@ -92,7 +92,7 @@ Four modes: **Push** pushes the Salesforce Updates section to linked Opportuniti
 
 **Usage:** `/sales-setup [salesforce | playwright | calendar]`
 
-Guided onboarding that walks through configuration: role, company, name, vault path, and company folder. Searches the web for your company's products and lets you review them. Creates a persistent config file at `~/.claude/skills/sales-config.md` that all other skills read at runtime. Optionally configures the Salesforce CLI (with custom field discovery), Playwright MCP, and Google Calendar integration. Re-run anytime to pull upstream updates.
+Guided onboarding that walks through configuration: role, company, name, vault path, and company folder. Searches the web for your company's products and lets you review them. Creates a persistent config file at `~/.claude/skills/sales-config.md` that all other skills read at runtime. Optionally configures the Salesforce CLI (with custom field discovery), Playwright MCP, and Google Calendar (via the Claude.ai built-in integration in Claude Desktop). Re-run anytime to pull upstream updates.
 
 ### `/sales-summarize-account`
 
@@ -113,7 +113,7 @@ Portfolio-wide sweep of all accounts with open Salesforce opportunities. Pulls c
   - In Dataview settings, enable **Enable Inline Queries** -- this is required for inline expressions like `` `= this.ae` `` to render in account files
 - *Optional, for `/sales-salesforce`:* [Homebrew](https://brew.sh) and [Salesforce CLI](https://developer.salesforce.com/tools/salesforcecli) (`brew install sf`)
 - *Optional, for `/sales-gong`:* [Homebrew](https://brew.sh) and [Playwright MCP](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md) (`claude mcp add playwright -- npx @playwright/mcp@latest --browser chromium`)
-- *Optional, for `/sales-calendar`:* Google Calendar integration (configured via `/sales-setup calendar`)
+- *Optional, for `/sales-calendar`:* Claude.ai Google Calendar integration (connect your Google account in Claude Desktop Settings > Integrations, then run `/sales-setup calendar`)
 
 ## Obsidian Vault Setup
 
