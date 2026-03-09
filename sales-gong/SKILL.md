@@ -136,13 +136,13 @@ Present the matches and proceed with importing automatically.
 
 ### Step 5S: Import Each Matched Call
 
-For each matched call, process it using the **Call Processing Steps** below. Both recorded and non-recorded calls are imported:
+For each matched call, launch a **background subagent** with its own Playwright session (`gong_{account_slug}_{N}`). Both recorded and non-recorded calls are imported:
 - **Recorded calls:** Extract attendees, brief, and transcript
 - **Non-recorded calls:** Extract attendees only, update `gong_url` and attendees in frontmatter
 
-Write the data to the existing meeting file using the Append Rules. Navigate back to the activity page for the next call.
+Each subagent runs the **Call Processing Steps** below, writes data to the meeting file using the Append Rules, then closes its session.
 
-Report progress after each import.
+Launch up to 3 subagents at a time. Wait for a batch to complete before launching the next.
 
 ---
 
@@ -195,106 +195,87 @@ Proceeding with import...
 
 ### Step 4B: Process Each Call
 
-Process calls **sequentially** in the browser (they share a single browser session), but use **background subagents** for transcript processing. This creates a pipeline: while a subagent processes one call's transcript, the main agent navigates to the next call and extracts its brief.
+Each call is processed by its own **background subagent** with its own Playwright session. This allows multiple calls to be imported in parallel.
 
-**Optimized bulk import flow:**
-1. Click call entry → extract brief from Briefs tab (default) → save brief to temp file
-2. Click Transcript tab → snapshot saves to file
-3. Launch background subagent with brief file path + transcript snapshot file path
-4. Immediately navigate to next call (don't wait for subagent)
-5. Repeat
-
-For each call:
+**For each call in the list:**
 
 1. **Check for existing meeting file** at `meetings/{YYYY-MM-DD} {Topic}.md`
-   - If no file exists: use `/sales-meeting` to create one: `/sales-meeting {Account} {Topic} {YYYY-MM-DD}`
-   - If file exists: proceed to populate it with Gong data
-2. **Process the call** using the Call Processing Steps below
-3. Navigate directly to the next call URL (faster than going back to activity page)
-4. Report progress periodically (every 5-10 calls)
+   - If no file exists: create it with `/sales-meeting {Account} {Topic} {YYYY-MM-DD}` before launching the subagent
+   - If file exists: proceed
+2. **Launch a background subagent** (`run_in_background: true`) with:
+   - The call's URL (extracted from the activity page call entry or constructed from the call ID)
+   - The account name and slug
+   - A unique session name: `gong_{account_slug}_{N}` (where N is the call index)
+   - The meeting file path
+   - The account's contacts directory path (for name resolution)
+   - Instructions to run the **Call Processing Steps** below, then close its session with `playwright-cli -s=gong_{account_slug}_{N} close`
+3. **Batch size:** Launch up to 3 subagents at a time to avoid overwhelming Gong with concurrent requests. Wait for a batch to complete before launching the next batch.
+
+**Important:** All meeting files must be created by the main agent BEFORE launching subagents. This prevents race conditions where two subagents try to create the same file.
 
 ---
 
-## Call Processing Steps (shared by Scan and Bulk paths)
+## Call Processing Steps (run by each subagent)
 
-These steps handle extracting data from a single Gong call and writing it to the meeting file.
+Each subagent receives a call URL, a unique session name (`gong_{account_slug}_{N}`), and the meeting file path. These steps are self-contained: the subagent opens its own browser, extracts data, writes to the meeting file, and closes its session.
 
-### CP1: Click Call and Extract Attendees
+### CP1: Open Call and Extract Attendees
 
-1. Click the call entry in the left column to load details in the right panel:
+1. Open the call URL in a new browser session:
    ```bash
-   playwright-cli -s=gong_{account_slug} click {call_ref}
-   playwright-cli -s=gong_{account_slug} snapshot
+   playwright-cli -s=gong_{account_slug}_{N} open {call_url} --headed --persistent
    ```
-2. Extract **attendee names** from the participant list. Click "+N more" buttons to expand full lists:
+2. **Login check:** Snapshot and check for login screen. If shown, tell user to log in and wait.
+3. Extract **attendee names** from the participant list. Click "+N more" buttons to expand full lists:
    ```bash
-   playwright-cli -s=gong_{account_slug} click {more_ref}
-   playwright-cli -s=gong_{account_slug} snapshot
+   playwright-cli -s=gong_{account_slug}_{N} snapshot
+   playwright-cli -s=gong_{account_slug}_{N} click {more_ref}
    ```
-3. Check if there's a **"Go to call" button**: this only appears for recorded calls
+4. Resolve Gong display names to full names (e.g., "Gschultz" → "Geoff Schultz") using existing contact files in the account's `contacts/` folder
+5. Check if the page has call recording content (Briefs/Transcript tabs). If not, this is a **non-recorded call**.
 
 ### CP2: Handle Non-Recorded Calls
 
-If no "Go to call" button exists:
+If the call has no recording:
 1. Update the meeting file's frontmatter:
-   - Set `gong_url` to the activity page URL with the call selected
+   - Set `gong_url` to the call URL
    - Set `attendees` as `"[[Name]]"` links
-2. Done. Proceed to next call.
+2. Close the session and return.
 
-### CP3: Navigate to Call Page (Recorded Calls)
+### CP3: Extract Brief FIRST
 
-1. Click "Go to call" or navigate directly to the call page URL:
+**IMPORTANT: Extract the brief BEFORE clicking Transcript.** The Briefs tab is selected by default on recorded call pages.
+
+1. Take a snapshot and extract the full brief text:
    ```bash
-   playwright-cli -s=gong_{account_slug} click {go_to_call_ref}
-   ```
-2. **Important:** "Go to call" may open a new tab. Use `playwright-cli -s=gong_{account_slug} tab-list` and `tab-select` to switch if needed.
-
-### CP4: Extract Brief FIRST
-
-**IMPORTANT: Extract the brief BEFORE clicking Transcript.** The Briefs tab is selected by default.
-
-1. Take a snapshot and extract the full brief text from the Briefs tab content:
-   ```bash
-   playwright-cli -s=gong_{account_slug} snapshot --filename=/tmp/gong_brief_{date}_{topic}.yml
+   playwright-cli -s=gong_{account_slug}_{N} snapshot --filename=/tmp/gong_brief_{date}_{topic}.yml
    ```
 2. Read the snapshot file and extract: Recap, Key Points, and Next Steps sections
-3. Store this text for writing to the meeting file
 
-### CP5: Extract Transcript via Subagent
+### CP4: Extract Transcript
 
 1. Click the **"Transcript"** tab on the call page:
    ```bash
-   playwright-cli -s=gong_{account_slug} click {transcript_tab_ref}
-   playwright-cli -s=gong_{account_slug} snapshot --filename=/tmp/gong_transcript_{date}_{topic}.yml
+   playwright-cli -s=gong_{account_slug}_{N} click {transcript_tab_ref}
+   playwright-cli -s=gong_{account_slug}_{N} snapshot --filename=/tmp/gong_transcript_{date}_{topic}.yml
    ```
 2. The transcript snapshot will be very large (200-600KB+)
-3. **Launch a background subagent** (`run_in_background: true`, `model: "haiku"`) to handle reading the transcript file and writing everything to the meeting file. For bulk imports, this allows you to continue navigating to the next call while the subagent processes.
+3. Read the transcript snapshot file in chunks (500 lines at a time) and extract all transcript entries
+4. Format the transcript with call title, date, duration, participants, and timestamped entries
 
-**Brief storage for subagent:** Save the brief text to a temp file (e.g., `/tmp/gong_{date}_{topic}_brief.md`) before launching the subagent. This keeps the main agent's context clean.
+### CP5: Write to Meeting File
 
-Pass the subagent:
-- The meeting file path
-- The Gong call URL (for `gong_url` frontmatter)
-- The attendee list (for `attendees` frontmatter): resolve Gong display names to full names (e.g., "Gschultz" → "Geoff Schultz") using existing contact files in the account's `contacts/` folder
-- The brief file path
-- The transcript snapshot file path
-- The participant details (names, roles, talk percentages)
+Update the meeting file:
+- Set `gong_url` in frontmatter
+- Set `attendees` in frontmatter as `"[[Name]]"` links
+- **Append** brief text under `## External Summary` (see Append Rules below)
+- **Append** formatted transcript under `## Transcript` (see Append Rules below)
 
-The subagent should:
-1. Read the transcript snapshot file in chunks (500 lines at a time) and extract all transcript entries
-2. Format the transcript with call title, date, duration, participants, and timestamped entries
-3. Update the meeting file:
-   - Set `gong_url` in frontmatter
-   - Set `attendees` in frontmatter as `"[[Name]]"` links
-   - **Append** brief text under `## External Summary` (see Append Rules below)
-   - **Append** formatted transcript under `## Transcript` (see Append Rules below)
+### CP6: Cleanup
 
-### CP6: Navigate Back
-
-Close the call page tab or navigate back to the activity page:
+Close the browser session:
 ```bash
-playwright-cli -s=gong_{account_slug} tab-close
-playwright-cli -s=gong_{account_slug} tab-select 0
+playwright-cli -s=gong_{account_slug}_{N} close
 ```
 
 ---
@@ -337,9 +318,8 @@ The **"Briefs"** tab is selected by default on the call page.
    playwright-cli -s=gong_{account_slug} snapshot --filename=/tmp/gong_brief_{date}_{topic}.yml
    ```
 2. Read the snapshot and extract: Recap, Key Points, and Next Steps sections
-3. Store this text for writing to the meeting file
 
-### Step 5G: Extract Transcript via Subagent
+### Step 5G: Extract Transcript
 
 1. Click the **"Transcript"** tab on the call page:
    ```bash
@@ -347,26 +327,18 @@ The **"Briefs"** tab is selected by default on the call page.
    playwright-cli -s=gong_{account_slug} snapshot --filename=/tmp/gong_transcript_{date}_{topic}.yml
    ```
 2. The transcript snapshot will be very large (200-600KB+)
-3. **Launch a subagent** (`model: "haiku"`) to handle reading the transcript file and writing everything to the meeting file
+3. Read the transcript snapshot file in chunks (500 lines at a time) and extract all transcript entries
+4. Format the transcript with call title, date, duration, participants, and timestamped entries
 
-**Brief storage for subagent:** Save the brief text to a temp file before launching the subagent.
+### Step 6G: Write to Meeting File
 
-Pass the subagent:
-- The meeting file path
-- The Gong call URL (for `gong_url` frontmatter)
-- The attendee list (for `attendees` frontmatter): resolve Gong display names to full names using existing contact files
-- The brief file path
-- The transcript snapshot file path
-- The participant details (names, roles, talk percentages)
-
-The subagent should:
-1. Read the transcript snapshot file in chunks (500 lines at a time) and extract all transcript entries
-2. Format the transcript with call title, date, duration, participants, and timestamped entries
-3. Update the meeting file:
+1. Resolve Gong display names to full names using existing contact files in the account's `contacts/` folder
+2. Update the meeting file:
    - Set `gong_url` in frontmatter
    - Set `attendees` in frontmatter as `"[[Name]]"` links
    - **Append** brief text under `## External Summary` (see Append Rules below)
    - **Append** formatted transcript under `## Transcript` (see Append Rules below)
+3. Close the session: `playwright-cli -s=gong_{account_slug} close`
 
 ---
 
@@ -477,8 +449,9 @@ playwright-cli -s=gong_{account_slug} close
 - Scan Mode imports Gong recordings into EXISTING meeting files that are missing `gong_url`. It does not create new meeting files.
 - Bulk Import creates new meeting files for all calls found on the activity page.
 - For Gong: The Briefs tab is extracted BEFORE clicking Transcript to avoid navigating back.
-- For Gong: Transcript extraction is delegated to a subagent to keep the main agent's context window clean.
 - For Granola: Shared links only contain summary notes (no transcript available).
-- Calls within a single account are processed sequentially (they share one browser session).
-- Each account gets its own session (`-s=gong_{account_slug}`), so multiple accounts can be processed in parallel by launching separate `/sales-gong` subagents.
-- The `--persistent` flag preserves auth cookies across browser restarts within the same session.
+- Each call gets its own Playwright session (`gong_{account_slug}_{N}`), enabling parallel processing within a single `/sales-gong` invocation.
+- Multiple `/sales-gong` invocations for different accounts can also run in parallel (each uses a different `{account_slug}`).
+- Batches of 3 calls are processed concurrently to avoid overwhelming Gong.
+- The `--persistent` flag preserves auth cookies. Only the first session may need login; subsequent sessions reuse cookies.
+- All meeting files are created by the main agent before launching subagents to prevent race conditions.
