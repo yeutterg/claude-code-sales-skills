@@ -343,11 +343,11 @@ Use web search to gather business context:
 
 After creating the account, check if the `gong_url` frontmatter field was populated (either by the user providing it in arguments, or if you found it during setup).
 
-If `gong_url` is set AND the Playwright MCP tools are available:
-- Automatically invoke `/sales-gong {Account} {gong_url}` to run the bulk historical import. No need to ask — just do it.
+If `gong_url` is set AND Playwright CLI is configured (`playwright_configured` is true in config):
+- Automatically invoke `/sales-gong {Account} {gong_url}` to run the bulk historical import. No need to ask, just do it.
 
-If Playwright MCP is not available, mention it in the output:
-- "Tip: To import historical Gong calls, install the Playwright MCP server and run `/sales-gong {Account}`."
+If Playwright CLI is not configured, mention it in the output:
+- "Tip: To import historical Gong calls, install Playwright CLI and run `/sales-gong {Account}`."
 
 ### Output
 

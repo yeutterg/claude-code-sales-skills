@@ -176,4 +176,4 @@ These accounts need your attention before they can be processed:
 - If a Gong import fails (e.g., recording not yet available), leave the checkbox unchecked and note it in the report — it will be picked up on the next run
 - If `/sales-weekly` is triggered, run it AFTER all daily processing is complete
 - Do not ask for user input during the workflow — run autonomously from start to finish
-- If Playwright MCP is not configured (`playwright_configured` is not true in config), skip all Gong import steps and note in the report: "Gong imports skipped — Playwright MCP not configured. Run `/sales-setup playwright` to enable."
+- If Playwright CLI is not configured (`playwright_configured` is not true in config), skip all Gong import steps and note in the report: "Gong imports skipped: Playwright CLI not configured. Run `/sales-setup playwright` to enable."

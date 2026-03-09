@@ -1,5 +1,5 @@
 ---
-description: Post-clone setup — configure vault path, name, role, company, symlinks, and optional Salesforce CLI / Playwright MCP / Google Calendar. Re-run anytime to pull upstream updates and re-apply your config.
+description: Post-clone setup: configure vault path, name, role, company, symlinks, and optional Salesforce CLI / Playwright CLI / Google Calendar. Re-run anytime to pull upstream updates and re-apply your config.
 argument-hint: [salesforce | playwright | calendar]
 ---
 
@@ -11,7 +11,7 @@ Guided onboarding for the Obsidian sales skills. Walks the user through configur
 
 - No arguments: Full initial setup, or pull updates and re-apply config
 - `salesforce`: Just Salesforce CLI setup
-- `playwright`: Just Playwright MCP setup (for `/sales-gong`)
+- `playwright`: Just Playwright CLI setup (for `/sales-gong`)
 
 ## Instructions
 
@@ -19,7 +19,7 @@ You are helping a seller set up the Obsidian sales skills on their machine.
 
 Check `$ARGUMENTS`:
 - If `$ARGUMENTS` is `salesforce`, skip to **Salesforce CLI Setup** below.
-- If `$ARGUMENTS` is `playwright`, skip to **Playwright MCP Setup** below.
+- If `$ARGUMENTS` is `playwright`, skip to **Playwright CLI Setup** below.
 - If `$ARGUMENTS` is `calendar`, skip to **Google Calendar Setup** below.
 - Otherwise, run the **Full Setup** flow.
 
@@ -305,12 +305,12 @@ Options:
 - **Yes** — Run the **Google Calendar Setup** flow below
 - **No** — Skip
 
-### Step 12: Playwright MCP (Optional)
+### Step 12: Playwright CLI (Optional)
 
-Ask the user: "Would you like to set up Playwright MCP for automatic Gong call imports? (This is optional — you can always run `/sales-setup playwright` later.)"
+Ask the user: "Would you like to set up Playwright CLI for automatic Gong call imports? (This is optional. You can always run `/sales-setup playwright` later.)"
 
 Options:
-- **Yes** — Run the **Playwright MCP Setup** flow below
+- **Yes** — Run the **Playwright CLI Setup** flow below
 - **No** — Skip
 
 ### Step 13: Report
@@ -550,32 +550,49 @@ Usage:
 
 ---
 
-## Playwright MCP Setup
+## Playwright CLI Setup
 
-### Step 1: Check if Node.js/npx is Available
+### Step 1: Check if Node.js/npm is Available
 
 ```bash
-which npx
+which npm
 ```
 
-If `npx` is not found, tell the user: "Node.js is not installed. Install it via Homebrew (`brew install node`) or from https://nodejs.org, then re-run `/sales-setup playwright`."
+If `npm` is not found, tell the user: "Node.js is not installed. Install it via Homebrew (`brew install node`) or from https://nodejs.org, then re-run `/sales-setup playwright`."
 
-### Step 2: Add Playwright MCP Server
+### Step 2: Install Playwright CLI
 
 Run:
 ```bash
-claude mcp add playwright -- npx @playwright/mcp@latest --browser chromium
+npm install -g @anthropic-ai/claude-code-playwright@latest
 ```
 
-This registers the Playwright MCP server with Claude Code. It will launch a visible Chromium browser window when activated.
+Verify installation:
+```bash
+playwright-cli --version
+```
 
-### Step 3: Update Config
+This installs the Playwright CLI globally. `/sales-gong` uses it to automate Gong browser interactions for importing call recordings.
+
+### Step 3: Check for Old Playwright MCP Server
+
+Check if the old Playwright MCP server is configured:
+```bash
+claude mcp list 2>/dev/null | grep -i playwright
+```
+
+If a Playwright MCP server is found, ask the user: "You have an old Playwright MCP server configured. Would you like to remove it? The new Playwright CLI replaces it and is more token-efficient. (default: no)"
+
+- If **yes**: Run `claude mcp remove playwright` and report that it was removed.
+- If **no** (default): Leave it in place. Note: "Keeping the old Playwright MCP server. You can remove it later with `claude mcp remove playwright`."
+
+### Step 4: Update Config
 
 Update `~/.claude/skills/sales-config.md` frontmatter:
 - `playwright_configured: true`
 - `last_updated: {today}`
 
-### Step 4: Report
+### Step 5: Report
 
-- If successful: "Playwright MCP is configured. Restart Claude Code for the changes to take effect. You can now use `/sales-gong` to import Gong call recordings into meeting notes."
+- If successful: "Playwright CLI is installed. You can now use `/sales-gong` to import Gong call recordings into meeting notes."
 - If failed: Show the error and suggest re-running `/sales-setup playwright`.

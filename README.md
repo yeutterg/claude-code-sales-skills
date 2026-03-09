@@ -5,17 +5,17 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 ## Table of Contents
 
 - [Skills](#skills)
-  - [`/sales-today`](#ld-today)
-  - [`/sales-calendar`](#ld-calendar)
-  - [`/sales-create-account`](#ld-create-account)
-  - [`/sales-git`](#ld-git)
-  - [`/sales-gong`](#ld-gong)
-  - [`/sales-meeting`](#ld-meeting)
-  - [`/sales-review-learnings`](#ld-review-learnings)
-  - [`/sales-salesforce`](#ld-salesforce)
+  - [`/sales-today`](#sales-today)
+  - [`/sales-calendar`](#sales-calendar)
+  - [`/sales-create-account`](#sales-create-account)
+  - [`/sales-git`](#sales-git)
+  - [`/sales-gong`](#sales-gong)
+  - [`/sales-meeting`](#sales-meeting)
+  - [`/sales-review-learnings`](#sales-review-learnings)
+  - [`/sales-salesforce`](#sales-salesforce)
   - [`/sales-setup`](#sales-setup)
-  - [`/sales-summarize-account`](#ld-summarize-account)
-  - [`/sales-weekly`](#ld-weekly)
+  - [`/sales-summarize-account`](#sales-summarize-account)
+  - [`/sales-weekly`](#sales-weekly)
 - [Skill Dependency Graph](#skill-dependency-graph)
 - [Prerequisites](#prerequisites)
 - [Obsidian Vault Setup](#obsidian-vault-setup)
@@ -46,7 +46,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 | `/sales-meeting` | Create meeting notes for a sales account and link them in the daily note |
 | `/sales-review-learnings` | Review patterns and insights discovered by skills: competitors, objections, feature requests, model performance, and template drift |
 | `/sales-salesforce` | Push SE Status to Salesforce, scan accounts for opportunities and deal context, or discover all your open opportunities across Salesforce |
-| `/sales-setup` | Post-clone setup: configure vault path, name, role, company, symlinks, and optional Salesforce CLI / Playwright MCP / Google Calendar |
+| `/sales-setup` | Post-clone setup: configure vault path, name, role, company, symlinks, and optional Salesforce CLI / Playwright CLI / Google Calendar |
 | `/sales-summarize-account` | Summarize all meeting notes, update MEDDPICC/TECHMAPS/CoM, enrich contacts, refresh business context |
 | `/sales-weekly` | Weekly review of all accounts with open Salesforce opportunities. Pulls deal context, summarizes activity, updates ledgers and Salesforce |
 
@@ -77,7 +77,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 - Creates account folder with full directory structure (meetings, contacts, templates)
 - Populates business context by searching the web for company info and recent news
 - Optionally accepts a Gong activity URL or Salesforce opportunity URL
-- Triggers automatic Gong historical import if Playwright MCP is configured
+- Triggers automatic Gong historical import if Playwright CLI is configured
 
 ### `/sales-git`
 
@@ -91,7 +91,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 
 **Usage:** `/sales-gong <account name> [gong_or_granola_url]`
 
-- Imports call recordings into Obsidian meeting notes using Playwright MCP
+- Imports call recordings into Obsidian meeting notes using Playwright CLI
 - Four modes: single Gong call, Granola summary, scan (match existing meetings to unimported recordings), bulk import
 - Extracts attendees, briefs, and transcripts
 
@@ -127,7 +127,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 - Guided onboarding: role, company, name, vault path, company folder
 - Searches the web for your company's products and lets you review them
 - Creates persistent config at `~/.claude/skills/sales-config.md`
-- Optionally configures Salesforce CLI, Playwright MCP, and Google Calendar
+- Optionally configures Salesforce CLI, Playwright CLI, and Google Calendar
 - Re-run anytime to pull upstream updates
 
 ### `/sales-summarize-account`
@@ -176,7 +176,7 @@ graph LR
 - [Obsidian](https://obsidian.md) with the [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin enabled
   - In Dataview settings, enable **Enable Inline Queries** (required for inline expressions like `` `= this.ae` `` to render in account files)
 - *Optional, for `/sales-salesforce`:* [Homebrew](https://brew.sh) and [Salesforce CLI](https://developer.salesforce.com/tools/salesforcecli) (`brew install sf`)
-- *Optional, for `/sales-gong`:* [Homebrew](https://brew.sh) and [Playwright MCP](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md) (`claude mcp add playwright -- npx @playwright/mcp@latest --browser chromium`)
+- *Optional, for `/sales-gong`:* [Playwright CLI](https://www.npmjs.com/package/@anthropic-ai/claude-code-playwright) (`npm install -g @anthropic-ai/claude-code-playwright@latest`)
 - *Optional, for `/sales-calendar`:* Claude.ai Google Calendar integration (connect your Google account in Claude Desktop Settings > Integrations, then run `/sales-setup calendar`)
 
 ## Obsidian Vault Setup
@@ -234,7 +234,7 @@ Run `/sales-setup` in Claude Code. It will:
 - Create a persistent config file at `~/.claude/skills/sales-config.md`
 - Create symlinks in `~/.claude/skills/`
 - Set up your vault folder structure
-- Optionally configure the Salesforce CLI (with custom field auto-discovery), Google Calendar, and Playwright MCP
+- Optionally configure the Salesforce CLI (with custom field auto-discovery), Google Calendar, and Playwright CLI
 
 ## Workflow
 
@@ -428,7 +428,7 @@ Contributions are welcome! If you've built a new skill, improved an existing one
 
 **Guidelines:**
 - Keep skill instructions clear and self-contained. Another user should be able to use your skill without extra context.
-- If your skill adds a new `ld-*` directory, `/sales-git` will automatically pick it up for the README.
+- If your skill adds a new `sales-*` directory, `/sales-git` will automatically pick it up for the README.
 - Test your skill on at least one real account before submitting.
 - Don't include vault-specific paths, company names, or personal info. Use `{config.*}` references and `/sales-setup` handles personalization.
 - `/sales-git` will check for proprietary information before committing and auto-fix any leaks.
