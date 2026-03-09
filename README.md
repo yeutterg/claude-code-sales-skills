@@ -5,22 +5,25 @@ Claude Code skills for interacting with Obsidian sales notes. These skills integ
 ## Table of Contents
 
 - [Skills](#skills)
-  - [`/sales-calendar`](#sales-calendar)
-  - [`/sales-create-account`](#sales-create-account)
-  - [`/sales-git`](#sales-git)
-  - [`/sales-gong`](#sales-gong)
-  - [`/sales-meeting`](#sales-meeting)
-  - [`/sales-review-learnings`](#sales-review-learnings)
-  - [`/sales-salesforce`](#sales-salesforce)
+  - [`/sales-today`](#ld-today)
+  - [`/sales-calendar`](#ld-calendar)
+  - [`/sales-create-account`](#ld-create-account)
+  - [`/sales-git`](#ld-git)
+  - [`/sales-gong`](#ld-gong)
+  - [`/sales-meeting`](#ld-meeting)
+  - [`/sales-review-learnings`](#ld-review-learnings)
+  - [`/sales-salesforce`](#ld-salesforce)
   - [`/sales-setup`](#sales-setup)
-  - [`/sales-summarize-account`](#sales-summarize-account)
-  - [`/sales-weekly`](#sales-weekly)
+  - [`/sales-summarize-account`](#ld-summarize-account)
+  - [`/sales-weekly`](#ld-weekly)
+- [Skill Dependency Graph](#skill-dependency-graph)
 - [Prerequisites](#prerequisites)
 - [Obsidian Vault Setup](#obsidian-vault-setup)
 - [Getting Started](#getting-started)
   - [1. Install the skills](#1-install-the-skills)
   - [2. Run `/sales-setup`](#2-run-sales-setup)
 - [Workflow](#workflow)
+  - [Scheduled task setup](#scheduled-task-setup)
   - [New account onboarding](#new-account-onboarding)
   - [Ongoing usage](#ongoing-usage)
   - [Asking questions about a deal](#asking-questions-about-a-deal)
@@ -35,6 +38,7 @@ Claude Code skills for interacting with Obsidian sales notes. These skills integ
 
 | Skill | Description |
 |-------|-------------|
+| `/sales-today` | Daily sales workflow -- morning prep or evening wrap-up with calendar scan, Gong imports, account summaries, and Salesforce updates |
 | `/sales-calendar` | Scan Google Calendar for upcoming meetings, match them to accounts, and auto-create meeting notes via /sales-meeting |
 | `/sales-create-account` | Create a new account folder structure with template files and business context |
 | `/sales-git` | Commit and push skill changes and auto-regenerate the README |
@@ -45,6 +49,12 @@ Claude Code skills for interacting with Obsidian sales notes. These skills integ
 | `/sales-setup` | Post-clone setup -- configure vault path, name, role, company, symlinks, and optional Salesforce CLI / Playwright MCP / Google Calendar. Re-run anytime to pull upstream updates and re-apply your config. |
 | `/sales-summarize-account` | Summarize all meeting notes, update MEDDPICC/TECHMAPS/CoM, enrich contacts, refresh business context |
 | `/sales-weekly` | Weekly review of all accounts with open Salesforce opportunities -- pulls deal context, summarizes activity, updates ledgers and Salesforce |
+
+### `/sales-today`
+
+**Usage:** `/sales-today [morning | evening]`
+
+Orchestrates the full daily sales workflow based on time of day. **Morning mode** (before noon): scans today's calendar, creates meeting notes, and processes any outstanding items from previous days (Gong imports, account summaries, Salesforce updates). **Evening mode** (noon or later): processes today's meetings end-to-end, then scans tomorrow's calendar. Automatically creates accounts for unrecognized external meetings and prompts the user to paste Salesforce and Gong URLs. On Friday evenings through Monday mornings, also runs the weekly portfolio review. Designed to run as a [scheduled task](#scheduled-task-setup) -- set it to run daily after your last call.
 
 ### `/sales-calendar`
 
@@ -62,7 +72,7 @@ Creates a new account folder with the full directory structure (meetings, contac
 
 **Usage:** `/sales-git`
 
-Commits and pushes changes to the skills GitHub repo. Pulls latest upstream updates first, scans all SKILL.md files for proprietary information (customer names, staff names, contact names, hardcoded paths, Salesforce credentials) and auto-fixes any leaks before committing. Regenerates the README.md from skill frontmatter.
+Commits and pushes changes to the skills GitHub repo. Pulls latest upstream updates first, scans all SKILL.md files for proprietary information (customer names, staff names, contact names, hardcoded paths, Salesforce credentials) and auto-fixes any leaks before committing. Regenerates the README.md from skill frontmatter. Syncs changes to the public repo with `ld-` to `sales-` renaming.
 
 ### `/sales-gong`
 
@@ -105,6 +115,49 @@ Processes all unsummarized meeting notes via parallel subagents, then aggregates
 **Usage:** `/sales-weekly`
 
 Portfolio-wide sweep of all accounts with open Salesforce opportunities. Pulls current deal context, auto-summarizes meetings that have transcripts but no summary, adds status ledger entries, and pushes updates to Salesforce. Includes a weekly retro phase that analyzes run quality, surfaces cross-account patterns (common competitors, objections, tech stacks), and queues discoveries for daily review. Designed to run autonomously at the end of the week -- start it and walk away.
+
+## Skill Dependency Graph
+
+Shows which skills call other skills. `/sales-today` is the top-level orchestrator -- run it daily and it handles everything else.
+
+```mermaid
+graph TD
+    today["/sales-today"] --> calendar["/sales-calendar"]
+    today --> gong["/sales-gong"]
+    today --> summarize["/sales-summarize-account"]
+    today --> salesforce["/sales-salesforce"]
+    today --> create["/sales-create-account"]
+    today --> weekly["/sales-weekly"]
+
+    calendar --> meeting["/sales-meeting"]
+    calendar --> create
+
+    gong --> meeting
+
+    weekly --> summarize
+    weekly --> salesforce
+    weekly --> create
+
+    create --> gong
+
+    setup["/sales-setup"] ~~~ today
+    git["/sales-git"] ~~~ setup
+    review["/sales-review-learnings"] ~~~ git
+
+    style today fill:#4a9eff,stroke:#333,color:#fff
+    style weekly fill:#9b59b6,stroke:#333,color:#fff
+    style calendar fill:#2ecc71,stroke:#333,color:#fff
+    style meeting fill:#f39c12,stroke:#333,color:#fff
+    style gong fill:#e74c3c,stroke:#333,color:#fff
+    style summarize fill:#1abc9c,stroke:#333,color:#fff
+    style salesforce fill:#3498db,stroke:#333,color:#fff
+    style create fill:#e67e22,stroke:#333,color:#fff
+    style setup fill:#95a5a6,stroke:#333,color:#fff
+    style git fill:#95a5a6,stroke:#333,color:#fff
+    style review fill:#95a5a6,stroke:#333,color:#fff
+```
+
+**Legend:** Blue = orchestrators, Green = calendar, Orange/Yellow = account & meeting creation, Red = Gong import, Teal/Blue = processing & sync, Gray = utility/config
 
 ## Prerequisites
 
@@ -157,7 +210,7 @@ You can add additional folders under `{Company}/` as you see fit -- for example,
 3. Add upstream so you can pull future updates from the original repo:
    ```bash
    cd ~/repos/claude-code-sales-skills
-   git remote add upstream https://github.com/yeutterg/claude-code-sales-skills.git
+   git remote add upstream https://github.com/<original-author>/claude-code-sales-skills.git
    ```
 
 To pull upstream updates later, just run `/sales-setup` -- it checks for updates automatically.
@@ -173,6 +226,34 @@ Run `/sales-setup` in Claude Code. It will:
 - Optionally configure the Salesforce CLI (with custom field auto-discovery), Google Calendar, and Playwright MCP
 
 ## Workflow
+
+### Scheduled task setup
+
+The recommended way to use these skills is to run `/sales-today` as a daily scheduled task. It handles calendar scanning, Gong imports, account summaries, and Salesforce updates automatically.
+
+**Set up in Claude Desktop:**
+
+1. Open Claude Desktop
+2. Click the **Code** tab (bottom of the sidebar)
+3. Go to **Scheduled Tasks**
+4. Click **Add Task** and configure:
+   - **Name:** Daily Sales Workflow
+   - **Schedule:** Daily at **5:00 PM** (or whenever you typically finish your last call)
+   - **Working Directory:** Your home directory (e.g., `/Users/you`)
+   - **Prompt:** `/sales-today`
+5. Save the task
+
+**Why evening?** Gong typically needs 1-2 hours to process recordings. Running in the evening ensures today's calls are available for import. The evening run also scans tomorrow's calendar so your meeting notes are ready before the next day starts. On Fridays, it automatically triggers the weekly portfolio review.
+
+**What it does each run:**
+- Imports Gong transcripts for today's meetings
+- Summarizes accounts with new meeting data
+- Pushes updates to Salesforce
+- Scans tomorrow's calendar and creates meeting notes
+- Creates accounts for any new companies (prompts you to add Salesforce/Gong URLs)
+- Runs `/sales-weekly` on Friday evenings
+
+You can also run `/sales-today` manually at any time -- it detects morning vs. evening mode automatically.
 
 ### New account onboarding
 
@@ -305,7 +386,7 @@ Claude will create a `SKILL.md` file in a new directory under `~/.claude/skills/
 Here are some directions you could take this:
 
 - **Gong API integration** -- Use an [MCP server](https://modelcontextprotocol.io/) or API calls to pull transcripts and briefings directly from Gong instead of copy-pasting
-- ~~**Google Calendar integration**~~
+- ✅ ~~**Google Calendar integration**~~
 - **Competitive intelligence** -- Add a skill that searches for competitor mentions across all account meetings and builds a comparison matrix
 - **Pipeline dashboard** -- Create a skill that reads all account files and generates a summary table with deal stage, next call, and MEDDPICC completeness
 - **POV tracking** -- Add a skill for managing proof-of-value timelines, success criteria, and milestone tracking
@@ -336,7 +417,7 @@ Contributions are welcome! If you've built a new skill, improved an existing one
 
 **Guidelines:**
 - Keep skill instructions clear and self-contained -- another user should be able to use your skill without extra context
-- If your skill adds a new `sales-*` directory, `/sales-git` will automatically pick it up for the README
+- If your skill adds a new `ld-*` directory, `/sales-git` will automatically pick it up for the README
 - Test your skill on at least one real account before submitting
 - Don't include vault-specific paths, company names, or personal info -- use `{config.*}` references and `/sales-setup` handles personalization
 - `/sales-git` will check for proprietary information before committing and auto-fix any leaks
