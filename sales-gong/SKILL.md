@@ -94,6 +94,9 @@ playwright-cli -s={session} eval "() => { var tabs = document.querySelectorAll('
 
 You are helping a Solutions Engineer import call recordings for the account: $ARGUMENTS
 
+### Execution Strategy
+When processing multiple Gong calls, use subagents to process each call in parallel. Fan out for reads/extraction, fan in for writes.
+
 ### Pre-check: Read Config
 
 Read `~/.claude/skills/sales-config.md` and extract: `vault_path`, `company_folder`, `name`, `initials`, `company`, `gong_workspace_id`. Use these values throughout the rest of this skill wherever `{config.*}` placeholders appear.

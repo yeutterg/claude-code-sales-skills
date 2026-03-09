@@ -27,6 +27,9 @@ which sf && sf org list 2>&1
 ```
 If `sf` is not installed or not authenticated, stop: "Salesforce CLI not ready. Run `/sales-setup salesforce`."
 
+### Execution Strategy
+Use subagents for all independent work — account scanning, Salesforce queries, and web searches should run in parallel via subagents whenever possible. Fan out for reads/extraction, fan in for writes.
+
 ---
 
 ### Phase 1: Discover Accounts with Open Opportunities

@@ -5,23 +5,23 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 ## Table of Contents
 
 - [Skills](#skills)
-  - [`/sales-today`](#ld-today)
-  - [`/sales-calendar`](#ld-calendar)
-  - [`/sales-create-account`](#ld-create-account)
-  - [`/sales-git`](#ld-git)
-  - [`/sales-gong`](#ld-gong)
-  - [`/sales-meeting`](#ld-meeting)
-  - [`/sales-review-learnings`](#ld-review-learnings)
-  - [`/sales-salesforce`](#ld-salesforce)
-  - [`/sales-setup`](#ld-setup)
-  - [`/sales-summarize-account`](#ld-summarize-account)
-  - [`/sales-weekly`](#ld-weekly)
+  - [`/sales-today`](#sales-today)
+  - [`/sales-calendar`](#sales-calendar)
+  - [`/sales-create-account`](#sales-create-account)
+  - [`/sales-git`](#sales-git)
+  - [`/sales-gong`](#sales-gong)
+  - [`/sales-meeting`](#sales-meeting)
+  - [`/sales-review-learnings`](#sales-review-learnings)
+  - [`/sales-salesforce`](#sales-salesforce)
+  - [`/sales-setup`](#sales-setup)
+  - [`/sales-summarize-account`](#sales-summarize-account)
+  - [`/sales-weekly`](#sales-weekly)
 - [Skill Dependency Graph](#skill-dependency-graph)
 - [Prerequisites](#prerequisites)
 - [Obsidian Vault Setup](#obsidian-vault-setup)
 - [Getting Started](#getting-started)
   - [1. Install the skills](#1-install-the-skills)
-  - [2. Run `/sales-setup`](#2-run-ld-setup)
+  - [2. Run `/sales-setup`](#2-run-sales-setup)
   - [3. Set up the daily scheduled task](#3-set-up-the-daily-scheduled-task)
 - [Workflow](#workflow)
   - [New account onboarding](#new-account-onboarding)
@@ -174,6 +174,8 @@ graph LR
     create1 --> salesforce3["/sales-salesforce"]
     create1 --> gong2["/sales-gong"]
     create1 --> summarize3["/sales-summarize-account"]
+    summarize1 --> salesforce4["/sales-salesforce"]
+    salesforce1 --> create4["/sales-create-account"]
 ```
 
 ## Prerequisites

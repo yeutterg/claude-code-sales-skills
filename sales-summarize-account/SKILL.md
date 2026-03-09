@@ -38,6 +38,24 @@ Read the `competitors` array from `~/.claude/skills/sales-config.md`. Each compe
 
 **Auto-grow competitors:** If a meeting transcript mentions a competitor not yet in the config, add it to `~/.claude/skills/sales-config.md` with the name, a brief description (inferred from context), and any observed misspellings.
 
+### Execution Strategy
+
+Maximize parallelism by using subagents for all independent work. The general pattern is: fan out for reads and extraction, fan in for writes. Specifically:
+
+- **Phase 1.5 + Phase 2** run in parallel: SF deal context pull, business context web search, and all meeting processing subagents launch in a single message
+- **Phase 4b + Phase 3** run in parallel: contact enrichment subagents launch alongside account file updates
+- Only sequential when there's a data dependency (e.g., Phase 3 needs Phase 2 results)
+
+The new execution order is:
+1. Phase 1: Discovery
+2. Phase 1.5 + Phase 2: Launch SF pull + business context + meeting subagents (all parallel in a single message)
+3. Collect all results
+4. Phase 4a: Create missing contact files (quick, needed before enrichment)
+5. Phase 4b + Phase 3: Launch contact enrichment subagents IN PARALLEL with account file updates
+6. Collect enrichment results, update contact files
+7. Phase 5: Update daily note
+8. Phase 6: Self-improvement
+
 ---
 
 ### Phase 1: Discovery
@@ -48,6 +66,26 @@ Read the `competitors` array from `~/.claude/skills/sales-config.md`. Each compe
 4. Read `Ledger.md` to see which meetings already have ledger entries
 5. List all meeting files in the `meetings/` subdirectory (files are `.md`)
 6. List all contact files in the `contacts/` subdirectory — save the list of contact names (filenames without `.md`) for use in Phase 2 subagent prompts
+
+---
+
+### Phase 1.5 + Phase 2: Parallel Subagent Launch
+
+**Phase 1.5 runs IN PARALLEL with Phase 2.** After Phase 1 Discovery, launch all of the following concurrently in a single message:
+
+1. **A subagent for the Salesforce deal context pull** — reads the **Scan Open Mode** section of `/sales-salesforce` (`~/.claude/skills/sales-salesforce/SKILL.md`) and executes Steps 2O through 5O for this account. Instead of writing directly to the account file, the subagent should write its results to a temp file (e.g., `/tmp/sf_context_{account_slug}.json`) so Phase 3 can merge everything.
+   - If the account has no `salesforce_opportunity` fields in its frontmatter, skip this subagent silently (the account may not have been scanned yet).
+   - If the Salesforce CLI is not configured (`salesforce_configured` is not `true` in the config), skip this subagent silently.
+   - If the SF token retrieval fails, log a warning and continue — don't block the summarization.
+
+2. **A subagent for business context web search** — searches for company info and recent news for the account. The subagent should:
+   - Search for "{Account} company" to get 1-2 bullets on their line of business
+   - Search for "{Account} news {current year}" for relevant headlines (leadership changes, acquisitions, layoffs, data breaches, funding, partnerships, financial results)
+   - Return structured output (company description bullets + news items with dates and URLs) rather than writing directly to the account file. Phase 3 Step 3d will merge these results.
+
+3. **All meeting processing subagents from Phase 2** (see below)
+
+All three types of subagents (SF pull, business context, meeting processing) launch in a SINGLE message for maximum parallelism.
 
 ---
 
@@ -158,7 +196,7 @@ REMINDER: Do NOT write anything to the `## Tasks` section. Leave it untouched.
 ```
 
 **IMPORTANT:**
-- Launch ALL meeting subagents in a SINGLE message (parallel execution)
+- Launch ALL subagents (SF pull, business context, AND meeting subagents) in a SINGLE message (parallel execution per Phase 1.5 + Phase 2)
 - Use `model: "sonnet"` for each subagent to optimize cost/speed
 - Each subagent handles its own file reads and writes independently
 - The structured extraction format lets you collect results without re-reading transcripts
@@ -167,7 +205,7 @@ REMINDER: Do NOT write anything to the `## Tasks` section. Leave it untouched.
 
 ### Phase 3: Collect Results and Update Account
 
-After all meeting subagents complete, collect their structured extractions and proceed with the following steps. You now have all meeting data in compact form without needing to read any transcripts.
+After all Phase 1.5 + Phase 2 subagents complete, collect their structured extractions. First run Phase 4a (contact reconciliation) to create missing contact files, then proceed with Phase 3 steps below IN PARALLEL with Phase 4b (contact enrichment subagents). You now have all meeting data in compact form without needing to read any transcripts.
 
 #### Step 3a: Rename Generic Meeting Files
 
@@ -213,22 +251,21 @@ Most recent entries at the top. If the Ledger contains non-meeting content, move
 
 #### Step 3d: Update Business Context
 
-Check if the `## Business Context` section exists and is populated:
+Use the business context results from the Phase 1.5 subagent rather than doing a fresh web search. The subagent already searched for company info and recent news.
 
-**If the section doesn't exist or is empty:**
+**If the `## Business Context` section doesn't exist or is empty:**
 1. Add the section below `## Meetings` and above `## MEDDPICC`
-2. Use web search to populate:
-   - **About the Company**: Search for "{Account} company" - add 1-2 bullets on their line of business
-   - **Recent News**: Search for "{Account} news {current year}" - add relevant headlines:
-     - Leadership changes, acquisitions, layoffs, data breaches, funding, partnerships, financial results
+2. Populate with the subagent's results:
+   - **About the Company**: Use the company description bullets from the subagent
+   - **Recent News**: Use the headlines from the subagent
 
 **If the section exists and has content:**
-1. If the newest headline is more than 2 weeks old, search for "{Account} news" for updates
-2. Add any new headlines at the top of the Recent News list
+1. Merge the subagent's news results with existing content — add any new headlines at the top of the Recent News list
+2. Don't duplicate existing headlines
 
 Format for news items: `- **M/DD/YYYY**: [Headline summary](URL)`
 
-**CRITICAL: Only include news items where you have a direct URL to the actual article.**
+**CRITICAL: Only include news items where the subagent returned a direct URL to the actual article.**
 - Link to specific articles (BusinessWire, PRNewswire, TechCrunch, news outlets)
 - Do NOT link to company profile pages (Tracxn, Crunchbase, ZoomInfo)
 - Do NOT link to generic newsroom landing pages
@@ -364,7 +401,9 @@ DEAL HISTORY:
 
 ---
 
-### Phase 4: Contact Reconciliation and Enrichment via Subagents
+### Phase 4a: Contact Reconciliation (runs BEFORE Phase 3)
+
+After collecting all Phase 1.5 + Phase 2 results, immediately create missing contact files before starting account updates. This is needed so enrichment subagents can launch in parallel with Phase 3.
 
 #### Step 4a: Reconcile Attendees
 
@@ -405,11 +444,17 @@ SORT date DESC
 
 **Also update existing contacts:** After creating missing contacts, scan ALL existing contact files in the `contacts/` folder. If any contact has an empty `company:` field, fill it in using the same rules above. Check meeting transcripts and notes for context clues about each person's company affiliation.
 
+---
+
+### Phase 4b + Phase 3: Enrichment and Account Updates (in parallel)
+
+After creating contact files in Phase 4a, launch contact enrichment subagents IN PARALLEL with the Phase 3 account file updates. Collect enrichment results after Phase 3 is done.
+
 #### Step 4b: Enrich Contacts via Subagents
 
-After reconciliation, list ALL contact files again. For each contact that has an empty `role:` or `linkedin:` field, launch a subagent (`subagent_type: "general-purpose"`, `model: "haiku"`) to search for and enrich that contact.
+List ALL contact files. For each contact that has an empty `role:` or `linkedin:` field, launch a subagent (`subagent_type: "general-purpose"`, `model: "haiku"`) to search for and enrich that contact.
 
-Run all contact enrichment subagents **in parallel**. Use this prompt template:
+Run all contact enrichment subagents **in parallel**, launched in the SAME message as the Phase 3 account file updates begin. Use this prompt template:
 
 ```
 You are enriching a contact profile for a {config.company} sales account.
@@ -432,7 +477,7 @@ LINKEDIN: {URL or "unchanged" if already set or "not found"}
 ---END CONTACT---
 ```
 
-After all contact subagents return, update the contact files with any enrichment data found.
+After all contact enrichment subagents return (which may be after Phase 3 completes), update the contact files with any enrichment data found.
 
 #### Step 4c: Output Contact Table
 

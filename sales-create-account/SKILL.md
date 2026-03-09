@@ -35,6 +35,9 @@ test -d "{config.vault_path}/{config.company_folder}/Accounts"
 ```
 If the directory does not exist, stop and tell the user: "Obsidian vault not found. Run `/sales-setup` to configure your vault path and create the folder structure."
 
+### Execution Strategy
+Use subagents for independent research tasks — web searches for company info, Salesforce queries, and Gong imports can run in parallel. Fan out for reads/extraction, fan in for writes.
+
 ### Step 1: Create Directory Structure
 
 1. Create the account directory at `{config.vault_path}/{config.company_folder}/Accounts/{Account}/`
