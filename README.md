@@ -40,7 +40,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 |-------|-------------|
 | `/sales-today` | Daily sales workflow: morning prep or evening wrap-up with calendar scan, Gong imports, account summaries, and Salesforce updates |
 | `/sales-calendar` | Scan Google Calendar for upcoming meetings, match them to accounts, and auto-create meeting notes via /sales-meeting |
-| `/sales-create-account` | Create a new account folder structure with template files and business context |
+| `/sales-create-account` | Create a new account folder, populate business context, and auto-import from Salesforce and Gong |
 | `/sales-git` | Commit and push skill changes and auto-regenerate the README |
 | `/sales-gong` | Import Gong calls or Granola meetings into Obsidian meeting notes, or bulk import all calls for an account |
 | `/sales-meeting` | Create meeting notes for a sales account and link them in the daily note |
@@ -72,11 +72,13 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 
 ### `/sales-create-account`
 
-**Usage:** `/sales-create-account <account name> [gong_url]`
+**Usage:** `/sales-create-account <account name> [gong_url] [salesforce_url]`
 
 - Creates account folder with full directory structure (meetings, contacts, templates)
 - Populates business context by searching the web for company info and recent news
-- Optionally accepts a Gong activity URL or Salesforce opportunity URL
+- Optionally accepts a Gong activity URL, Salesforce Account URL, or Salesforce Opportunity URL (any combination, any order)
+- Salesforce Account URL: runs `/sales-salesforce scan` to discover all open and closed opportunities
+- Salesforce Opportunity URL: looks up the parent account, then scans all opportunities
 - Triggers automatic Gong historical import if Playwright CLI is configured
 
 ### `/sales-git`

@@ -1,6 +1,6 @@
 ---
 description: Create a new account folder structure with template files and business context
-argument-hint: <account name> [gong_url]
+argument-hint: <account name> [gong_url] [salesforce_url]
 ---
 
 # Create Account
@@ -12,9 +12,10 @@ Create a new account folder structure with template files.
 - `account`: The account name in Title Case (e.g., "Acme Corp")
 - URLs (optional): Any combination of:
   - **Gong activity URL** (contains `gong.io/account/activity`): Saved to `gong_url` frontmatter field
-  - **Salesforce opportunity URL** (contains `salesforce.com` or `force.com`): Saved to `salesforce_opportunity` frontmatter field
+  - **Salesforce Account URL** (contains `/Account/` in the path): Saved to `salesforce_account` frontmatter field
+  - **Salesforce Opportunity URL** (contains `/Opportunity/` in the path): Saved to `salesforce_opportunity` frontmatter field
 
-URLs can appear in any order after the account name. The skill auto-detects the URL type.
+URLs can appear in any order after the account name. The skill auto-detects the URL type by checking the path segment (`/Account/` vs `/Opportunity/`).
 
 ## Instructions
 
@@ -42,7 +43,7 @@ If the directory does not exist, stop and tell the user: "Obsidian vault not fou
 
 ### Step 2: Create Main Account File
 
-Create `{Account}.md` with the following template. Populate `gong_url` and/or `salesforce_opportunity` frontmatter fields if the corresponding URLs were provided as arguments:
+Create `{Account}.md` with the following template. Populate URL frontmatter fields based on the URLs provided as arguments (see Arguments section for auto-detection rules):
 
 ```markdown
 ---
@@ -52,6 +53,7 @@ csm:
 deal_type: Net New
 next_call:
 next_call_agenda:
+salesforce_account:
 salesforce_opportunity:
 gong_url:
 revenue_assets_folder:
@@ -64,7 +66,7 @@ revenue_assets_folder:
 **Next Call:** `= this.next_call`
 **Next Call Agenda:** `= this.next_call_agenda`
 
-**Links:** [Salesforce](`= this.salesforce_opportunity`) | [Gong](`= this.gong_url`) | [Revenue Assets](`= this.revenue_assets_folder`)
+**Links:** [Salesforce Account](`= this.salesforce_account`) | [Salesforce Opp](`= this.salesforce_opportunity`) | [Gong](`= this.gong_url`) | [Revenue Assets](`= this.revenue_assets_folder`)
 
 ## Deal Ledger
 
@@ -339,9 +341,33 @@ Use web search to gather business context:
 - No blank line between last bullet and next heading
 - Sections flow directly into each other
 
-### Step 7: Automatic Gong Historical Import
+### Step 7: Automatic Salesforce Import
 
-After creating the account, check if the `gong_url` frontmatter field was populated (either by the user providing it in arguments, or if you found it during setup).
+After creating the account, check which Salesforce URL was provided and run the appropriate import. These steps require the Salesforce CLI to be configured (`salesforce_configured` is true in config). If not configured, skip and note in the output: "Salesforce not configured. Run `/sales-setup salesforce` to enable."
+
+**If a Salesforce Account URL was provided** (saved to `salesforce_account`):
+1. Run `/sales-salesforce scan {Account}` to discover all opportunities (open and closed) for this account
+2. This will create opportunity files, update the frontmatter with `salesforce_opportunity` and `salesforce_opportunity_*` fields for open opps, add deal history to the ledger, and populate the Opportunity History section
+
+**If a Salesforce Opportunity URL was provided** (saved to `salesforce_opportunity`):
+1. Extract the Opportunity ID from the URL (the 15-18 character ID after `/Opportunity/`)
+2. Use the Salesforce REST API to get the parent Account ID:
+   ```bash
+   sf org display --target-org {config.salesforce_username} --json 2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin)['result']; print(d['accessToken']); print(d['instanceUrl'])"
+   ```
+   ```bash
+   curl -s "{instance_url}/services/data/v62.0/sobjects/Opportunity/{opp_id}?fields=AccountId" \
+     -H "Authorization: Bearer {access_token}"
+   ```
+3. Build the Salesforce Account URL from the Account ID and save it to the `salesforce_account` frontmatter field:
+   `{config.salesforce_instance_url}/lightning/r/Account/{account_id}/view`
+4. Run `/sales-salesforce scan {Account}` to discover all opportunities (open and closed), including the one already provided
+
+**If no Salesforce URL was provided**, skip this step.
+
+### Step 8: Automatic Gong Historical Import
+
+After creating the account (and after Salesforce import if applicable), check if the `gong_url` frontmatter field was populated.
 
 If `gong_url` is set AND Playwright CLI is configured (`playwright_configured` is true in config):
 - Automatically invoke `/sales-gong {Account} {gong_url}` to run the bulk historical import. No need to ask, just do it.
@@ -356,4 +382,5 @@ After completing all steps, provide:
 2. List of files created
 3. Business context summary (what you learned about the company)
 4. Path to the new account for easy access
-5. Gong import status (auto-triggered if URL provided and Playwright available)
+5. Salesforce import status (opportunities found, open opps linked)
+6. Gong import status (auto-triggered if URL provided and Playwright available)
