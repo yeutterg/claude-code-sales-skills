@@ -236,7 +236,10 @@ Run `/sales-setup` in Claude Code. It will:
 - Create a persistent config file at `~/.claude/skills/sales-config.md`
 - Create symlinks in `~/.claude/skills/`
 - Set up your vault folder structure
-- Optionally configure the Salesforce CLI (with custom field auto-discovery), Google Calendar, and Playwright CLI
+- Optionally configure integrations (you can also set these up later):
+  - Salesforce CLI (with custom field auto-discovery): `/sales-setup salesforce`
+  - Google Calendar (via Claude.ai integration): `/sales-setup calendar`
+  - Playwright CLI (for Gong imports): `/sales-setup playwright`
 
 ### 3. Set up the daily scheduled task
 
