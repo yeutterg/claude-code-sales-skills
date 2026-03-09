@@ -37,7 +37,7 @@ playwright-cli open https://app.gong.io --headed
 
 **Persistent sessions:** Use `--persistent` to preserve cookies across browser restarts, reducing re-authentication:
 ```bash
-playwright-cli -s=gong open https://app.gong.io --headed --persistent
+playwright-cli -s=gong_{account_slug} open https://app.gong.io --headed --persistent
 ```
 
 ## Instructions
@@ -55,6 +55,14 @@ Check that the accounts directory exists:
 test -d "{config.vault_path}/{config.company_folder}/Accounts"
 ```
 If the directory does not exist, stop and tell the user: "Obsidian vault not found. Run `/sales-setup` to configure your vault path and create the folder structure."
+
+### Pre-check: Derive Session Name
+
+Create a unique Playwright session name for this account by converting the account name to a lowercase slug (spaces → underscores, remove special characters). For example:
+- "Acme Corp" → `gong_acme_corp`
+- "LPL Financial" → `gong_lpl_financial`
+
+Use this as the `-s={account_slug}` value in all `playwright-cli` commands. This allows multiple `/sales-gong` invocations to run in parallel for different accounts without session conflicts.
 
 ### Pre-check: Verify Playwright CLI
 
@@ -102,19 +110,19 @@ Checking Gong for matching recordings...
 
 1. Open the browser and navigate to the Gong activity page:
    ```bash
-   playwright-cli -s=gong open {gong_activity_url} --headed --persistent
+   playwright-cli -s=gong_{account_slug} open {gong_activity_url} --headed --persistent
    ```
 2. **Login check:** Take a snapshot and check if the page shows a login screen. If so, tell the user to log in and wait for them to confirm.
    ```bash
-   playwright-cli -s=gong snapshot
+   playwright-cli -s=gong_{account_slug} snapshot
    ```
 3. Ensure the calls-only filter is active. Take a snapshot, find the "Calls only" checkbox ref, and click it if not checked:
    ```bash
-   playwright-cli -s=gong click {ref}
+   playwright-cli -s=gong_{account_slug} click {ref}
    ```
 4. Scroll through the call list to load all entries using keyboard navigation or mouse wheel:
    ```bash
-   playwright-cli -s=gong mousewheel 0 500
+   playwright-cli -s=gong_{account_slug} mousewheel 0 500
    ```
 
 ### Step 4S: Match Gong Calls to Meeting Files
@@ -144,7 +152,7 @@ Report progress after each import.
 
 1. Open the browser and navigate to the Gong activity page:
    ```bash
-   playwright-cli -s=gong open {activity_page_url} --headed --persistent
+   playwright-cli -s=gong_{account_slug} open {activity_page_url} --headed --persistent
    ```
 2. **Login check:** Snapshot and check for login screen. If shown, tell user to log in and wait.
 3. Ensure the calls-only filter is active. Snapshot, find checkbox ref, click if not checked.
@@ -158,8 +166,8 @@ Report progress after each import.
 
 Scroll through the left column to load all calls (infinite scroll):
 ```bash
-playwright-cli -s=gong mousewheel 0 500
-playwright-cli -s=gong snapshot
+playwright-cli -s=gong_{account_slug} mousewheel 0 500
+playwright-cli -s=gong_{account_slug} snapshot
 ```
 
 For each call entry, extract:
@@ -215,13 +223,13 @@ These steps handle extracting data from a single Gong call and writing it to the
 
 1. Click the call entry in the left column to load details in the right panel:
    ```bash
-   playwright-cli -s=gong click {call_ref}
-   playwright-cli -s=gong snapshot
+   playwright-cli -s=gong_{account_slug} click {call_ref}
+   playwright-cli -s=gong_{account_slug} snapshot
    ```
 2. Extract **attendee names** from the participant list. Click "+N more" buttons to expand full lists:
    ```bash
-   playwright-cli -s=gong click {more_ref}
-   playwright-cli -s=gong snapshot
+   playwright-cli -s=gong_{account_slug} click {more_ref}
+   playwright-cli -s=gong_{account_slug} snapshot
    ```
 3. Check if there's a **"Go to call" button**: this only appears for recorded calls
 
@@ -237,9 +245,9 @@ If no "Go to call" button exists:
 
 1. Click "Go to call" or navigate directly to the call page URL:
    ```bash
-   playwright-cli -s=gong click {go_to_call_ref}
+   playwright-cli -s=gong_{account_slug} click {go_to_call_ref}
    ```
-2. **Important:** "Go to call" may open a new tab. Use `playwright-cli -s=gong tab-list` and `tab-select` to switch if needed.
+2. **Important:** "Go to call" may open a new tab. Use `playwright-cli -s=gong_{account_slug} tab-list` and `tab-select` to switch if needed.
 
 ### CP4: Extract Brief FIRST
 
@@ -247,7 +255,7 @@ If no "Go to call" button exists:
 
 1. Take a snapshot and extract the full brief text from the Briefs tab content:
    ```bash
-   playwright-cli -s=gong snapshot --filename=/tmp/gong_brief_{date}_{topic}.yml
+   playwright-cli -s=gong_{account_slug} snapshot --filename=/tmp/gong_brief_{date}_{topic}.yml
    ```
 2. Read the snapshot file and extract: Recap, Key Points, and Next Steps sections
 3. Store this text for writing to the meeting file
@@ -256,8 +264,8 @@ If no "Go to call" button exists:
 
 1. Click the **"Transcript"** tab on the call page:
    ```bash
-   playwright-cli -s=gong click {transcript_tab_ref}
-   playwright-cli -s=gong snapshot --filename=/tmp/gong_transcript_{date}_{topic}.yml
+   playwright-cli -s=gong_{account_slug} click {transcript_tab_ref}
+   playwright-cli -s=gong_{account_slug} snapshot --filename=/tmp/gong_transcript_{date}_{topic}.yml
    ```
 2. The transcript snapshot will be very large (200-600KB+)
 3. **Launch a background subagent** (`run_in_background: true`, `model: "haiku"`) to handle reading the transcript file and writing everything to the meeting file. For bulk imports, this allows you to continue navigating to the next call while the subagent processes.
@@ -285,8 +293,8 @@ The subagent should:
 
 Close the call page tab or navigate back to the activity page:
 ```bash
-playwright-cli -s=gong tab-close
-playwright-cli -s=gong tab-select 0
+playwright-cli -s=gong_{account_slug} tab-close
+playwright-cli -s=gong_{account_slug} tab-select 0
 ```
 
 ---
@@ -297,7 +305,7 @@ playwright-cli -s=gong tab-select 0
 
 1. Open the browser and navigate to the Gong call URL:
    ```bash
-   playwright-cli -s=gong open {gong_call_url} --headed --persistent
+   playwright-cli -s=gong_{account_slug} open {gong_call_url} --headed --persistent
    ```
 2. **Login check:** Snapshot and check for login screen. If shown, tell user to log in and wait.
 3. Extract from the call page snapshot:
@@ -326,7 +334,7 @@ The **"Briefs"** tab is selected by default on the call page.
 
 1. Take a snapshot and extract the full brief text:
    ```bash
-   playwright-cli -s=gong snapshot --filename=/tmp/gong_brief_{date}_{topic}.yml
+   playwright-cli -s=gong_{account_slug} snapshot --filename=/tmp/gong_brief_{date}_{topic}.yml
    ```
 2. Read the snapshot and extract: Recap, Key Points, and Next Steps sections
 3. Store this text for writing to the meeting file
@@ -335,8 +343,8 @@ The **"Briefs"** tab is selected by default on the call page.
 
 1. Click the **"Transcript"** tab on the call page:
    ```bash
-   playwright-cli -s=gong click {transcript_tab_ref}
-   playwright-cli -s=gong snapshot --filename=/tmp/gong_transcript_{date}_{topic}.yml
+   playwright-cli -s=gong_{account_slug} click {transcript_tab_ref}
+   playwright-cli -s=gong_{account_slug} snapshot --filename=/tmp/gong_transcript_{date}_{topic}.yml
    ```
 2. The transcript snapshot will be very large (200-600KB+)
 3. **Launch a subagent** (`model: "haiku"`) to handle reading the transcript file and writing everything to the meeting file
@@ -452,7 +460,7 @@ Next steps:
 
 When finished with all imports, close the browser session:
 ```bash
-playwright-cli -s=gong close
+playwright-cli -s=gong_{account_slug} close
 ```
 
 ### Error Handling
@@ -471,5 +479,6 @@ playwright-cli -s=gong close
 - For Gong: The Briefs tab is extracted BEFORE clicking Transcript to avoid navigating back.
 - For Gong: Transcript extraction is delegated to a subagent to keep the main agent's context window clean.
 - For Granola: Shared links only contain summary notes (no transcript available).
-- Calls are processed sequentially because they share a single Playwright browser session.
-- The `-s=gong` session flag keeps all Gong navigation in a dedicated session, preserving auth cookies with `--persistent`.
+- Calls within a single account are processed sequentially (they share one browser session).
+- Each account gets its own session (`-s=gong_{account_slug}`), so multiple accounts can be processed in parallel by launching separate `/sales-gong` subagents.
+- The `--persistent` flag preserves auth cookies across browser restarts within the same session.
