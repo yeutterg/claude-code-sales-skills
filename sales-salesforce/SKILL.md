@@ -27,7 +27,7 @@ Before first use, authenticate with the Salesforce CLI via SSO:
 sf org login web --instance-url {config.salesforce_instance_url}
 ```
 
-This opens a browser for SSO login (Okta). You only need to do this once per org — the token is stored locally until it expires.
+This opens a browser for SSO login. You only need to do this once per org — the token is stored locally until it expires.
 
 To verify authentication:
 
@@ -59,9 +59,9 @@ You are helping a Solutions Engineer manage Salesforce data for: $ARGUMENTS
 Read the config file at `~/.claude/skills/sales-config.md` and extract these values from its YAML frontmatter:
 
 - `vault_path` — path to the Obsidian vault
-- `company_folder` — subfolder name within the vault (e.g., "LaunchDarkly")
+- `company_folder` — subfolder name within the vault (e.g., "Acme Inc")
 - `name` — the user's full name
-- `initials` — the user's initials (e.g., "GY")
+- `initials` — the user's initials (e.g., "JS")
 - `company` — the company name
 - `salesforce_username` — Salesforce login email
 - `salesforce_instance_url` — Salesforce instance base URL (e.g., `https://yourcompany.my.salesforce.com`)

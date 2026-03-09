@@ -50,7 +50,7 @@ The user can respond with shorthand like "keep all competitors, dismiss objectio
 ### Step 3: Process Decisions
 
 - **Keep**: Move the item from `#### Pending Review` to `#### Reviewed` in `sales-config.md`
-- **Act**: Create a task in today's daily note under the appropriate section (LaunchDarkly for LD-related items, Restful for product feedback) and move to Reviewed
+- **Act**: Create a task in today's daily note under the appropriate section ({config.company} for company-related items) and move to Reviewed
 - **Dismiss**: Remove the item entirely
 
 ### Step 4: Show Model Performance

@@ -323,7 +323,7 @@ Read `## Discovered Patterns > ### Pending Review` in the learnings file. If the
 
 1. Determine tomorrow's date
 2. Check if `{config.vault_path}/Daily/{tomorrow}.md` exists
-3. If it exists, add under `## LaunchDarkly` (or create the section if missing):
+3. If it exists, add under `## {config.company}` (or create the section if missing):
    ```
    - [ ] Review skill learnings — {N} new patterns discovered (run `/sales-review-learnings`)
    ```

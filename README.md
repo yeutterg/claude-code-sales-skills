@@ -5,23 +5,23 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 ## Table of Contents
 
 - [Skills](#skills)
-  - [`/sales-today`](#sales-today)
-  - [`/sales-calendar`](#sales-calendar)
-  - [`/sales-create-account`](#sales-create-account)
-  - [`/sales-git`](#sales-git)
-  - [`/sales-gong`](#sales-gong)
-  - [`/sales-meeting`](#sales-meeting)
-  - [`/sales-review-learnings`](#sales-review-learnings)
-  - [`/sales-salesforce`](#sales-salesforce)
-  - [`/sales-setup`](#sales-setup)
-  - [`/sales-summarize-account`](#sales-summarize-account)
-  - [`/sales-weekly`](#sales-weekly)
+  - [`/sales-today`](#ld-today)
+  - [`/sales-calendar`](#ld-calendar)
+  - [`/sales-create-account`](#ld-create-account)
+  - [`/sales-git`](#ld-git)
+  - [`/sales-gong`](#ld-gong)
+  - [`/sales-meeting`](#ld-meeting)
+  - [`/sales-review-learnings`](#ld-review-learnings)
+  - [`/sales-salesforce`](#ld-salesforce)
+  - [`/sales-setup`](#ld-setup)
+  - [`/sales-summarize-account`](#ld-summarize-account)
+  - [`/sales-weekly`](#ld-weekly)
 - [Skill Dependency Graph](#skill-dependency-graph)
 - [Prerequisites](#prerequisites)
 - [Obsidian Vault Setup](#obsidian-vault-setup)
 - [Getting Started](#getting-started)
   - [1. Install the skills](#1-install-the-skills)
-  - [2. Run `/sales-setup`](#2-run-sales-setup)
+  - [2. Run `/sales-setup`](#2-run-ld-setup)
   - [3. Set up the daily scheduled task](#3-set-up-the-daily-scheduled-task)
 - [Workflow](#workflow)
   - [New account onboarding](#new-account-onboarding)
@@ -80,6 +80,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 - Salesforce Account URL: runs `/sales-salesforce scan` to discover all open and closed opportunities
 - Salesforce Opportunity URL: looks up the parent account, then scans all opportunities
 - Triggers automatic Gong historical import if Playwright CLI is configured
+- After imports complete, runs `/sales-summarize-account` to populate MEDDPICC, deal ledger, and all account sections
 
 ### `/sales-git`
 
@@ -93,9 +94,10 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 
 **Usage:** `/sales-gong <account name> [gong_or_granola_url]`
 
-- Imports call recordings into Obsidian meeting notes using Playwright CLI
+- Imports call recordings into Obsidian meeting notes using [Playwright CLI](https://github.com/microsoft/playwright-cli) for browser automation
 - Four modes: single Gong call, Granola summary, scan (match existing meetings to unimported recordings), bulk import
-- Extracts attendees, briefs, and transcripts
+- Extracts attendees, briefs, and transcripts in parallel using browser tabs (up to 3 calls at once)
+- Background subagents write to meeting files while the browser continues extracting the next batch
 
 ### `/sales-meeting`
 
@@ -169,7 +171,9 @@ graph LR
     weekly --> summarize2["/sales-summarize-account"]
     weekly --> salesforce2["/sales-salesforce"]
     weekly --> create3["/sales-create-account"]
+    create1 --> salesforce3["/sales-salesforce"]
     create1 --> gong2["/sales-gong"]
+    create1 --> summarize3["/sales-summarize-account"]
 ```
 
 ## Prerequisites
@@ -178,7 +182,7 @@ graph LR
 - [Obsidian](https://obsidian.md) with the [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin enabled
   - In Dataview settings, enable **Enable Inline Queries** (required for inline expressions like `` `= this.ae` `` to render in account files)
 - *Optional, for `/sales-salesforce`:* [Homebrew](https://brew.sh) and [Salesforce CLI](https://developer.salesforce.com/tools/salesforcecli) (`brew install sf`)
-- *Optional, for `/sales-gong`:* [Playwright CLI](https://www.npmjs.com/package/@anthropic-ai/claude-code-playwright) (`npm install -g @anthropic-ai/claude-code-playwright@latest`)
+- *Optional, for `/sales-gong`:* [Playwright CLI](https://github.com/microsoft/playwright-cli) (`npm install -g @playwright/cli@latest`)
 - *Optional, for `/sales-calendar`:* Claude.ai Google Calendar integration (connect your Google account in Claude Desktop Settings > Integrations, then run `/sales-setup calendar`)
 
 ## Obsidian Vault Setup
@@ -279,33 +283,14 @@ You can also run `/sales-today` manually at any time. It detects morning vs. eve
    ```
    This creates the full folder structure, populates business context from the web, and sets up template files.
 
-2. **Import historical calls from Gong:**
-   Search for the account in Gong, go to the Activity tab, and check "Calls Only." Then run `/sales-meeting` with all the call dates and descriptions. The input is freeform. Claude is pretty smart at figuring out what you mean, so just list them however is fastest:
-   ```
-   /sales-meeting Acme Corp
+   If you provide the Gong activity URL and/or Salesforce URL, it will automatically:
+   - Import all historical Gong calls (briefs + transcripts) via Playwright CLI
+   - Scan Salesforce for all opportunities and deal history
+   - Summarize the account (MEDDPICC, CoM, TECHMAPS, deal ledger, tech stack)
 
-   1/15 Discovery
-   1/22 Platform Demo
-   2/3 Technical sync
-   2/10
-   2/14 Follow-up with VP Eng
-   ```
-   Comma-separated works too, and you can mix date formats:
-   ```
-   /sales-meeting Acme Corp
-   Jan 15 Discovery, 1/22 Platform Demo, 2/3 Technical sync, Feb 10, 2/14 Follow-up with VP Eng
-   ```
+   The full onboarding runs end-to-end with a single command.
 
-3. **Fill in transcripts:**
-   Open each Gong recording in a new tab. For each meeting note that was just created, paste the **Briefing** from Gong into the `## External Summary` section and the **Transcript** into the `## Transcript` section.
-
-4. **Summarize the account:**
-   ```
-   /sales-summarize-account Acme Corp
-   ```
-   This launches subagents to process each meeting in parallel, then aggregates everything into the main account file: deal ledger, MEDDPICC, Command of the Message, TECHMAPS, tech stack, architecture diagram, and Salesforce-ready updates.
-
-5. **Update Salesforce and share:**
+2. **Update Salesforce and share:**
    ```
    /sales-salesforce Acme Corp
    ```
@@ -401,7 +386,7 @@ Claude will create a `SKILL.md` file in a new directory under `~/.claude/skills/
 
 Here are some directions you could take this:
 
-- **Gong API integration:** Use an [MCP server](https://modelcontextprotocol.io/) or API calls to pull transcripts and briefings directly from Gong instead of copy-pasting
+- **Gong API integration:** `/sales-gong` currently uses Playwright CLI for browser automation. A native Gong API or MCP server integration would be faster and more reliable
 - ~~**Google Calendar integration**~~ (done)
 - **Competitive intelligence:** Add a skill that searches for competitor mentions across all account meetings and builds a comparison matrix
 - **Pipeline dashboard:** Create a skill that reads all account files and generates a summary table with deal stage, next call, and MEDDPICC completeness

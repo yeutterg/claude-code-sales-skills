@@ -74,13 +74,13 @@ For each remaining event, classify it into one of these categories:
 #### 3a: Identify Existing Accounts
 
 List all account folders in `{config.vault_path}/{config.company_folder}/Accounts/`. Build a lookup of:
-- Account folder names (e.g., "Acme Corp", "LPL Financial")
+- Account folder names (e.g., "Acme Corp", "Globex")
 - For each account, read the frontmatter of `{Account}.md` to get any `aliases` field
 
 **Match events to accounts** by checking (in order):
-1. **Event title contains account name** (case-insensitive, partial match OK): e.g., "LPL Financial Discovery" → LPL Financial
-2. **Event title contains an account alias**: e.g., "LPL Fin Demo" matches alias "LPL Fin"
-3. **External attendee email domain matches a known account**: Read account frontmatter `website` or `domain` fields if available. Also try matching the company name against the domain (e.g., attendee `@lplfinancial.com` → "LPL Financial")
+1. **Event title contains account name** (case-insensitive, partial match OK): e.g., "Globex Discovery" → Globex
+2. **Event title contains an account alias**: e.g., "Globex Inc Demo" matches alias "Globex Inc"
+3. **External attendee email domain matches a known account**: Read account frontmatter `website` or `domain` fields if available. Also try matching the company name against the domain (e.g., attendee `@globex.com` → "Globex")
 
 **Categories:**
 - **Deal meeting**: Event matches an existing account AND has external attendees (people not in `calendar_user_emails` and not from `{config.company}` email domain)
@@ -103,7 +103,7 @@ Process meetings in parallel where possible using subagents.
 For each deal meeting, create a meeting note following the `/sales-meeting` pattern:
 
 1. **Determine topic**: Extract the topic from the event title by removing the account name. If nothing remains, use "Call".
-   - "LPL Financial Discovery" → topic: "Discovery"
+   - "Globex Discovery" → topic: "Discovery"
    - "Acme Corp" → topic: "Call"
    - "Technical Deep-Dive - Globex" → topic: "Technical Deep-Dive"
 
@@ -215,7 +215,7 @@ Calendar scan complete for {date range}.
 | Account | Meeting | Date | Attendees |
 |---------|---------|------|-----------|
 | Acme Corp | Discovery | 3/10 | Jane Smith, Bob Chen |
-| LPL Financial | Technical Review | 3/10 | Tim Cook, Mark Zuckerberg |
+| Globex | Technical Review | 3/10 | Tim Cook, Mark Zuckerberg |
 
 ## Deal Prep Meetings Created (or "Skipped — prep meetings disabled")
 | Account | Meeting | Date |

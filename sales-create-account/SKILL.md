@@ -375,6 +375,21 @@ If `gong_url` is set AND Playwright CLI is configured (`playwright_configured` i
 If Playwright CLI is not configured, mention it in the output:
 - "Tip: To import historical Gong calls, install Playwright CLI and run `/sales-gong {Account}`."
 
+### Step 9: Automatic Account Summarization
+
+After both Salesforce and Gong imports are complete (or skipped), automatically run `/sales-summarize-account {Account}` to process all imported meeting data.
+
+This will:
+- Populate MEDDPICC, Command of the Message, and TECHMAPS sections from meeting transcripts
+- Build the deal ledger from meeting history
+- Enrich contacts with roles and influence levels
+- Generate the Salesforce Updates section
+- Create the tech stack summary and architecture diagram
+
+**Skip this step if:**
+- No Gong import was performed (no meeting transcripts to summarize)
+- The account has zero meeting files
+
 ### Output
 
 After completing all steps, provide:
@@ -384,3 +399,4 @@ After completing all steps, provide:
 4. Path to the new account for easy access
 5. Salesforce import status (opportunities found, open opps linked)
 6. Gong import status (auto-triggered if URL provided and Playwright available)
+7. Summarization status (completed, skipped, or errors)

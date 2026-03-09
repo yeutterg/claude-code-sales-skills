@@ -60,7 +60,7 @@ Proprietary information found in SKILL.md files:
 
 | File | Line | Type | Value | Suggested Fix |
 |------|------|------|-------|---------------|
-| ld-meeting/SKILL.md | 32 | Customer name | "DriveTime" | Replace with generic example |
+| ld-meeting/SKILL.md | 32 | Customer name | "Globex" | Replace with generic example |
 | ld-salesforce/SKILL.md | 106 | SF username | "user@company.com" | Use {config.salesforce_username} |
 ...
 ```
@@ -293,7 +293,7 @@ The MEDDPICC summary callout in Acme Corp is collapsed -- it should be open.
 The ledger entries in Globex are out of order, newest should be first.
 The contacts table in Initech isn't rendering -- can you check the base file?
 Move the architecture diagram above the Salesforce Updates section in Acme Corp.
-The ledger is calling her Kathy, but she spells it with a C.
+The ledger is calling him Jon, but he spells it with an H.
 ```
 
 ## Customizing and creating skills

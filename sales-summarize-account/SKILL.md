@@ -100,14 +100,14 @@ The frontmatter should have:
 
 Populate the attendees array with links for every person who actually PARTICIPATED in the call — both customer/account contacts AND {config.company} team members (AEs, SEs, CSMs, leadership, etc.). Use the transcript's participant/speaker list and the Notes section's people list as the source of truth for who was on the call. Do NOT add people who are merely mentioned or discussed during the call but were not actually present as participants. Update the meeting file if changes were made.
 
-**CRITICAL: Resolve first-name-only or ambiguous attendees to full names.** Transcripts and notes often refer to people by first name only (e.g., "Greg", "Cooper", "Dylan"). You MUST resolve these to full names before writing the attendees array:
+**CRITICAL: Resolve first-name-only or ambiguous attendees to full names.** Transcripts and notes often refer to people by first name only (e.g., "Alex", "Cooper", "Dylan"). You MUST resolve these to full names before writing the attendees array:
 1. Check existing contact files in the account's `contacts/` folder for matches
 2. Check the account file frontmatter (`ae`, `se`, `csm` fields) for {config.company} team members
 3. Check attendees from other meeting files in the same account for name patterns
-4. Use context from the transcript itself (e.g., "Kathy Tang" mentioned later resolves "Kathy")
+4. Use context from the transcript itself (e.g., "Jane Smith" mentioned later resolves "Jane")
 5. If a name cannot be resolved to a full name with reasonable confidence, keep it as-is but flag it in the extraction output
 
-**CRITICAL: Prefer existing name spellings over transcript spellings.** Transcription tools frequently misspell names (e.g., "Kathy" vs "Cathy", "Shawn" vs "Sean"). When a name from the transcript is phonetically similar to an existing contact or known team member, ALWAYS use the spelling from the existing contact file or frontmatter. The contact files and frontmatter are the source of truth for how names are spelled — transcripts are not.
+**CRITICAL: Prefer existing name spellings over transcript spellings.** Transcription tools frequently misspell names (e.g., "Jon" vs "John", "Shawn" vs "Sean"). When a name from the transcript is phonetically similar to an existing contact or known team member, ALWAYS use the spelling from the existing contact file or frontmatter. The contact files and frontmatter are the source of truth for how names are spelled — transcripts are not.
 
 **4. Suggest Better Title (if needed)**
 If the meeting filename has a generic topic like "Call", "Check-in", or "Meeting", suggest a more descriptive title based on the actual content discussed. The title should be 1-3 words in Title Case that capture the primary topic (e.g., "Pricing Discussion", "Experimentation Demo", "Renewal Negotiation", "POV Kickoff"). If the existing title is already descriptive, return "unchanged".

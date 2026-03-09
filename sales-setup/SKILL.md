@@ -564,7 +564,7 @@ If `npm` is not found, tell the user: "Node.js is not installed. Install it via 
 
 Run:
 ```bash
-npm install -g @anthropic-ai/claude-code-playwright@latest
+npm install -g @playwright/cli@latest
 ```
 
 Verify installation:
