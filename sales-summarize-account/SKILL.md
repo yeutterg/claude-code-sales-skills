@@ -136,7 +136,11 @@ The frontmatter should have:
 
 **CRITICAL: Every name in the attendees array MUST use wiki-link format: `"[[Person Name]]"`.** If any existing attendees are listed as plain text (e.g., `"Person Name"`, `Person Name`, or `[Person Name]`), convert them to `"[[Person Name]]"`. This is required for Obsidian's dataview queries to work.
 
-Populate the attendees array with links for every person who actually PARTICIPATED in the call — both customer/account contacts AND {config.company} team members (AEs, SEs, CSMs, leadership, etc.). Use the transcript's participant/speaker list and the Notes section's people list as the source of truth for who was on the call. Do NOT add people who are merely mentioned or discussed during the call but were not actually present as participants. Update the meeting file if changes were made.
+Populate the attendees array with links for every person who actually PARTICIPATED in the call — both customer/account contacts AND {config.company} team members (AEs, SEs, CSMs, leadership, etc.). Use the transcript's participant/speaker list and the Notes section's people list as the source of truth for who was on the call. Do NOT add people who are merely mentioned or discussed during the call but were not actually present as participants.
+
+**Remove no-shows:** If someone is already in the attendees array but the transcript/notes show they did NOT participate (e.g., they were invited but didn't join, or the notes say they no-showed), remove them from the attendees array. The attendees list should reflect who was actually on the call, not who was invited.
+
+Update the meeting file if changes were made.
 
 **CRITICAL: Resolve first-name-only or ambiguous attendees to full names.** Transcripts and notes often refer to people by first name only (e.g., "Alex", "Cooper", "Dylan"). You MUST resolve these to full names before writing the attendees array:
 1. Check existing contact files in the account's `contacts/` folder for matches
