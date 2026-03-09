@@ -54,67 +54,99 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 
 **Usage:** `/sales-today [morning | evening]`
 
-Orchestrates the full daily sales workflow based on time of day. **Morning mode** (before noon) scans today's calendar, creates meeting notes, and processes any outstanding items from previous days (Gong imports, account summaries, Salesforce updates). **Evening mode** (noon or later) processes today's meetings end-to-end, then scans tomorrow's calendar. Automatically creates accounts for unrecognized external meetings and prompts the user to paste Salesforce and Gong URLs. On Friday evenings through Monday mornings, also runs the weekly portfolio review. Designed to run as a [scheduled task](#scheduled-task-setup).
+- **Morning** (before noon): scans today's calendar, creates meeting notes, processes outstanding items from previous days
+- **Evening** (noon or later): processes today's meetings (Gong, summaries, Salesforce), scans tomorrow's calendar
+- Friday evening through Monday morning: also runs `/sales-weekly`
+- Auto-creates accounts for unrecognized external meetings, prompts for Salesforce/Gong URLs
+- Designed to run as a [scheduled task](#scheduled-task-setup)
 
 ### `/sales-calendar`
 
 **Usage:** `/sales-calendar [week | next week | YYYY-MM-DD]`
 
-Scans Google Calendar for upcoming meetings, identifies which ones map to existing accounts, and automatically creates meeting notes and daily note entries. Classifies events as deal meetings, deal prep, internal meetings, or unrecognized external meetings, and suggests account creation for unrecognized companies. With no arguments, defaults to today (if morning) or tomorrow (if afternoon). Also supports a specific date or an entire week. Uses the Claude.ai built-in Google Calendar integration. Configure via `/sales-setup calendar`.
+- Scans Google Calendar, matches meetings to existing accounts, creates meeting notes and daily note entries
+- Classifies events: deal meetings, deal prep, internal, or unrecognized external
+- No arguments: defaults to today (morning) or tomorrow (afternoon)
+- Suggests `/sales-create-account` for unrecognized companies
+- Uses the Claude.ai built-in Google Calendar integration. Configure via `/sales-setup calendar`
 
 ### `/sales-create-account`
 
 **Usage:** `/sales-create-account <account name> [gong_url]`
 
-Creates a new account folder with the full directory structure (meetings, contacts, templates) and populates the business context section by searching the web for company info and recent news. Optionally accepts a Gong activity URL or Salesforce opportunity URL to link during creation. Triggers automatic Gong historical import if Playwright MCP is configured.
+- Creates account folder with full directory structure (meetings, contacts, templates)
+- Populates business context by searching the web for company info and recent news
+- Optionally accepts a Gong activity URL or Salesforce opportunity URL
+- Triggers automatic Gong historical import if Playwright MCP is configured
 
 ### `/sales-git`
 
 **Usage:** `/sales-git`
 
-Commits and pushes changes to the skills GitHub repo. Pulls latest upstream updates first, scans all SKILL.md files for proprietary information (customer names, staff names, contact names, hardcoded paths, Salesforce credentials) and auto-fixes any leaks before committing. Regenerates the README.md from skill frontmatter. Syncs changes to the public repo with `ld-` to `sales-` renaming.
+- Pulls latest upstream updates, scans SKILL.md files for proprietary information, auto-fixes leaks
+- Regenerates README.md from skill frontmatter
+- Commits, pushes, and syncs to public repo with `ld-` to `sales-` renaming
 
 ### `/sales-gong`
 
 **Usage:** `/sales-gong <account name> [gong_or_granola_url]`
 
-Imports call recordings into Obsidian meeting notes using Playwright MCP. Supports four modes: single Gong call import, Granola summary import, scan mode (matches existing meetings to unimported Gong recordings), and bulk import of all historical calls from a Gong activity page. Extracts attendees, briefs, and transcripts.
+- Imports call recordings into Obsidian meeting notes using Playwright MCP
+- Four modes: single Gong call, Granola summary, scan (match existing meetings to unimported recordings), bulk import
+- Extracts attendees, briefs, and transcripts
 
 ### `/sales-meeting`
 
 **Usage:** `/sales-meeting <account> [topic] [date]`
 
-Creates a meeting note file for a sales account and links it in today's daily note with a standard checklist (Gong transcript, summarize account, push to Salesforce, send stakeholder update). Supports creating multiple meetings at once with freeform date/topic input. Defaults topic to "Call" if not specified.
+- Creates a meeting note and links it in today's daily note with a standard checklist
+- Checklist: Gong transcript, summarize account, push to Salesforce, send stakeholder update
+- Supports creating multiple meetings at once with freeform date/topic input
 
 ### `/sales-review-learnings`
 
 **Usage:** `/sales-review-learnings`
 
-Reviews and acts on patterns discovered by `/sales-summarize-account` and `/sales-weekly`. Shows pending discoveries grouped by category (competitors, objections, feature requests, technical patterns, portfolio insights) and lets you keep, act on, or dismiss each item. Also surfaces model performance alerts and template drift (sections users frequently edit post-generation, suggesting the prompt should be updated).
+- Reviews patterns discovered by `/sales-summarize-account` and `/sales-weekly`
+- Groups by category: competitors, objections, feature requests, technical patterns, portfolio insights
+- Surfaces model performance alerts and template drift
 
 ### `/sales-salesforce`
 
 **Usage:** `/sales-salesforce <account>` or `scan <account>` or `scan open <account>` or `my accounts`
 
-Four modes: **Push** pushes the Salesforce Updates section to linked Opportunities via REST API. **Scan** imports all opportunities with historical deal context. **Scan open** pulls current deal context from open opportunities. **My accounts** discovers all open opportunities where you are the SE, cross-references with Obsidian, and onboards missing accounts.
+- **Push:** pushes Salesforce Updates section to linked Opportunities via REST API
+- **Scan:** imports all opportunities with historical deal context
+- **Scan open:** pulls current deal context from open opportunities
+- **My accounts:** discovers all open opportunities where you are the SE, onboards missing accounts
 
 ### `/sales-setup`
 
 **Usage:** `/sales-setup [salesforce | playwright | calendar]`
 
-Guided onboarding that walks through configuration: role, company, name, vault path, and company folder. Searches the web for your company's products and lets you review them. Creates a persistent config file at `~/.claude/skills/sales-config.md` that all other skills read at runtime. Optionally configures the Salesforce CLI (with custom field discovery), Playwright MCP, and Google Calendar (via the Claude.ai built-in integration in Claude Desktop). Re-run anytime to pull upstream updates.
+- Guided onboarding: role, company, name, vault path, company folder
+- Searches the web for your company's products and lets you review them
+- Creates persistent config at `~/.claude/skills/sales-config.md`
+- Optionally configures Salesforce CLI, Playwright MCP, and Google Calendar
+- Re-run anytime to pull upstream updates
 
 ### `/sales-summarize-account`
 
 **Usage:** `/sales-summarize-account <account name>`
 
-Processes all unsummarized meeting notes via parallel subagents, then aggregates findings into the main account file: deal ledger, MEDDPICC, Command of the Message, TECHMAPS, tech stack, architecture diagram, and Salesforce-ready updates. Enriches contacts with LinkedIn profiles. Includes self-improvement features: adaptive model selection based on past performance, pattern discovery (competitors, objections, feature requests), and template drift detection.
+- Processes unsummarized meeting notes via parallel subagents
+- Updates: deal ledger, MEDDPICC, Command of the Message, TECHMAPS, tech stack, architecture diagram, Salesforce updates
+- Enriches contacts with LinkedIn profiles
+- Adaptive model selection, pattern discovery, and template drift detection
 
 ### `/sales-weekly`
 
 **Usage:** `/sales-weekly`
 
-Portfolio-wide sweep of all accounts with open Salesforce opportunities. Pulls current deal context, auto-summarizes meetings that have transcripts but no summary, adds status ledger entries, and pushes updates to Salesforce. Includes a weekly retro phase that analyzes run quality, surfaces cross-account patterns (common competitors, objections, tech stacks), and queues discoveries for daily review. Designed to run autonomously at the end of the week.
+- Portfolio-wide sweep of all accounts with open Salesforce opportunities
+- Auto-summarizes meetings with transcripts, adds ledger entries, pushes to Salesforce
+- Weekly retro: cross-account patterns (competitors, objections, tech stacks), queues discoveries for review
+- Runs autonomously. Start it and walk away
 
 ## Skill Dependency Graph
 
