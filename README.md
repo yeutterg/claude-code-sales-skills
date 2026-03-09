@@ -121,43 +121,22 @@ Portfolio-wide sweep of all accounts with open Salesforce opportunities. Pulls c
 Shows which skills call other skills. `/sales-today` is the top-level orchestrator -- run it daily and it handles everything else.
 
 ```mermaid
-graph TD
+graph LR
     today["/sales-today"] --> calendar["/sales-calendar"]
-    today --> gong["/sales-gong"]
-    today --> summarize["/sales-summarize-account"]
-    today --> salesforce["/sales-salesforce"]
-    today --> create["/sales-create-account"]
+    today --> gong1["/sales-gong"]
+    today --> summarize1["/sales-summarize-account"]
+    today --> salesforce1["/sales-salesforce"]
+    today --> create1["/sales-create-account"]
     today --> weekly["/sales-weekly"]
 
-    calendar --> meeting["/sales-meeting"]
-    calendar --> create
-
-    gong --> meeting
-
-    weekly --> summarize
-    weekly --> salesforce
-    weekly --> create
-
-    create --> gong
-
-    setup["/sales-setup"] ~~~ today
-    git["/sales-git"] ~~~ setup
-    review["/sales-review-learnings"] ~~~ git
-
-    style today fill:#4a9eff,stroke:#333,color:#fff
-    style weekly fill:#9b59b6,stroke:#333,color:#fff
-    style calendar fill:#2ecc71,stroke:#333,color:#fff
-    style meeting fill:#f39c12,stroke:#333,color:#fff
-    style gong fill:#e74c3c,stroke:#333,color:#fff
-    style summarize fill:#1abc9c,stroke:#333,color:#fff
-    style salesforce fill:#3498db,stroke:#333,color:#fff
-    style create fill:#e67e22,stroke:#333,color:#fff
-    style setup fill:#95a5a6,stroke:#333,color:#fff
-    style git fill:#95a5a6,stroke:#333,color:#fff
-    style review fill:#95a5a6,stroke:#333,color:#fff
+    calendar --> meeting1["/sales-meeting"]
+    calendar --> create2["/sales-create-account"]
+    gong1 --> meeting2["/sales-meeting"]
+    weekly --> summarize2["/sales-summarize-account"]
+    weekly --> salesforce2["/sales-salesforce"]
+    weekly --> create3["/sales-create-account"]
+    create1 --> gong2["/sales-gong"]
 ```
-
-**Legend:** Blue = orchestrators, Green = calendar, Orange/Yellow = account & meeting creation, Red = Gong import, Teal/Blue = processing & sync, Gray = utility/config
 
 ## Prerequisites
 
