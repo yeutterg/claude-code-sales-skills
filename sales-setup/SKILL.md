@@ -266,7 +266,7 @@ mkdir -p "{VAULT_PATH}/{COMPANY_FOLDER}/Accounts"
 
 ### Step 8: Migrate Old Commands
 
-Check if `~/.claude/commands/` contains any `ld-*.md` files:
+Check if `~/.claude/commands/` contains any `sales-*.md` files:
 
 ```bash
 ls ~/.claude/commands/sales-*.md 2>/dev/null
