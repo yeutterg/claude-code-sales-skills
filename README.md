@@ -38,7 +38,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 
 | Skill | Description |
 |-------|-------------|
-| `/sales-today` | Daily sales workflow: morning prep or evening wrap-up with calendar scan, AE exec summaries, coaching tips, Gong imports, account summaries, and Salesforce updates |
+| `/sales-today` | Daily sales workflow: morning prep or evening wrap-up with calendar scan, objective-first AE exec summaries, yesterday's recap, coaching tips, Gong imports, account summaries, and Salesforce updates |
 | `/sales-calendar` | Scan Google Calendar for upcoming meetings, match them to accounts, extract agendas, generate targeted questions, and auto-create meeting notes |
 | `/sales-create-account` | Create a new account folder, populate business context, and auto-import from Salesforce and Gong |
 | `/sales-git` | Commit and push skill changes and auto-regenerate the README |
@@ -57,7 +57,8 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 - **Morning** (before noon): scans today's calendar, creates meeting notes, generates per-AE exec summaries with deal insights, adds a daily coaching tip, processes outstanding items from previous days
 - **Evening** (noon or later): processes today's meetings (Gong, summaries, Salesforce), scans tomorrow's calendar, generates exec summaries for tomorrow
 - **`no gong` flag**: Skip all Gong import steps (useful for automated/scheduled runs where Gong auth may not be available). Can be combined with morning/evening.
-- **AE Exec Summaries**: Groups deal meetings by AE and generates a Slack-ready briefing per AE — attendee-aware with roles and past participation, concise 3-4 bullets per account, Slack-compatible markdown (`*bold*`)
+- **AE Exec Summaries**: Groups deal meetings by AE and generates a Slack-ready briefing per AE. Objective-first format (every account starts with `*OBJECTIVE:*`), attendee annotations with MEDDPICC roles (Champion, EB, Detractor), LinkedIn hyperlinks for contacts, fenced code blocks for clean copy-paste into Slack
+- **Yesterday's Recap**: Includes a per-AE recap of the previous day's deal meetings with key outcomes and deal changes
 - **Coaching Tip**: Analyzes recent meeting transcripts and surfaces one specific, actionable improvement to try on today's calls
 - Friday evening through Monday morning: also runs `/sales-weekly`
 - Auto-creates accounts for unrecognized external meetings, prompts for Salesforce/Gong URLs

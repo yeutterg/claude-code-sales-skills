@@ -29,9 +29,9 @@ Check `$ARGUMENTS`:
 
 ### Step 1: Detect Repo and Check for Updates
 
-Determine the repo path by finding where this skill file lives. The repo root is the parent directory of the `sales-setup/` folder — e.g., if this skill is at `~/repos/claude-code-sales-skills/sales-setup/SKILL.md`, the repo root is `~/repos/claude-code-sales-skills/`.
+Determine the repo path by finding where this skill file lives. The repo root is the parent directory of the `ld-setup/` folder — e.g., if this skill is at `~/repos/claude-code-obsidian-commands/sales-setup/SKILL.md`, the repo root is `~/repos/claude-code-obsidian-commands/`.
 
-Verify the repo root contains `sales-*/SKILL.md` files. If not, report an error and stop.
+Verify the repo root contains `ld-*/SKILL.md` files. If not, report an error and stop.
 
 **Check for upstream updates:**
 
@@ -233,7 +233,7 @@ If the config already existed, preserve the `salesforce_username`, `salesforce_i
 
 ### Step 6: Create Symlinks
 
-Create symlinks from `~/.claude/skills/` to each `sales-*` directory in the repo:
+Create symlinks from `~/.claude/skills/` to each `ld-*` directory in the repo:
 
 ```bash
 mkdir -p ~/.claude/skills
@@ -266,7 +266,7 @@ mkdir -p "{VAULT_PATH}/{COMPANY_FOLDER}/Accounts"
 
 ### Step 8: Migrate Old Commands
 
-Check if `~/.claude/commands/` contains any `sales-*.md` files:
+Check if `~/.claude/commands/` contains any `ld-*.md` files:
 
 ```bash
 ls ~/.claude/commands/sales-*.md 2>/dev/null

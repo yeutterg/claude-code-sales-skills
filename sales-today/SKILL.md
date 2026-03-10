@@ -89,7 +89,7 @@ After the calendar scan, generate a short exec summary for each AE who has deal 
    - **MEDDPICC/TECHMAPS gaps relevant to these attendees**: Only flag gaps that the people on the call can actually address. A technical IC can't answer Paper Process questions. A VP can't answer SDK integration questions. Match gaps to attendee roles.
    - **Deal-moving actions**: Based on the account state and who's on the call, identify 1-2 things that would advance the deal.
 
-3. **Write max 3-4 concise bullet points per account.** Each bullet should be actionable, specific, and relevant to the attendees. Avoid generic advice. Shorter is better — these get copy-pasted into Slack.
+3. **Write max 3-4 concise bullet points per account.** The *first bullet must always be the single biggest objective for the call* — what we absolutely need to walk away with. Remaining bullets are supporting context. Each bullet should be actionable, specific, and relevant to the attendees. Avoid generic advice. Shorter is better — these get copy-pasted into Slack.
 
 **Add to daily note:**
 
@@ -98,37 +98,95 @@ Insert a new section `## AE Exec Summaries` in the daily note, **after** `## Mee
 **IMPORTANT — Slack-compatible formatting:** The blockquote content will be copied from Obsidian into Slack. Use Slack-compatible markdown:
 - `*bold*` for emphasis (Slack uses single asterisks, not double)
 - `-` for bullet lists
+- No em dashes (`—`). Use colons, periods, or line breaks instead.
 - No wiki-links or Obsidian-specific syntax inside the blockquote
+- Use bold liberally to make objectives and key names scannable
 
-```
+````
 ## AE Exec Summaries
 ### {AE Name}
 - [ ] Send exec summary to [[{AE Name}]]
-> *{Account 1}* — {meeting topic}, {time}
-> Attendees: {Name} ({Role}), {Name} ({Role})
-> - {Agenda or context, if available}
-> - {Insight tied to who's on the call — e.g., "Last time we met with Sarah she flagged X — follow up on that"}
-> - {Gap or action relevant to attendee roles}
->
-> *{Account 2}* — {meeting topic}, {time}
-> Attendees: {Name} ({Role})
-> - {Concise insight}
-> - {Deal-moving action}
+```markdown
+Prep for {Day of Week}, {Mon} {Date}
+
+*{Account 1}* | {meeting topic}, {time}
+Attendees: [{Name}]({linkedin_url}) ({Role}, Champion), *{Name}* ({Role}, EB)
+- *OBJECTIVE:* {The single most important thing we need from this call}
+- {Supporting context or insight tied to who's on the call}
+- {Gap or action relevant to attendee roles}
+
+*{Account 2}* | {meeting topic}, {time}
+Attendees: *{Name}* ({Role}, Detractor)
+- *OBJECTIVE:* {What we need to walk away with}
+- {Supporting insight}
+```
 
 ### {AE Name 2}
 - [ ] Send exec summary to [[{AE Name 2}]]
-> *{Account 3}* — {meeting topic}, {time}
-> Attendees: {Name} ({Role}), {Name} ({Role})
-> - ...
+```markdown
+Prep for {Day of Week}, {Mon} {Date}
+
+*{Account 3}* | {meeting topic}, {time}
+Attendees: [{Name}]({linkedin_url}) ({Role})
+- *OBJECTIVE:* ...
+- ...
 ```
+````
 
 **Formatting rules:**
-- Use a Markdown blockquote (`>`) for the summary body so it's easy to select and copy into Slack
-- Use Slack markdown inside blockquotes: `*bold*` (single asterisk), `-` for lists
-- Start each account with attendee names and roles so the AE knows who to expect
-- Keep bullets short and punchy — one line each, no sub-bullets, max 3-4 per account
+- Wrap each AE's summary content in a ` ```markdown ` fenced code block. This preserves Slack markdown as raw text in Obsidian while providing syntax highlighting for readability. Copy-paste the block content directly into Slack.
+- Use Slack markdown inside code blocks: `*bold*` (single asterisk), `-` for lists
+- *First bullet is always the call objective* in bold (`*OBJECTIVE:*`). This is the single biggest thing we need from this meeting. Be specific: "Get Lee to commit to workshop date" not "Discuss next steps."
+- No em dashes (`—`). Use colons, periods, pipes, or line breaks instead.
+- Use `|` as a separator in the account header line (not em dash)
+- **Times must be in Pacific time** (PT). When reading calendar events, use `timeZone: America/Los_Angeles` and append "PT" to times in the summary (e.g., "10:30 AM PT").
+- Bold key names, amounts, dates, and action items so the summary is scannable
+- **Attendee annotations:** After each attendee's role, add their MEDDPICC role in parentheses if they are an Economic Buyer (EB), Champion, Coach, or Detractor. Only add the label if it applies. Examples: `*Holly Clark* (Sr TPM, Champion)`, `*Jeff Doll* (VP Platform Eng, EB)`, `*Michelle Ryals* (Dir Platform Eng, Detractor)`. If the person has no special MEDDPICC role, just show name and title.
+- **LinkedIn hyperlinks:** If a contact has a `linkedin` field in their contact file, hyperlink their name using standard markdown link format: `[Name](https://linkedin.com/in/person)`. Slack renders these as clickable links when pasted. If no LinkedIn URL exists, just bold the name: `*Name*`.
+- **List ALL attendees** from the calendar event, both internal (LD team) and external (customer). Include everyone so the AE knows exactly who will be in the room.
+- Start each account with the full attendee list with roles
+- Keep bullets short and punchy. One line each, no sub-bullets, max 3-4 per account
 - Tailor insights to the attendees. If a VP is on the call, focus on business value and decision process. If an engineer is on the call, focus on technical gaps and integration questions. Don't suggest asking an IC about budget or a VP about SDK configuration.
-- Reference past interactions with these specific people when possible ("Last call with {Name}, they mentioned X — follow up")
+- Reference past interactions with these specific people when possible ("Last call with {Name}, they mentioned X. Follow up.")
+
+#### Yesterday's Recap
+
+After the prep section for the upcoming day, add a recap of the previous day's deal meetings. This goes in the same `## AE Exec Summaries` section, after all the prep blocks.
+
+**How to build the recap:**
+
+1. Read the previous day's daily note. Find all deal meetings that occurred (under `## Meetings`).
+2. For each meeting, read the meeting note (summary, notes, transcript) and the account's latest ledger entry.
+3. Write 1-5 concise bullets per account focused on: what changed in the deal, key learnings, new risks or wins, and next steps committed.
+
+**Format in daily note:**
+
+````
+### Yesterday's Recap
+#### {AE Name}
+```markdown
+Recap for {Day of Week}, {Mon} {Date}
+
+*{Account 1}* | {meeting topic}
+- {Key outcome or learning}
+- {Deal change: new stakeholder, risk surfaced, next step locked, etc.}
+```
+
+#### {AE Name 2}
+```markdown
+Recap for {Day of Week}, {Mon} {Date}
+
+*{Account 2}* | {meeting topic}
+- {One-liner if nothing major changed}
+```
+````
+
+**Recap rules:**
+- Group recaps by AE, same as prep summaries. Each AE gets their own `#### {AE Name}` heading and ` ```markdown ` code block so it can be copy-pasted individually.
+- Be very concise. 1 bullet if nothing notable happened, up to 5 if the deal moved significantly.
+- Focus on *what changed* and *what we learned*, not a rehash of the agenda.
+- If a meeting had no notes or transcript yet, note that: "No notes captured yet."
+- Include the recap even in morning mode (recap yesterday) and evening mode (recap today).
 
 #### Coaching Tip
 
