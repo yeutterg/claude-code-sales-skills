@@ -71,7 +71,89 @@ For each unrecognized meeting:
 
 Do NOT run `/sales-gong`, `/sales-summarize-account`, or `/sales-salesforce` for new accounts — the user needs to paste the Salesforce and Gong URLs first.
 
-### Morning Step 3: Process Outstanding Items from Previous Days
+### Morning Step 3: Generate AE Exec Summaries
+
+After the calendar scan, generate a short exec summary for each AE who has deal meetings scheduled. These summaries help the user prep their AEs before calls.
+
+**How to build the summaries:**
+
+1. **Group today's deal meetings by AE**: For each deal meeting created in Step 1, read the account frontmatter `ae` field. Group all accounts under the same AE.
+
+2. **For each account, read the account file** (`{Account}.md`) and extract:
+   - **TECHMAPS sections**: Check for gaps — are any TECHMAPS fields empty or marked as unknown? Flag these as "Missing from tech maps: {field}" (e.g., "Missing from tech maps: Environment, Validation Plan")
+   - **Agenda from calendar**: `/sales-calendar` extracts agenda from the calendar event description (Step 2b). Include the agenda if present: "Agenda: {agenda summary}"
+   - **Key unreached insights**: Look at MEDDPICC fields for gaps — particularly Economic Buyer, Decision Process, Paper Process, Metrics, and Champion. If these are empty or thin, suggest probing questions. Also check the Ledger for patterns that haven't been explored.
+   - **Deal-moving actions**: Based on the account state, identify 1-2 things that would advance the deal (e.g., "Need to confirm POC timeline", "Champion hasn't introduced us to EB yet", "No technical validation plan defined")
+
+3. **Write max 5 short bullet points per account.** Each bullet should be actionable and specific. Avoid generic advice.
+
+**Add to daily note:**
+
+Insert a new section `## AE Exec Summaries` in the daily note, **after** `## Meetings`. Format it as a Slack-ready text block per AE with a checkbox to send:
+
+```
+## AE Exec Summaries
+### {AE Name}
+- [ ] Send exec summary to [[{AE Name}]]
+> **{Account 1}** ({meeting topic}, {time})
+> - Missing from tech maps: Environment, Validation Plan
+> - Agenda: Review POC results and discuss production rollout
+> - Champion hasn't introduced us to economic buyer yet
+> - Need to confirm decision timeline before EOQ
+>
+> **{Account 2}** ({meeting topic}, {time})
+> - No technical blockers identified — ask about integration concerns
+> - Agenda: Experimentation deep-dive
+> - Decision criteria not documented — clarify what "success" looks like
+> - Competitor (Split) mentioned in last call — probe current eval status
+
+### {AE Name 2}
+- [ ] Send exec summary to [[{AE Name 2}]]
+> **{Account 3}** ({meeting topic}, {time})
+> - ...
+```
+
+**Formatting rules:**
+- Use a Markdown blockquote (`>`) for the summary body so it's easy to select and copy into Slack
+- Bold the account name, include meeting topic and time in parentheses
+- Keep bullets short — one line each, no sub-bullets
+- If an AE has only one account meeting, still use the same format
+- If an account has no gaps in TECHMAPS/MEDDPICC and no agenda, still include 1-2 bullets about what to listen for or confirm
+
+#### Coaching Tip
+
+While reading account files and meeting history for the exec summaries, also generate **one coaching tip** for the user. Add it to the daily note inside the `## Meetings` section, right after the section heading and before any subsection (`### Today`, etc.).
+
+**How to generate the tip:**
+
+Review recent meeting notes (transcripts, summaries, external summaries) across the accounts on today's schedule. Look for one concrete, specific thing the user could improve:
+
+- **Verbal patterns**: Filler words, talking over the customer, jumping to solutioning before fully understanding the problem, not pausing after asking a question
+- **Discovery technique**: Asking closed questions when open ones would uncover more, not following up on pain statements, missing opportunities to quantify business impact
+- **Demo/technical flow**: Spending too long on setup before showing value, not tying features back to stated pain, skipping the "so what" after a capability demo
+- **Meeting management**: Not setting an agenda upfront, not confirming next steps at the end, not assigning owners to action items
+- **Stakeholder engagement**: Not asking who else should be involved, not confirming the champion's priorities, not validating assumptions from previous calls
+- **Competitive handling**: Dismissing competitors instead of acknowledging and differentiating, not probing what the customer liked about a competitor
+
+Pick the **single most impactful** observation. If there aren't enough transcripts to find a real pattern, base it on the types of meetings scheduled today (e.g., "Discovery calls are most effective when you let the customer describe their current workflow before introducing any product concepts").
+
+**Format in daily note:**
+
+```
+## Meetings
+> [!tip] Coaching
+> {One specific, actionable sentence. No generic advice — reference a real pattern observed or a technique relevant to today's meeting types.}
+### Today
+...
+```
+
+**Rules:**
+- Exactly one tip per day — keep it focused
+- Never repeat the same tip on consecutive days (check previous daily notes if they exist)
+- Be specific and constructive, not vague ("Try pausing 3 seconds after asking about their decision process — in the last Acme call you jumped in before they finished answering" is good; "Ask better questions" is bad)
+- If no transcripts exist yet (new user or new accounts), tailor the tip to the meeting types on the schedule
+
+### Morning Step 4: Process Outstanding Items from Previous Days
 
 Read the current daily note. Look for any **deal meeting entries from previous daily notes** that have been carried forward with unchecked items. These are entries under `### Past` in the `## Meetings` section.
 
@@ -85,11 +167,11 @@ Process accounts in parallel using subagents where possible.
 
 Skip any account where the "Paste Salesforce Opportunity URL" or "Paste Gong Activity URL" checkboxes exist and are unchecked — the user hasn't provided the URLs yet.
 
-### Morning Step 4: Weekly Review (if applicable)
+### Morning Step 5: Weekly Review (if applicable)
 
 If `run_weekly` is true, run `/sales-weekly`.
 
-### Morning Step 5: Report
+### Morning Step 6: Report
 
 Output a summary:
 ```
@@ -139,11 +221,17 @@ This creates meeting notes and daily note entries for tomorrow's meetings.
 
 Same as Morning Step 2 — create accounts for unrecognized external meetings and add the URL-paste checklist items.
 
-### Evening Step 4: Weekly Review (if applicable)
+### Evening Step 4: Generate AE Exec Summaries for Tomorrow
+
+Same as Morning Step 3, but for tomorrow's deal meetings. Generate exec summaries for each AE with accounts scheduled for tomorrow.
+
+Add the `## AE Exec Summaries` section to **tomorrow's** daily note (since that's the day the meetings are on), using the same format as Morning Step 3.
+
+### Evening Step 5: Weekly Review (if applicable)
 
 If `run_weekly` is true, run `/sales-weekly`.
 
-### Evening Step 5: Report
+### Evening Step 6: Report
 
 Output a summary:
 ```

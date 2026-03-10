@@ -76,6 +76,7 @@ attendees: []
 ## Tasks
 - [ ]
 ## Summary
+## Agenda
 ## Attendees
 ```dataview
 TABLE WITHOUT ID file.link AS "Name", default(account, team) AS "Company/Team", role AS "Role", notes AS "Notes"
@@ -86,9 +87,6 @@ WHERE contains(this.attendees, file.link)
 | ---- | ---- | ----- |
 |      |      |       |
 ## Notes
-### Key Discussion Points
-### Technical Details
-### Next Steps
 ## External Summary
 ## Transcript
 ```

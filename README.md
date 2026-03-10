@@ -38,8 +38,8 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 
 | Skill | Description |
 |-------|-------------|
-| `/sales-today` | Daily sales workflow: morning prep or evening wrap-up with calendar scan, Gong imports, account summaries, and Salesforce updates |
-| `/sales-calendar` | Scan Google Calendar for upcoming meetings, match them to accounts, and auto-create meeting notes via /sales-meeting |
+| `/sales-today` | Daily sales workflow: morning prep or evening wrap-up with calendar scan, AE exec summaries, coaching tips, Gong imports, account summaries, and Salesforce updates |
+| `/sales-calendar` | Scan Google Calendar for upcoming meetings, match them to accounts, extract agendas, generate targeted questions, and auto-create meeting notes |
 | `/sales-create-account` | Create a new account folder, populate business context, and auto-import from Salesforce and Gong |
 | `/sales-git` | Commit and push skill changes and auto-regenerate the README |
 | `/sales-gong` | Import Gong calls or Granola meetings into Obsidian meeting notes, or bulk import all calls for an account |
@@ -48,14 +48,16 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 | `/sales-salesforce` | Push SE Status to Salesforce, scan accounts for opportunities and deal context, or discover all your open opportunities across Salesforce |
 | `/sales-setup` | Post-clone setup: configure vault path, name, role, company, symlinks, and optional Salesforce CLI / Playwright CLI / Google Calendar |
 | `/sales-summarize-account` | Summarize all meeting notes, update MEDDPICC/TECHMAPS/CoM, enrich contacts, refresh business context |
-| `/sales-weekly` | Weekly review of all accounts with open Salesforce opportunities. Pulls deal context, summarizes activity, updates ledgers and Salesforce |
+| `/sales-weekly` | Weekly review of all accounts with open Salesforce opportunities. Pulls deal context, scores deal health (Red/Yellow/Green), summarizes activity, updates ledgers and Salesforce |
 
 ### `/sales-today`
 
 **Usage:** `/sales-today [morning | evening]`
 
-- **Morning** (before noon): scans today's calendar, creates meeting notes, processes outstanding items from previous days
-- **Evening** (noon or later): processes today's meetings (Gong, summaries, Salesforce), scans tomorrow's calendar
+- **Morning** (before noon): scans today's calendar, creates meeting notes, generates per-AE exec summaries with deal insights, adds a daily coaching tip, processes outstanding items from previous days
+- **Evening** (noon or later): processes today's meetings (Gong, summaries, Salesforce), scans tomorrow's calendar, generates exec summaries for tomorrow
+- **AE Exec Summaries**: Groups deal meetings by AE and generates a Slack-ready briefing per AE with up to 5 bullet points per account (TECHMAPS/MEDDPICC gaps, calendar agenda, competitive intel, deal-moving actions)
+- **Coaching Tip**: Analyzes recent meeting transcripts and surfaces one specific, actionable improvement to try on today's calls
 - Friday evening through Monday morning: also runs `/sales-weekly`
 - Auto-creates accounts for unrecognized external meetings, prompts for Salesforce/Gong URLs
 - Designed to run as a [scheduled task](#scheduled-task-setup)
@@ -65,6 +67,9 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 **Usage:** `/sales-calendar [week | next week | YYYY-MM-DD]`
 
 - Scans Google Calendar, matches meetings to existing accounts, creates meeting notes and daily note entries
+- Extracts agendas from calendar event descriptions (strips video conferencing boilerplate, preserves meaningful content)
+- Generates 3-5 targeted questions per meeting based on MEDDPICC/TECHMAPS gaps, meeting type, and deal stage
+- Adds competitive intelligence questions based on competitor mentions in the account and cross-account learnings
 - Classifies events: deal meetings, deal prep, internal, or unrecognized external
 - No arguments: defaults to today (morning) or tomorrow (afternoon)
 - Suggests `/sales-create-account` for unrecognized companies
@@ -148,6 +153,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 **Usage:** `/sales-weekly`
 
 - Portfolio-wide sweep of all accounts with open Salesforce opportunities
+- **Deal Risk Radar**: Scores each open opportunity as Green/Yellow/Red based on 9 signals (champion engagement, stage velocity, stakeholder breadth, competitive pressure, etc.). Pushes health score to Salesforce if configured
 - Auto-summarizes meetings with transcripts, adds ledger entries, pushes to Salesforce
 - Weekly retro: cross-account patterns (competitors, objections, tech stacks), queues discoveries for review
 - Runs autonomously. Start it and walk away
@@ -277,9 +283,11 @@ The recommended way to use these skills is to run `/sales-today` as a daily sche
 - Imports Gong transcripts for today's meetings
 - Summarizes accounts with new meeting data
 - Pushes updates to Salesforce
-- Scans tomorrow's calendar and creates meeting notes
+- Scans tomorrow's calendar and creates meeting notes (with agendas, targeted questions, and competitive intel)
+- Generates per-AE exec summaries with deal insights for tomorrow's meetings
+- Adds a daily coaching tip based on recent call patterns
 - Creates accounts for any new companies (prompts you to add Salesforce/Gong URLs)
-- Runs `/sales-weekly` on Friday evenings
+- Runs `/sales-weekly` on Friday evenings (includes Deal Risk Radar with Red/Yellow/Green scoring)
 
 You can also run `/sales-today` manually at any time. It detects morning vs. evening mode automatically.
 
@@ -398,8 +406,11 @@ Here are some directions you could take this:
 
 - **Gong API integration:** `/sales-gong` currently uses Playwright CLI for browser automation. A native Gong API or MCP server integration would be faster and more reliable
 - ~~**Google Calendar integration**~~ (done)
-- **Competitive intelligence:** Add a skill that searches for competitor mentions across all account meetings and builds a comparison matrix
+- ~~**Competitive intelligence**~~ (done — `/sales-calendar` now generates competitive probing questions from cross-account learnings)
+- ~~**Deal health scoring**~~ (done — `/sales-weekly` scores deals Red/Yellow/Green and pushes to Salesforce)
 - **Pipeline dashboard:** Create a skill that reads all account files and generates a summary table with deal stage, next call, and MEDDPICC completeness
+- **Stakeholder map gaps:** Analyze contacts and MEDDPICC to identify missing personas (e.g., no Economic Buyer contact, single-threaded deals)
+- **Win/loss pattern matching:** Compare new account profiles against past accounts to surface winning strategies and common failure modes
 - **POV tracking:** Add a skill for managing proof-of-value timelines, success criteria, and milestone tracking
 - **Email drafts:** Generate follow-up emails or internal updates from the latest meeting summary and next steps
 - **Email and Slack context:** Pull in relevant email threads and Slack messages as additional context for account summaries, using MCP servers for [Gmail](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md) and [Slack](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md)

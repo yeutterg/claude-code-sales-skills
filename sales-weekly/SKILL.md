@@ -13,7 +13,7 @@ You are running a weekly account review for: $SE_NAME
 
 ### Pre-check: Read Config
 
-Read `~/.claude/skills/sales-config.md` and extract: `vault_path`, `company_folder`, `name`, `initials`, `company`, `salesforce_username`, `salesforce_instance_url`, `salesforce_se_status_field`, `salesforce_custom_fields`. Use these values throughout the rest of this skill wherever `{config.*}` placeholders appear.
+Read `~/.claude/skills/sales-config.md` and extract: `vault_path`, `company_folder`, `name`, `initials`, `company`, `salesforce_username`, `salesforce_instance_url`, `salesforce_se_status_field`, `salesforce_deal_health_field`, `salesforce_custom_fields`. Use these values throughout the rest of this skill wherever `{config.*}` placeholders appear.
 
 ### Pre-check
 
@@ -186,7 +186,52 @@ Extract the full content of the (now-updated) code block from `## Salesforce Upd
    {"{config.salesforce_se_status_field}": "{html_content}"}
    ```
 
-### Step 5: Return Results
+### Step 5: Deal Health Assessment
+
+Score each open opportunity as **Green**, **Yellow**, or **Red** based on deal signals. This is a holistic assessment, not a formula — use judgment informed by the data.
+
+**Signals to evaluate:**
+
+| Signal | Green | Yellow | Red |
+|--------|-------|--------|-----|
+| Days since last meeting | < 14 days | 14-30 days | 30+ days |
+| Champion engagement | Active, responding | Slowing down, delayed responses | Dark, no-shows, unresponsive |
+| MEDDPICC completeness | Most fields populated | Key gaps (EB, Decision Process) | Major gaps across multiple fields |
+| Stage velocity | Progressing on schedule | Stalled but explainable | Stuck for 30+ days with no movement |
+| Close date | On track or moved in | Pushed once | Pushed multiple times |
+| Stakeholder breadth | Multi-threaded (3+ contacts) | 2 contacts | Single-threaded |
+| Technical validation | POV complete or scheduled | POV delayed but planned | No technical validation path defined |
+| Competitive pressure | No active competitor or we're preferred | Competitor in evaluation | Competitor is incumbent or preferred |
+| Next steps clarity | Clear next step with date/owner | Vague next step | No next steps defined |
+
+**Scoring logic:**
+- **Green**: Deal is progressing well. Most signals are positive. Champion is engaged, timeline is on track.
+- **Yellow**: Deal has 1-2 risk signals that need attention but is still viable. Typical: slowing momentum, a key gap in MEDDPICC, or a pushed close date.
+- **Red**: Deal has multiple risk signals. Typical: champion gone dark, stalled 30+ days, single-threaded with no EB access, or competitor is winning.
+
+**One-line justification**: Write a short explanation for the score (max ~15 words). This goes into Salesforce and the ledger.
+
+Examples:
+- Green: "Champion engaged, POV scheduled for 3/20, no blockers."
+- Yellow: "Close date pushed from 3/15 to 4/30. Waiting on budget approval."
+- Red: "No contact in 28 days. Champion left the company. Single-threaded."
+
+**Push to Salesforce (if configured):**
+
+If `{config.salesforce_deal_health_field}` is set in the config:
+1. For each open opportunity, PATCH the health field via REST API:
+   ```
+   PATCH {instance_url}/services/data/v62.0/sobjects/Opportunity/{id}
+   Authorization: Bearer {token}
+   Content-Type: application/json
+   {"{config.salesforce_deal_health_field}": "{Green|Yellow|Red}"}
+   ```
+
+If `salesforce_deal_health_field` is NOT set in config, skip the Salesforce push but still include the health score in the return data and the ledger status entry.
+
+**Update ledger status entry**: Append the health color to the status entry from Step 3. Format: `- M/D {initials} (status): 🟢/🟡/🔴 {justification}`
+
+### Step 6: Return Results
 
 Return EXACTLY this format:
 
@@ -195,9 +240,11 @@ ACCOUNT: {name}
 STATUS: {processed|needs_input|no_open_opps|error}
 OPEN_OPPS: {count}
 OPP_DETAILS: {opp name | stage | amount | close date | forecast — one per line}
+DEAL_HEALTH: {Green|Yellow|Red} — {justification}
+DEAL_HEALTH_PUSHED: {yes|no|not configured}
 AUTO_SUMMARIZED: {yes — N meetings | no}
 UNSUMMARIZED_MEETINGS: {list of filenames that still need input, or "none"}
-LEDGER_ENTRY: {the status entry that was added/updated}
+LEDGER_ENTRY: {the status entry that was added/updated, now including health color}
 SF_PUSH: {success count}/{total count} or "skipped"
 CLOSED_OPPS: {any opps that were found to be closed, or "none"}
 NEW_COMPETITORS: {any new competitors found during auto-summarization, or "none"}
@@ -218,10 +265,34 @@ After all subagents complete, collect their results and build the final report.
 For each account with STATUS=processed:
 
 ```
-| Account | Stage | Amount | Close | Forecast | Status Entry | SF Push |
-|---------|-------|--------|-------|----------|--------------|---------|
-| Acme    | Tech Eval | $50K | 3/15 | Commit | In Tech Eval. Demo 3/12. | 1/1 |
+| Account | Health | Stage | Amount | Close | Forecast | Status Entry | SF Push |
+|---------|--------|-------|--------|-------|----------|--------------|---------|
+| Acme    | 🟢     | Tech Eval | $50K | 3/15 | Commit | In Tech Eval. Demo 3/12. | 1/1 |
+| Globex  | 🔴     | Discovery | $100K | 3/30 | Pipeline | No contact in 28 days. | 1/1 |
 ```
+
+#### Deal Risk Radar
+
+Show the top risk accounts first (Red, then Yellow). This is the "what needs my attention" view:
+
+```
+## Deal Risk Radar
+
+🔴 Red — Needs Immediate Attention
+| Account | Stage | Amount | Close | Why |
+|---------|-------|--------|-------|-----|
+| Globex  | Discovery | $100K | 3/30 | No contact in 28 days. Champion left. |
+
+🟡 Yellow — Watch Closely
+| Account | Stage | Amount | Close | Why |
+|---------|-------|--------|-------|-----|
+| Initech | Tech Eval | $75K | 4/15 | Close date pushed twice. Waiting on budget. |
+
+🟢 Green — On Track
+Acme Corp, NewCo, BigBank (all progressing normally)
+```
+
+If `salesforce_deal_health_field` is configured, note: "Deal health scores pushed to Salesforce (`{field_name}`)."
 
 #### Accounts Auto-Summarized
 

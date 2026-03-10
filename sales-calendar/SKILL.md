@@ -67,6 +67,17 @@ Call `mcp__claude_ai_Google_Calendar__gcal_list_events` with:
 - Events that are cancelled
 - Events with summary "Busy" (Notion Calendar blocks)
 
+#### 2b: Extract Event Agenda
+
+For each event that passes the filter, check the event `description` field for agenda content. Calendar event descriptions often contain meeting agendas, discussion topics, or context set by the organizer.
+
+**Extraction rules:**
+- If the event has a `description` field with substantive content (not just a video call link or "Join Zoom Meeting" boilerplate), extract it as the event's **agenda**
+- Strip out video conferencing boilerplate (Zoom/Teams/Google Meet join links, dial-in numbers, passcodes, "Do not edit this section" blocks)
+- Strip out HTML tags — convert to plain text
+- Preserve the meaningful content: agenda items, discussion topics, goals, context, links to documents
+- Store the extracted agenda with the event for use in Step 4 (meeting note creation) and for the exec summary in `/sales-today`
+
 ### Step 3: Classify Each Event
 
 For each remaining event, classify it into one of these categories:
@@ -122,6 +133,10 @@ attendees:
 ## Tasks
 - [ ]
 ## Summary
+## Agenda
+{If the event had an extracted agenda from Step 2b, insert it here as bullet points. Otherwise, leave this section empty.}
+### Questions to Ask
+{Generated questions — see Step 4, substep 4a/4b below.}
 ## Attendees
 ```dataview
 TABLE WITHOUT ID file.link AS "Name", default(account, team) AS "Company/Team", role AS "Role", notes AS "Notes"
@@ -132,9 +147,6 @@ WHERE contains(this.attendees, file.link)
 | ---- | ---- | ----- |
 |      |      |       |
 ## Notes
-### Key Discussion Points
-### Technical Details
-### Next Steps
 ## External Summary
 ## Transcript
 ```
@@ -145,12 +157,27 @@ WHERE contains(this.attendees, file.link)
    - Add as `"[[Display Name]]"` in the frontmatter attendees list
    - Also fill in the "New Customer Contacts" table with Name and any info available
 
-4. **Update daily note** following `/sales-meeting` Step 5 rules:
+4. **Generate questions and competitive context**: After creating the meeting file and reading the account file (for attendees/frontmatter), populate the `### Questions to Ask` section:
+
+   **4a. Question bank** — Read the account file's MEDDPICC, TECHMAPS, and Command of the Message sections. Generate 3-5 targeted questions based on:
+   - **MEDDPICC gaps**: Empty or thin fields → generate discovery questions (e.g., empty Decision Process → "Who else needs to evaluate this, and what does your approval process look like?")
+   - **TECHMAPS gaps**: Missing technical details → generate technical discovery questions (e.g., empty Environment → "Can you walk us through your current deployment pipeline and infrastructure?")
+   - **Meeting type**: Tailor questions to the meeting topic. Discovery calls need open-ended pain questions. Technical deep-dives need architecture questions. POV reviews need success criteria questions.
+   - **Deal stage**: Early-stage deals need broader discovery. Late-stage deals need validation and closing questions.
+
+   **4b. Competitive intelligence** — Read the account file's Competition section (under MEDDPICC) and the Ledger for any competitor mentions. If a competitor has been mentioned in this account:
+   - Add a question about the competitor's current status: "Last time we spoke, {competitor} was also being evaluated — where does that stand?"
+   - Cross-reference `~/.claude/skills/sales-config.md` learnings (`[competitor]` patterns) for insights from other accounts about the same competitor. If found, add a targeted question: e.g., "Other teams evaluating {competitor} have raised concerns about {issue} — is that something you've encountered?"
+   - If no competitors mentioned yet but the account is in early stages, add: "Are you evaluating any other solutions alongside us?"
+
+   Format each question as a bullet point in the `### Questions to Ask` section. Keep questions conversational and natural — not robotic.
+
+5. **Update daily note** following `/sales-meeting` Step 5 rules:
    - Read account frontmatter for `gong_url`, `salesforce_opportunity*`, `ae`, `csm`
    - Add to the appropriate daily note subsection (Today/Upcoming/Past) with the standard 4-item checklist
    - Use full wiki-link paths
 
-5. **Skip if file exists**: If a meeting file with the same name already exists, skip it and report it.
+6. **Skip if file exists**: If a meeting file with the same name already exists, skip it and report it.
 
 #### Deal Prep Meetings (if calendar_include_prep is true)
 

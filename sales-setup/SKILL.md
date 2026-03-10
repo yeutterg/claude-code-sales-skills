@@ -194,6 +194,7 @@ public_repo_path: {PUBLIC_REPO_PATH or empty}
 salesforce_username: {SF_USERNAME or empty}
 salesforce_instance_url: {SF_INSTANCE_URL or empty}
 salesforce_se_status_field: {SF_SE_STATUS_FIELD or empty}
+salesforce_deal_health_field: {SF_DEAL_HEALTH_FIELD or empty}
 salesforce_se_lookup_fields:
   - {field name, e.g., SE__c}
 salesforce_custom_fields:
@@ -228,7 +229,7 @@ It is read by skills at runtime and survives repo updates.
 To reconfigure or pull updates, run `/sales-setup` again.
 ```
 
-If the config already existed, preserve the `salesforce_username`, `salesforce_instance_url`, `salesforce_se_status_field`, `salesforce_se_lookup_fields`, `salesforce_custom_fields`, `salesforce_configured`, `playwright_configured`, `calendar_id`, `calendar_user_emails`, `calendar_mode`, `calendar_include_prep`, `calendar_configured`, `gong_workspace_id`, `public_repo_path`, and `setup_date` values from the old config. Update `last_updated` to today.
+If the config already existed, preserve the `salesforce_username`, `salesforce_instance_url`, `salesforce_se_status_field`, `salesforce_deal_health_field`, `salesforce_se_lookup_fields`, `salesforce_custom_fields`, `salesforce_configured`, `playwright_configured`, `calendar_id`, `calendar_user_emails`, `calendar_mode`, `calendar_include_prep`, `calendar_configured`, `gong_workspace_id`, `public_repo_path`, and `setup_date` values from the old config. Update `last_updated` to today.
 
 ### Step 6: Create Symlinks
 
@@ -412,6 +413,12 @@ From the output, look for custom fields (ending in `__c`) in these categories:
 - These are lookup fields (type: reference) to User
 - Store as an array of fallback field names
 
+**Deal Health field** (for pushing Red/Yellow/Green health scores):
+- Search for fields with names containing: `Health`, `SE_Health`, `Opportunity_Health`, `Deal_Health`, `SE_Opportunity_Health`
+- These are picklist fields with values like Green, Yellow, Red (or similar traffic-light values)
+- If found, store as `salesforce_deal_health_field`
+- If not found, leave empty — the weekly review will still generate health scores locally but won't push to Salesforce
+
 **MEDDPICC / Deal Context fields** (for pulling deal context):
 - Search for fields containing: `Pain`, `Champion`, `Decision_Criteria`, `Decision_Process`, `Competition`, `Forecast`, `POV_Status`, `Trial_Status`, `CSM`, `Manager_Notes`, `SE_Next_Steps`, `Next_Steps`, `ARR`, `Loss_Reason`, `Business_Value`, `Use_Case`, `Solution_Fit`, `Lead_Source`
 - Store all found custom field API names
@@ -422,6 +429,7 @@ Found these Salesforce custom fields:
 
 SE Status field: Technical_Blockers__c
 SE Lookup fields: SE__c, Solutions_Engineer__c
+Deal Health field: SE_Opportunity_Health__c (Green/Yellow/Red)
 Deal context fields: Pain__c, Decision_Criteria__c, Champion_formula__c, ...
 
 Does this look right? You can adjust if needed.
@@ -439,6 +447,7 @@ Update `~/.claude/skills/sales-config.md` frontmatter:
 - `salesforce_username: {extracted username}`
 - `salesforce_instance_url: {instance URL}`
 - `salesforce_se_status_field: {discovered field}`
+- `salesforce_deal_health_field: {discovered field or empty}`
 - `salesforce_se_lookup_fields: {discovered fields}`
 - `salesforce_custom_fields: {discovered fields}`
 - `salesforce_configured: true`
