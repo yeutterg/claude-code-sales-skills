@@ -94,6 +94,19 @@ playwright-cli -s={session} eval "() => { var tabs = document.querySelectorAll('
 
 You are helping a Solutions Engineer import call recordings for the account: $ARGUMENTS
 
+### CRITICAL: Never Skip Gong Imports
+
+**Gong imports are MANDATORY for every call that has a recording.** Follow these rules without exception:
+
+1. **Never skip a Gong import because the meeting file already has notes.** User-pasted notes, Granola summaries, and manually typed content do NOT replace Gong data. Gong briefs and transcripts are always imported alongside existing content using the Append Rules.
+2. **The only valid reason to skip a call is if Gong has no recording** (voicemail, missed call, cancelled call, or "no recording" indicator on the call page).
+3. **If authentication fails** (SSO expired, login page shown, session timeout), do NOT skip the import. Instead:
+   - Tell the user: "Gong authentication required. Please log in to the browser window."
+   - Wait for the page to load the expected content (poll every 5 seconds up to 2 minutes)
+   - If auth still fails after 2 minutes, remind the user again
+   - Never give up — keep prompting until the user authenticates or explicitly tells you to stop
+4. **Existing `gong_url` in a meeting file does NOT mean it was already imported.** The URL may have been set without the brief/transcript being extracted. Always check if `## External Summary` and `## Transcript` sections have Gong content before skipping.
+
 ### Execution Strategy
 When processing multiple Gong calls, use subagents to process each call in parallel. Fan out for reads/extraction, fan in for writes.
 
@@ -143,8 +156,10 @@ If not available, tell the user to install it: `npm install -g @playwright/cli@l
 
 1. Read the account file at `{Account}.md` to get the `gong_url` from frontmatter (this is the Gong activity page URL)
 2. If no `gong_url` exists, ask the user for the Gong account activity URL
-3. List all meeting files in `meetings/` and read the frontmatter of each
-4. Identify meetings that have an **empty `gong_url`** field: these are candidates for Gong import
+3. List all meeting files in `meetings/` and read the frontmatter and content of each
+4. Identify meetings that are candidates for Gong import. A meeting needs Gong import if ANY of these are true:
+   - The `gong_url` field is empty (never checked)
+   - The `gong_url` is set BUT `## External Summary` has no "Gong Brief" content and `## Transcript` has no "Gong Transcript" content (URL was set but data wasn't extracted)
 5. Present the list to the user:
 
 ```
@@ -525,12 +540,12 @@ playwright-cli -s=gong_{account_slug} close
 
 ### Error Handling
 
-- **Login required:** Pause and ask user to log in. The `--headed --persistent` flags make this easier.
-- **No recording:** Still update the meeting file with attendees and `gong_url`. Log as "no recording" and continue.
-- **Existing content:** Always preserve existing content. Append new data using subheadings.
+- **Login required:** Pause and tell the user to log in. Do NOT skip the import. Poll every 5 seconds (check page URL for `sign-in`) and resume automatically once auth succeeds. If no auth after 2 minutes, remind the user again. The `--headed --persistent` flags make re-auth easier.
+- **No recording:** Still update the meeting file with attendees and `gong_url`. Log as "no recording" and continue. This is the ONLY valid reason to skip extracting a brief/transcript.
+- **Existing content:** Always preserve existing content. Append new data using subheadings. Never skip a call because the meeting file already has notes from another source (Granola, manual notes, etc.).
 - **No Gong URL in account file:** Ask the user for the Gong account activity URL.
-- **Gong rate limiting:** If Gong returns errors or CAPTCHAs, pause and tell the user.
-- **Session timeout:** If the Gong session expires mid-import, pause and ask the user to re-authenticate.
+- **Gong rate limiting:** If Gong returns errors or CAPTCHAs, pause and tell the user. Do NOT skip — wait for resolution.
+- **Session timeout:** If the Gong session expires mid-import, pause and ask the user to re-authenticate. Do NOT skip remaining calls.
 - **"not well-serializable" error:** This means a regex literal was used in `eval`. Replace with `indexOf()` or `new RegExp()`.
 
 ### Notes

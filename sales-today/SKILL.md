@@ -190,36 +190,43 @@ Recap for {Day of Week}, {Mon} {Date}
 
 #### Coaching Tip
 
-While reading account files and meeting history for the exec summaries, also generate **one coaching tip** for the user. Add it to the daily note inside the `## Meetings` section, right after the section heading and before any subsection (`### Today`, etc.).
+Generate **one coaching tip** based on analyzing the user's actual behavior in recent call transcripts. Add it to the daily note inside the `## Meetings` section, right after the section heading and before any subsection (`### Today`, etc.).
 
 **How to generate the tip:**
 
-Review recent meeting notes (transcripts, summaries, external summaries) across the accounts on today's schedule. Look for one concrete, specific thing the user could improve:
+1. **Read 3-5 recent transcripts** from the accounts on today's schedule (or the most recent transcripts if today has no scheduled meetings). Focus on the `## Transcript` sections, specifically the user's (SE's) speaking turns.
 
-- **Verbal patterns**: Filler words, talking over the customer, jumping to solutioning before fully understanding the problem, not pausing after asking a question
-- **Discovery technique**: Asking closed questions when open ones would uncover more, not following up on pain statements, missing opportunities to quantify business impact
-- **Demo/technical flow**: Spending too long on setup before showing value, not tying features back to stated pain, skipping the "so what" after a capability demo
-- **Meeting management**: Not setting an agenda upfront, not confirming next steps at the end, not assigning owners to action items
-- **Stakeholder engagement**: Not asking who else should be involved, not confirming the champion's priorities, not validating assumptions from previous calls
-- **Competitive handling**: Dismissing competitors instead of acknowledging and differentiating, not probing what the customer liked about a competitor
+2. **Analyze the SE's behavior in the transcripts.** Look for specific, concrete patterns — cite the account name and what happened. Categories to watch for:
 
-Pick the **single most impactful** observation. If there aren't enough transcripts to find a real pattern, base it on the types of meetings scheduled today (e.g., "Discovery calls are most effective when you let the customer describe their current workflow before introducing any product concepts").
+   - **Talk ratio**: Is the SE talking too much vs. listening? In discovery calls, the customer should be talking 60-70% of the time. In demos, the SE talks more but should still pause for reactions.
+   - **Question quality**: Is the SE asking open-ended questions that uncover pain ("Walk me through what happens when a deploy fails") or closed ones that get yes/no answers ("Do you use feature flags?")? Are they following up on pain statements or moving on too quickly?
+   - **Solutioning too early**: Does the SE jump to "here's how we solve that" before fully understanding the problem? Does the customer get to articulate the full impact before the SE starts pitching?
+   - **Pausing and listening**: Does the SE pause after asking a question, or fill the silence? Does the SE talk over the customer or interrupt?
+   - **Tying back to pain**: During demos, does the SE connect each capability to the customer's stated pain, or just show features in isolation?
+   - **Next steps and commitment**: Does the SE confirm specific next steps with owners and dates at the end of calls, or leave it vague ("we'll follow up")?
+   - **Stakeholder mapping**: Does the SE ask who else should be involved, who the decision maker is, or what the approval process looks like?
+   - **Competitive positioning**: When competitors come up, does the SE acknowledge and differentiate, or dismiss? Does the SE probe what the customer liked about the competitor?
+   - **Quantifying impact**: Does the SE help the customer put numbers on the pain ("How many hours per week does that cost your team?") or leave it qualitative?
+   - **Technical depth calibration**: Does the SE match the technical depth to the audience? Too deep for execs, too shallow for engineers?
+
+3. **Pick the single most impactful observation** — something specific from a real transcript, not a generic best practice. Reference the actual account and moment.
 
 **Format in daily note:**
 
 ```
 ## Meetings
 > [!tip] Coaching
-> {One specific, actionable sentence. No generic advice — reference a real pattern observed or a technique relevant to today's meeting types.}
+> {One specific, actionable tip that references what actually happened in a recent call. Example: "In the Acme Corp discovery (3/4), you asked 'Do you use canary deployments?' and got a yes/no. Try instead: 'Walk me through your current release process step by step' — that would've uncovered the manual QA bottleneck they mentioned later without prompting."}
 ### Today
 ...
 ```
 
 **Rules:**
 - Exactly one tip per day — keep it focused
+- **Must be grounded in a real transcript.** Reference the account name and the specific moment. If no transcripts exist yet, skip the coaching tip entirely rather than giving generic advice.
 - Never repeat the same tip on consecutive days (check previous daily notes if they exist)
-- Be specific and constructive, not vague ("Try pausing 3 seconds after asking about their decision process — in the last Acme call you jumped in before they finished answering" is good; "Ask better questions" is bad)
-- If no transcripts exist yet (new user or new accounts), tailor the tip to the meeting types on the schedule
+- Be constructive and specific. Quote or paraphrase what the SE actually said, then suggest what would have been more effective and why.
+- Focus on high-leverage patterns — things that, if changed, would meaningfully improve deal outcomes. Don't nitpick minor phrasing.
 
 ### Morning Step 4: Process Outstanding Items from Previous Days
 
@@ -293,7 +300,7 @@ Same as Morning Step 2 — create accounts for unrecognized external meetings an
 
 Same as Morning Step 3, but for tomorrow's deal meetings. Generate exec summaries for each AE with accounts scheduled for tomorrow.
 
-Add the `## AE Exec Summaries` section to **tomorrow's** daily note (since that's the day the meetings are on), using the same format as Morning Step 3.
+Add the `## AE Exec Summaries` section to **today's** daily note (the day the workflow runs), using the same format as Morning Step 3. This keeps all prep and recap content in one place for the user to review tonight.
 
 ### Evening Step 5: Weekly Review (if applicable)
 

@@ -94,6 +94,15 @@ Read the account file at:
 
 If the file doesn't exist, report an error and stop.
 
+### Step 2.5 (All Modes): Auto-correct Swapped Salesforce URLs
+
+After reading the account file, check all `salesforce_*` frontmatter fields for misplaced URLs:
+- If `salesforce_opportunity` (or any `salesforce_opportunity_*` field) contains an `/Account/` URL instead of an `/Opportunity/` URL, move it to `salesforce_account` (if `salesforce_account` is empty or missing) and clear the opportunity field.
+- If `salesforce_account` contains an `/Opportunity/` URL instead of an `/Account/` URL, move it to `salesforce_opportunity` (if `salesforce_opportunity` is empty or missing) and clear the account field.
+- Log any swaps performed and inform the user.
+
+This step runs in ALL modes (Push, Scan, Scan Open) immediately after reading the account file.
+
 ### Step 3P: Extract Salesforce Opportunity IDs
 
 Parse the frontmatter and collect ALL Salesforce opportunity fields. These can be:

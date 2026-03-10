@@ -59,7 +59,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 - **`no gong` flag**: Skip all Gong import steps (useful for automated/scheduled runs where Gong auth may not be available). Can be combined with morning/evening.
 - **AE Exec Summaries**: Groups deal meetings by AE and generates a Slack-ready briefing per AE. Objective-first format (every account starts with `*OBJECTIVE:*`), attendee annotations with MEDDPICC roles (Champion, EB, Detractor), LinkedIn hyperlinks for contacts, fenced code blocks for clean copy-paste into Slack
 - **Yesterday's Recap**: Includes a per-AE recap of the previous day's deal meetings with key outcomes and deal changes
-- **Coaching Tip**: Analyzes recent meeting transcripts and surfaces one specific, actionable improvement to try on today's calls
+- **Coaching Tip**: Reads 3-5 recent call transcripts, analyzes the SE's actual speaking turns, and surfaces one specific, transcript-grounded improvement to try on today's calls. Cites the account and moment. Skips the tip entirely if no transcripts exist (no generic fallback)
 - Friday evening through Monday morning: also runs `/sales-weekly`
 - Auto-creates accounts for unrecognized external meetings, prompts for Salesforce/Gong URLs
 - Designed to run as a [scheduled task](#scheduled-task-setup)
@@ -86,7 +86,8 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 - Optionally accepts a Gong activity URL, Salesforce Account URL, or Salesforce Opportunity URL (any combination, any order)
 - Salesforce Account URL: runs `/sales-salesforce scan` to discover all open and closed opportunities
 - Salesforce Opportunity URL: looks up the parent account, then scans all opportunities
-- Triggers automatic Gong historical import if Playwright CLI is configured
+- Opens Gong browser early (Step 0) so the user can authenticate while setup continues in the background
+- Triggers automatic Gong historical import if Playwright CLI is configured — never skips imports even if meeting files have existing notes
 - After imports complete, runs `/sales-summarize-account` to populate MEDDPICC, deal ledger, and all account sections
 
 ### `/sales-git`
@@ -105,6 +106,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 - Four modes: single Gong call, Granola summary, scan (match existing meetings to unimported recordings), bulk import
 - Extracts attendees, briefs, and transcripts in parallel using browser tabs (up to 3 calls at once)
 - Background subagents write to meeting files while the browser continues extracting the next batch
+- Mandatory imports: always imports recordings even if meeting files already have user-pasted notes or Granola summaries (Gong transcripts and AI briefs are always valuable)
 
 ### `/sales-meeting`
 
@@ -184,6 +186,7 @@ graph LR
     create1 --> summarize3["/sales-summarize-account"]
     summarize1 --> salesforce4["/sales-salesforce"]
     salesforce1 --> create4["/sales-create-account"]
+    weekly --> review["/sales-review-learnings"]
 ```
 
 ## Prerequisites

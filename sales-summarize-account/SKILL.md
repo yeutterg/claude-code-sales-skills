@@ -63,6 +63,10 @@ The new execution order is:
 1. Find the account directory at `{config.vault_path}/{config.company_folder}/Accounts/{Account}/`
 2. Read the main account file `{Account}.md`
 3. **Migrate legacy frontmatter:** If the account file has a `salesforce_url` field, rename it to `salesforce_opportunity` (update the key name in the frontmatter, preserving the value). This is a one-time migration from the old field name.
+3b. **Auto-correct swapped Salesforce URLs:** Check all `salesforce_*` frontmatter fields for misplaced URLs:
+   - If `salesforce_opportunity` (or any `salesforce_opportunity_*` field) contains an `/Account/` URL instead of an `/Opportunity/` URL, move it to `salesforce_account` (if `salesforce_account` is empty or missing) and clear the opportunity field.
+   - If `salesforce_account` contains an `/Opportunity/` URL instead of an `/Account/` URL, move it to `salesforce_opportunity` (if `salesforce_opportunity` is empty or missing) and clear the account field.
+   - Log any swaps performed so they appear in the output summary.
 4. Read `Ledger.md` to see which meetings already have ledger entries
 5. List all meeting files in the `meetings/` subdirectory (files are `.md`)
 6. List all contact files in the `contacts/` subdirectory — save the list of contact names (filenames without `.md`) for use in Phase 2 subagent prompts

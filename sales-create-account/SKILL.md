@@ -38,6 +38,23 @@ If the directory does not exist, stop and tell the user: "Obsidian vault not fou
 ### Execution Strategy
 Use subagents for independent research tasks — web searches for company info, Salesforce queries, and Gong imports can run in parallel. Fan out for reads/extraction, fan in for writes.
 
+### Step 0: Early Gong Browser Auth
+
+If a Gong activity URL was provided AND Playwright CLI is configured (`playwright_configured` is true in config):
+
+1. Verify Playwright CLI is available: `which playwright-cli`
+2. Derive the session name (account slug): e.g., "Acme Corp" → `gong_acme_corp`
+3. **Immediately open the Gong browser** for authentication:
+   ```bash
+   playwright-cli -s=gong_{account_slug} open {gong_activity_url} --headed --persistent
+   ```
+4. Tell the user: "**Gong browser opened — please log in if prompted.** The account setup will continue in the background while you authenticate."
+5. Do NOT wait for the user to confirm login — proceed immediately to Step 1. The Gong import (Step 8) will check auth status later and the browser session persists.
+
+This ensures the user can authenticate early and walk away while the rest of the setup runs. The browser stays open with `--persistent` and the auth cookies will be ready by the time Step 8 runs the actual import.
+
+If no Gong URL was provided or Playwright is not configured, skip this step.
+
 ### Step 1: Create Directory Structure
 
 1. Create the account directory at `{config.vault_path}/{config.company_folder}/Accounts/{Account}/`
@@ -373,7 +390,10 @@ After creating the account, check which Salesforce URL was provided and run the 
 After creating the account (and after Salesforce import if applicable), check if the `gong_url` frontmatter field was populated.
 
 If `gong_url` is set AND Playwright CLI is configured (`playwright_configured` is true in config):
+- The browser session from Step 0 should already be open and authenticated.
 - Automatically invoke `/sales-gong {Account} {gong_url}` to run the bulk historical import. No need to ask, just do it.
+- **CRITICAL: Never skip Gong imports.** Even if meeting files already have user-pasted notes or Granola summaries, Gong recordings contain the full transcript and AI brief which are always valuable. The only reason to skip a specific call is if Gong has no recording for it (voicemail, missed call).
+- If the browser session has an auth issue (SSO expired, login page shown), tell the user to log in and wait — do NOT skip the import.
 
 If Playwright CLI is not configured, mention it in the output:
 - "Tip: To import historical Gong calls, install Playwright CLI and run `/sales-gong {Account}`."
@@ -390,8 +410,7 @@ This will:
 - Create the tech stack summary and architecture diagram
 
 **Skip this step if:**
-- No Gong import was performed (no meeting transcripts to summarize)
-- The account has zero meeting files
+- The account has zero meeting files (no data to summarize)
 
 ### Output
 
