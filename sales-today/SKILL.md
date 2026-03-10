@@ -1,6 +1,6 @@
 ---
 description: Daily sales workflow — morning prep or evening wrap-up with calendar scan, Gong imports, account summaries, and Salesforce updates
-argument-hint: [morning | evening]
+argument-hint: [morning | evening] [no gong]
 ---
 
 # Daily Sales Workflow
@@ -14,6 +14,7 @@ Designed to be run as a scheduled task in Claude Desktop — set it to run daily
 - No arguments: Auto-detect morning (before noon) or evening (noon or later)
 - `morning`: Force morning mode
 - `evening`: Force evening mode
+- `no gong`: Skip all Gong import steps (useful for automated/scheduled runs where Gong auth may not be available). Can be combined with morning/evening: `/sales-today evening no gong`, `/sales-today no gong`
 
 ## Instructions
 
@@ -31,7 +32,10 @@ Run `date "+%Y-%m-%d %H:%M %u %A"` to get:
 - Day of week number (1=Monday, 7=Sunday)
 - Day name
 
-**Mode detection (if no argument provided):**
+**Flag detection:**
+- If arguments contain `no gong` (case-insensitive): set `skip_gong = true`. Remove `no gong` from the arguments before parsing mode.
+
+**Mode detection (if no mode argument provided):**
 - Before 12:00 PM → morning mode
 - 12:00 PM or later → evening mode
 
@@ -79,46 +83,52 @@ After the calendar scan, generate a short exec summary for each AE who has deal 
 
 1. **Group today's deal meetings by AE**: For each deal meeting created in Step 1, read the account frontmatter `ae` field. Group all accounts under the same AE.
 
-2. **For each account, read the account file** (`{Account}.md`) and extract:
-   - **TECHMAPS sections**: Check for gaps — are any TECHMAPS fields empty or marked as unknown? Flag these as "Missing from tech maps: {field}" (e.g., "Missing from tech maps: Environment, Validation Plan")
-   - **Agenda from calendar**: `/sales-calendar` extracts agenda from the calendar event description (Step 2b). Include the agenda if present: "Agenda: {agenda summary}"
-   - **Key unreached insights**: Look at MEDDPICC fields for gaps — particularly Economic Buyer, Decision Process, Paper Process, Metrics, and Champion. If these are empty or thin, suggest probing questions. Also check the Ledger for patterns that haven't been explored.
-   - **Deal-moving actions**: Based on the account state, identify 1-2 things that would advance the deal (e.g., "Need to confirm POC timeline", "Champion hasn't introduced us to EB yet", "No technical validation plan defined")
+2. **For each account, read the account file** (`{Account}.md`) and also check the calendar event attendees to understand who will be on the call. Extract:
+   - **Who's on the call**: Look up each external attendee in the account's contacts folder. Note their role, seniority, and how they've participated in past meetings (from meeting notes and ledger). This shapes the entire summary — questions and insights should be relevant to the people actually in the room.
+   - **Agenda from calendar**: `/sales-calendar` extracts agenda from the calendar event description (Step 2b). Include if present.
+   - **MEDDPICC/TECHMAPS gaps relevant to these attendees**: Only flag gaps that the people on the call can actually address. A technical IC can't answer Paper Process questions. A VP can't answer SDK integration questions. Match gaps to attendee roles.
+   - **Deal-moving actions**: Based on the account state and who's on the call, identify 1-2 things that would advance the deal.
 
-3. **Write max 5 short bullet points per account.** Each bullet should be actionable and specific. Avoid generic advice.
+3. **Write max 3-4 concise bullet points per account.** Each bullet should be actionable, specific, and relevant to the attendees. Avoid generic advice. Shorter is better — these get copy-pasted into Slack.
 
 **Add to daily note:**
 
-Insert a new section `## AE Exec Summaries` in the daily note, **after** `## Meetings`. Format it as a Slack-ready text block per AE with a checkbox to send:
+Insert a new section `## AE Exec Summaries` in the daily note, **after** `## Meetings`. Format it as a Slack-ready text block per AE with a checkbox to send.
+
+**IMPORTANT — Slack-compatible formatting:** The blockquote content will be copied from Obsidian into Slack. Use Slack-compatible markdown:
+- `*bold*` for emphasis (Slack uses single asterisks, not double)
+- `-` for bullet lists
+- No wiki-links or Obsidian-specific syntax inside the blockquote
 
 ```
 ## AE Exec Summaries
 ### {AE Name}
 - [ ] Send exec summary to [[{AE Name}]]
-> **{Account 1}** ({meeting topic}, {time})
-> - Missing from tech maps: Environment, Validation Plan
-> - Agenda: Review POC results and discuss production rollout
-> - Champion hasn't introduced us to economic buyer yet
-> - Need to confirm decision timeline before EOQ
+> *{Account 1}* — {meeting topic}, {time}
+> Attendees: {Name} ({Role}), {Name} ({Role})
+> - {Agenda or context, if available}
+> - {Insight tied to who's on the call — e.g., "Last time we met with Sarah she flagged X — follow up on that"}
+> - {Gap or action relevant to attendee roles}
 >
-> **{Account 2}** ({meeting topic}, {time})
-> - No technical blockers identified — ask about integration concerns
-> - Agenda: Experimentation deep-dive
-> - Decision criteria not documented — clarify what "success" looks like
-> - Competitor (Split) mentioned in last call — probe current eval status
+> *{Account 2}* — {meeting topic}, {time}
+> Attendees: {Name} ({Role})
+> - {Concise insight}
+> - {Deal-moving action}
 
 ### {AE Name 2}
 - [ ] Send exec summary to [[{AE Name 2}]]
-> **{Account 3}** ({meeting topic}, {time})
+> *{Account 3}* — {meeting topic}, {time}
+> Attendees: {Name} ({Role}), {Name} ({Role})
 > - ...
 ```
 
 **Formatting rules:**
 - Use a Markdown blockquote (`>`) for the summary body so it's easy to select and copy into Slack
-- Bold the account name, include meeting topic and time in parentheses
-- Keep bullets short — one line each, no sub-bullets
-- If an AE has only one account meeting, still use the same format
-- If an account has no gaps in TECHMAPS/MEDDPICC and no agenda, still include 1-2 bullets about what to listen for or confirm
+- Use Slack markdown inside blockquotes: `*bold*` (single asterisk), `-` for lists
+- Start each account with attendee names and roles so the AE knows who to expect
+- Keep bullets short and punchy — one line each, no sub-bullets, max 3-4 per account
+- Tailor insights to the attendees. If a VP is on the call, focus on business value and decision process. If an engineer is on the call, focus on technical gaps and integration questions. Don't suggest asking an IC about budget or a VP about SDK configuration.
+- Reference past interactions with these specific people when possible ("Last call with {Name}, they mentioned X — follow up")
 
 #### Coaching Tip
 
@@ -265,3 +275,4 @@ These accounts need your attention before they can be processed:
 - If `/sales-weekly` is triggered, run it AFTER all daily processing is complete
 - Do not ask for user input during the workflow — run autonomously from start to finish
 - If Playwright CLI is not configured (`playwright_configured` is not true in config), skip all Gong import steps and note in the report: "Gong imports skipped: Playwright CLI not configured. Run `/sales-setup playwright` to enable."
+- If `skip_gong` is true (from `no gong` argument), skip all Gong import steps. Leave Gong transcript checkboxes unchecked — they will be picked up on a future manual run. Note in the report: "Gong imports skipped: `no gong` flag set." Still proceed with `/sales-summarize-account` and `/sales-salesforce` for accounts that already have transcripts.

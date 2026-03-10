@@ -114,7 +114,7 @@ Claude Code skills for interacting with Obsidian sales notes. These skills integ
 - [Obsidian Vault Setup](#obsidian-vault-setup)
 - [Getting Started](#getting-started)
   - [1. Install the skills](#1-install-the-skills)
-  - [2. Run `/sales-setup`](#2-run-ld-setup)
+  - [2. Run `/sales-setup`](#2-run-sales-setup)
 - [Workflow](#workflow)
   - [New account onboarding](#new-account-onboarding)
   - [Ongoing usage](#ongoing-usage)
@@ -367,7 +367,7 @@ Contributions are welcome! If you've built a new skill, improved an existing one
 
 **Guidelines:**
 - Keep skill instructions clear and self-contained -- another user should be able to use your skill without extra context
-- If your skill adds a new `ld-*` directory, `/sales-git` will automatically pick it up for the README
+- If your skill adds a new `sales-*` directory, `/sales-git` will automatically pick it up for the README
 - Test your skill on at least one real account before submitting
 - Don't include vault-specific paths, company names, or personal info -- use `{config.*}` references and `/sales-setup` handles personalization
 - `/sales-git` will check for proprietary information before committing and auto-fix any leaks
@@ -407,7 +407,7 @@ After successfully committing and pushing the private repo, sync changes to the 
    cd {config.public_repo_path}
    # Replace /sales- skill references with /sales-
    sed -i '' 's|/sales-|/sales-|g' sales-*/SKILL.md
-   # Replace sales-config.md with sales-config.md
+   # Replace ld-config.md with sales-config.md
    sed -i '' 's|ld-config\.md|sales-config.md|g' sales-*/SKILL.md
    # Replace ld-* directory patterns (in symlink loops, file scans, etc.)
    sed -i '' 's|/sales-\*/|/sales-*/|g' sales-*/SKILL.md
@@ -416,7 +416,7 @@ After successfully committing and pushing the private repo, sync changes to the 
 
 4. **Regenerate the public README.md** using the same logic as Step 4, but:
    - Use `sales-*` skill names throughout
-   - Use `sales-config.md` instead of `sales-config.md`
+   - Use `sales-config.md` instead of `ld-config.md`
    - Use `sales-setup` instead of `ld-setup`
    - Reference the public repo's GitHub URL as the upstream (derive from `git remote get-url origin` in the public repo)
    - Keep the same structure (table of contents, skills table, detailed subsections, prerequisites, vault setup, workflow, customization, contributing)

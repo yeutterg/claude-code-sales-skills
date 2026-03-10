@@ -52,11 +52,12 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 
 ### `/sales-today`
 
-**Usage:** `/sales-today [morning | evening]`
+**Usage:** `/sales-today [morning | evening] [no gong]`
 
 - **Morning** (before noon): scans today's calendar, creates meeting notes, generates per-AE exec summaries with deal insights, adds a daily coaching tip, processes outstanding items from previous days
 - **Evening** (noon or later): processes today's meetings (Gong, summaries, Salesforce), scans tomorrow's calendar, generates exec summaries for tomorrow
-- **AE Exec Summaries**: Groups deal meetings by AE and generates a Slack-ready briefing per AE with up to 5 bullet points per account (TECHMAPS/MEDDPICC gaps, calendar agenda, competitive intel, deal-moving actions)
+- **`no gong` flag**: Skip all Gong import steps (useful for automated/scheduled runs where Gong auth may not be available). Can be combined with morning/evening.
+- **AE Exec Summaries**: Groups deal meetings by AE and generates a Slack-ready briefing per AE — attendee-aware with roles and past participation, concise 3-4 bullets per account, Slack-compatible markdown (`*bold*`)
 - **Coaching Tip**: Analyzes recent meeting transcripts and surfaces one specific, actionable improvement to try on today's calls
 - Friday evening through Monday morning: also runs `/sales-weekly`
 - Auto-creates accounts for unrecognized external meetings, prompts for Salesforce/Gong URLs
@@ -93,7 +94,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 
 - Pulls latest upstream updates, scans SKILL.md files for proprietary information, auto-fixes leaks
 - Regenerates README.md from skill frontmatter
-- Commits, pushes, and syncs to public repo with `ld-` to `sales-` renaming
+- Commits, pushes, and syncs to public repo with `sales-` to `sales-` renaming
 
 ### `/sales-gong`
 
@@ -153,7 +154,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 **Usage:** `/sales-weekly`
 
 - Portfolio-wide sweep of all accounts with open Salesforce opportunities
-- **Deal Risk Radar**: Scores each open opportunity as Green/Yellow/Red based on 9 signals (champion engagement, stage velocity, stakeholder breadth, competitive pressure, etc.). Pushes health score to Salesforce if configured
+- **Deal Risk Radar**: Scores each open opportunity as Green/Yellow/Red based on 9 signals (champion engagement, stage velocity, stakeholder breadth, competitive pressure, etc.). Pushes health score to Salesforce if configured (`SE_Opportunity_Health__c` or equivalent)
 - Auto-summarizes meetings with transcripts, adds ledger entries, pushes to Salesforce
 - Weekly retro: cross-account patterns (competitors, objections, tech stacks), queues discoveries for review
 - Runs autonomously. Start it and walk away
