@@ -221,12 +221,60 @@ Generate **one coaching tip** based on analyzing the user's actual behavior in r
 ...
 ```
 
+**Coaching Log:**
+
+Read the coaching log at `{config.vault_path}/{config.company_folder}/Resources/Coaching Log.md` before generating the tip. If the `Resources/` folder or `Coaching Log.md` file doesn't exist, create them:
+
+```bash
+mkdir -p "{config.vault_path}/{config.company_folder}/Resources"
+```
+
+Then create `Coaching Log.md` with this template:
+
+```markdown
+---
+type: coaching-log
+---
+
+## Active Focus Areas
+
+## Retired
+
+## Tip History
+```
+
+This file tracks:
+
+- **Active Focus Areas**: Patterns currently being worked on, with observation dates and frequency
+- **Retired**: Patterns the user has improved on
+- **Tip History**: Chronological log of every tip given
+
+**How to use the log:**
+
+1. **Before generating a tip**, read the log. Check Active Focus Areas for recurring patterns. Prioritize following up on an active pattern over introducing a new one.
+
+2. **Check for improvement.** When reading today's transcripts, compare against Active Focus Areas. If the user demonstrably improved on a pattern (e.g., they paused after a question when they previously didn't), note the improvement:
+   - Update the Active Focus Area entry with "Improvement seen: {date}, {account}"
+   - If improved consistently across 3+ calls, move to Retired with a note
+   - Make today's coaching tip a positive reinforcement: "In the {Account} call, you did X. That landed well because Y. Keep it up."
+
+3. **Generate the tip.** Either:
+   - **Follow up** on an active pattern with a new example from today's transcripts
+   - **Introduce a new pattern** if all active areas are improving or retired
+   - **Reinforce improvement** if the user fixed something
+
+4. **Update the log** after generating the tip:
+   - Add to Tip History: `- M/D: {tip summary} | Account: {account} | Focus: {category} | Status: {new/recurring/improved/retired}`
+   - If this is a new pattern, add it to Active Focus Areas with the date and account
+   - If following up on an existing pattern, increment the count in Active Focus Areas
+
 **Rules:**
 - Exactly one tip per day — keep it focused
 - **Must be grounded in a real transcript.** Reference the account name and the specific moment. If no transcripts exist yet, skip the coaching tip entirely rather than giving generic advice.
-- Never repeat the same tip on consecutive days (check previous daily notes if they exist)
+- Never give the same tip twice in a row. Check Tip History.
 - Be constructive and specific. Quote or paraphrase what the SE actually said, then suggest what would have been more effective and why.
 - Focus on high-leverage patterns — things that, if changed, would meaningfully improve deal outcomes. Don't nitpick minor phrasing.
+- **Celebrate wins.** When improvement is real, say so. Positive reinforcement builds habits faster than constant critique.
 
 ### Morning Step 4: Process Outstanding Items from Previous Days
 
