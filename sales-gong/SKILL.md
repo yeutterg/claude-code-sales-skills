@@ -36,8 +36,8 @@ playwright-cli install
 Key commands used by this skill:
 
 ```bash
-# Open browser (always use --headed --persistent for Gong)
-playwright-cli -s={session} open {url} --headed --persistent
+# Open browser (always use --headed --profile {config.gong_browser_profile} for Gong)
+playwright-cli -s={session} open {url} --headed --profile {config.gong_browser_profile}
 
 # Take page snapshot (returns element refs for clicking)
 playwright-cli -s={session} snapshot
@@ -124,7 +124,18 @@ If the directory does not exist, stop and tell the user: "Obsidian vault not fou
 
 ### Pre-check: Session Name
 
-Use the shared session name `gong` for all Gong operations (`-s=gong`). This ensures SSO cookies persist across accounts and runs via the `--persistent` flag. Do NOT use account-specific session names — a shared session means you authenticate once and it works for all accounts.
+**CRITICAL: Always use `-s=gong` for ALL Gong browser operations.** Never use account-specific session names like `-s=gong_acme_corp` or `-s=gong_{account_slug}`. The shared `gong` session preserves SSO cookies across accounts and runs, so the user authenticates once and it works for everything.
+
+Before opening a new browser, check if the `gong` session is already running:
+```bash
+playwright-cli -s=gong tab-list 2>&1
+```
+If it's running, reuse it (navigate with `goto`). If not, open it with the persistent profile:
+```bash
+playwright-cli -s=gong open {url} --headed --profile {config.gong_browser_profile}
+```
+
+**CRITICAL: Always use `--profile {config.gong_browser_profile}` instead of `--persistent`.** The `--profile` flag points to the user's persistent browser directory which has their password manager extension (1Password) and saved SSO cookies. Using `--persistent` without `--profile` creates a new empty profile without extensions. If `gong_browser_profile` is not set in config, fall back to `--persistent`.
 
 ### Pre-check: Verify Playwright CLI
 
@@ -174,7 +185,7 @@ Checking Gong for matching recordings...
 
 1. Open the browser and navigate to the Gong activity page:
    ```bash
-   playwright-cli -s=gong open {gong_activity_url} --headed --persistent
+   playwright-cli -s=gong open {gong_activity_url} --headed --profile {config.gong_browser_profile}
    ```
 2. **Login check:** Take a snapshot and check if the page URL contains `sign-in`. If so, tell the user to log in and wait for them to confirm.
 3. Ensure the calls-only filter is active. Use eval to check the checkbox state:
@@ -219,7 +230,7 @@ Present matches and proceed immediately. Never ask for confirmation.
 
 1. Open the browser and navigate to the Gong activity page:
    ```bash
-   playwright-cli -s=gong open {activity_page_url} --headed --persistent
+   playwright-cli -s=gong open {activity_page_url} --headed --profile {config.gong_browser_profile}
    ```
 2. **Login check:** Snapshot and check if the page URL contains `sign-in`. If so, tell user to log in and wait.
 3. Ensure the calls-only filter is active. Snapshot, check the checkbox.
@@ -393,7 +404,7 @@ The subagent reads the brief and transcript files and updates the meeting file:
 
 1. Open the browser and navigate to the Gong call URL:
    ```bash
-   playwright-cli -s=gong open {gong_call_url} --headed --persistent
+   playwright-cli -s=gong open {gong_call_url} --headed --profile {config.gong_browser_profile}
    ```
 2. **Login check:** Snapshot and check if the page URL contains `sign-in`. If shown, tell user to log in and wait.
 3. Extract from the call page snapshot:
@@ -423,7 +434,6 @@ Follow CP4 above.
 
 1. Resolve Gong display names to full names using contact files
 2. Update the meeting file per CP5
-3. Close the session: `playwright-cli -s=gong close`
 
 ---
 
@@ -431,9 +441,9 @@ Follow CP4 above.
 
 ### Step 2R: Navigate and Extract Content
 
-1. Open the browser and navigate to the Granola URL:
+1. Open the browser and navigate to the Granola URL (use the shared `gong` session — check if it's already running first with `tab-list`, and if so use `goto` instead of `open`):
    ```bash
-   playwright-cli -s=gong open {granola_url} --headed --persistent
+   playwright-cli -s=gong open {granola_url} --headed --profile {config.gong_browser_profile}
    ```
 2. **Dismiss prompts:** If a "Download Granola" dialog appears, find and click "Maybe later" via snapshot + click.
 3. Take a snapshot and extract:
@@ -529,14 +539,16 @@ Next steps:
 
 ### Cleanup
 
-When finished with all imports, close the browser session:
+**Do NOT close the browser session after imports.** The persistent session preserves SSO cookies across runs and accounts. Closing it forces the user to re-authenticate on the next run.
+
+Only close the session if the user explicitly asks to close it:
 ```bash
 playwright-cli -s=gong close
 ```
 
 ### Error Handling
 
-- **Login required:** Pause and tell the user to log in. Do NOT skip the import. Poll every 5 seconds (check page URL for `sign-in`) and resume automatically once auth succeeds. If no auth after 2 minutes, remind the user again. The `--headed --persistent` flags make re-auth easier.
+- **Login required:** Pause and tell the user to log in. Do NOT skip the import. Poll every 5 seconds (check page URL for `sign-in`) and resume automatically once auth succeeds. If no auth after 2 minutes, remind the user again. The `--headed --profile {config.gong_browser_profile}` flags make re-auth easier.
 - **No recording:** Still update the meeting file with attendees and `gong_url`. Log as "no recording" and continue. This is the ONLY valid reason to skip extracting a brief/transcript.
 - **Existing content:** Always preserve existing content. Append new data using subheadings. Never skip a call because the meeting file already has notes from another source (Granola, manual notes, etc.).
 - **No Gong URL in account file:** Ask the user for the Gong account activity URL.
@@ -552,6 +564,6 @@ playwright-cli -s=gong close
 - For Granola: Shared links only contain summary notes (no transcript available).
 - Parallel processing uses browser tabs (up to 3 at a time) within a single session.
 - All accounts share a single `gong` session so SSO cookies persist across runs and accounts. This means only one `/sales-gong` can run at a time (no parallel imports for different accounts).
-- The `--persistent` flag preserves auth cookies in the browser profile directory across restarts.
+- The `--profile` flag points to the user's persistent browser directory with their password manager extension and saved cookies. Never use `--persistent` without `--profile` as it creates a bare profile without extensions.
 - All meeting files are created by the main agent before launching subagents to prevent race conditions.
 - Never ask for confirmation. The skill runs fully autonomously — skip voicemail/missed calls and import everything else.

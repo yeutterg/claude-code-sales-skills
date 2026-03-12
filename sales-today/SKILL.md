@@ -116,7 +116,7 @@ Insert a new section `## Deal Prep` in the daily note, **after** `## Meetings`. 
 Prep: {Day of Week}, {Mon} {Date}
 
 *{Account}* | {meeting topic}, {time}
-Attendees: [{Name}]({linkedin_url}) ({Role}, Champion), *{Name}* ({Role}, EB), *{Internal Name}* ({config.company})
+Attendees: [{Name}]({linkedin_url}) ({Role}, Champion), *{Name}* ({Role}, EB), *{Internal Name}*, *{Internal Name}*
 - *OBJECTIVE:* {The single most important thing we need from this call}
 - {Supporting context or insight tied to who's on the call}
 - {Gap or action relevant to attendee roles}
@@ -147,7 +147,8 @@ Attendees: *{Name}* ({Role}, Detractor)
 - **Attendee annotations:** After each attendee's role, add their MEDDPICC role in parentheses if they are an Economic Buyer (EB), Champion, Coach, or Detractor. Only add the label if it applies. Examples: `*Jane Smith* (Sr TPM, Champion)`, `*Tim Cook* (VP Platform Eng, EB)`, `*Bob Chen* (Dir Platform Eng, Detractor)`. If the person has no special MEDDPICC role, just show name and title.
 - **LinkedIn hyperlinks:** If a contact has a `linkedin` field in their contact file, hyperlink their name using standard markdown link format: `[Name](https://linkedin.com/in/person)`. Slack renders these as clickable links when pasted. If no LinkedIn URL exists, just bold the name: `*Name*`.
 - **List ALL attendees** from the calendar event, both internal ({config.company} team) and external (customer). Include everyone so stakeholders know exactly who will be in the room.
-- Start each account with the full attendee list with roles
+- **Roles and titles for customer attendees only.** Internal team members (AEs, SEs, CSMs, managers, etc.) are listed by name only, without role or company annotations. Customer attendees get their title and MEDDPICC role (if applicable).
+- Start each account with the full attendee list
 - Keep bullets short and punchy. One line each, no sub-bullets, max 3-4 per account
 - Tailor insights to the attendees. If a VP is on the call, focus on business value and decision process. If an engineer is on the call, focus on technical gaps and integration questions. Don't suggest asking an IC about budget or a VP about SDK configuration.
 - Reference past interactions with these specific people when possible ("Last call with {Name}, they mentioned X. Follow up.")
