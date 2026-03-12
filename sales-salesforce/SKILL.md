@@ -228,7 +228,7 @@ Read the account file at:
 If the file doesn't exist, report an error and stop.
 
 Extract the Salesforce Account ID from the frontmatter. Look for:
-- `salesforce_account` — contains a URL like `{config.salesforce_instance_url}/lightning/r/Account/0011K00002D40TEQAZ/view`
+- `salesforce_account` — contains a URL like `{config.salesforce_instance_url}/lightning/r/Account/001000000000000AAA/view`
 - Extract the 15 or 18-character ID after `/Account/` in the URL
 
 If no `salesforce_account` field exists or is empty, check `salesforce_opportunity` fields — extract the Account ID from an Opportunity using the REST API:

@@ -137,6 +137,7 @@ Exports account markdown files to professionally formatted PDFs. Preprocesses Ob
 - No arguments or `today`: exports accounts that were summarized during the current `/sales-today` run
 - Specific account name: exports just that account
 - `all`: exports every account with substantive content (skips template-only files)
+- PDFs are organized into date subfolders: `{pdf_path}/{YYYY-MM-DD}/{YYYY-MM-DD} {Account}.pdf`
 - Requires `pandoc` (`brew install pandoc`) and Playwright MCP (`/sales-setup playwright`)
 - Enable via `/sales-setup` (sets `pdf_export: true` and `pdf_path` in config)
 - Called automatically by `/sales-today` after account summaries complete

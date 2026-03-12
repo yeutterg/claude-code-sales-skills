@@ -97,23 +97,25 @@ Apply these transformations in order:
    - `` `= this.next_call_agenda` `` → Replace with the `next_call_agenda` value (format as comma-separated if it's a YAML list)
    - For any other `` `= this.*` `` expressions where the field exists in frontmatter, substitute the value. If the field is empty or not found, remove the expression.
 
-7. **Convert wiki-links with display text:** Replace `[[path/to/file|Display Text]]` with just `Display Text`.
+7. **Force line breaks on consecutive bold-label lines:** Lines like `**AE:** value`, `**SE:** value`, `**Next Call:** value` at the top of the file appear on consecutive lines with no blank line between them. Pandoc collapses these into a single paragraph. Add two trailing spaces (`  `) at the end of each line that starts with `**` and is followed by another `**` line, to force `<br>` in the HTML output. This also applies to the `**Links:**` line.
 
-8. **Convert simple wiki-links:** Replace `[[simple link]]` with just `simple link`.
+8. **Convert wiki-links with display text:** Replace `[[path/to/file|Display Text]]` with just `Display Text`.
 
-9. **Convert Obsidian callouts:** Transform `> [!type] Title` into a blockquote with bold title:
+9. **Convert simple wiki-links:** Replace `[[simple link]]` with just `simple link`.
+
+10. **Convert Obsidian callouts:** Transform `> [!type] Title` into a blockquote with bold title:
    ```
    > **Title**
    ```
    Preserve the rest of the callout content as regular blockquote lines. **IMPORTANT:** Each `> - **Field:** value` line in the callout must remain on its own line with a line break between items. Do NOT collapse multiple bullet points into a single paragraph. When the callout contains a list of fields (e.g., MEDDPICC summary with Metrics, Economic Buyer, etc.), each field must be a separate `<br>`-terminated line or a separate list item in the output. Insert `  ` (two trailing spaces) or `<br>` at the end of each blockquote line to force line breaks in the HTML output.
 
-10. **Remove empty table rows:** Remove table rows where all cells (after the header separator) are empty or contain only whitespace.
+11. **Remove empty table rows:** Remove table rows where all cells (after the header separator) are empty or contain only whitespace.
 
-11. **Remove empty field labels:** Remove lines that are just a bold label with nothing after it, like `**AE:** ` or `**Champion:** ` (bold text followed by colon, optional space, and nothing else).
+12. **Remove empty field labels:** Remove lines that are just a bold label with nothing after it, like `**AE:** ` or `**Champion:** ` (bold text followed by colon, optional space, and nothing else).
 
-12. **Add H1 title:** Prepend `# {Account Name}` as the first line.
+13. **Add H1 title:** Prepend `# {Account Name}` as the first line.
 
-13. **Add generation date:** Add `*Generated {YYYY-MM-DD}*` on the line after the title, followed by a blank line.
+14. **Add generation date:** Add `*Generated {YYYY-MM-DD}*` on the line after the title, followed by a blank line.
 
 Save the preprocessed markdown to a temp file (e.g., `/tmp/sales-pdf-{Account}.md`).
 
@@ -160,11 +162,11 @@ For each account HTML file, use Playwright MCP to print to PDF:
    });
    ```
 
-Save each PDF to `{config.pdf_path}/{YYYY-MM-DD} {Account}.pdf`.
+Save each PDF to `{config.pdf_path}/{YYYY-MM-DD}/{YYYY-MM-DD} {Account}.pdf`.
 
-Create the `{config.pdf_path}` directory if it doesn't exist:
+Create the date subfolder if it doesn't exist:
 ```bash
-mkdir -p "{config.pdf_path}"
+mkdir -p "{config.pdf_path}/{YYYY-MM-DD}"
 ```
 
 Process accounts **sequentially** in this step (each needs the Playwright browser).
@@ -187,8 +189,8 @@ rm -f /tmp/sales-pdf-*.md /tmp/sales-pdf-*.html /tmp/sales-pdf-style.css
 PDF export complete.
 
 Exported {N} accounts:
-- {pdf_path}/{YYYY-MM-DD} {Account1}.pdf
-- {pdf_path}/{YYYY-MM-DD} {Account2}.pdf
+- {pdf_path}/{YYYY-MM-DD}/{YYYY-MM-DD} {Account1}.pdf
+- {pdf_path}/{YYYY-MM-DD}/{YYYY-MM-DD} {Account2}.pdf
 ...
 ```
 
