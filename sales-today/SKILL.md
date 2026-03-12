@@ -75,27 +75,33 @@ For each unrecognized meeting:
 
 Do NOT run `/sales-gong`, `/sales-summarize-account`, or `/sales-salesforce` for new accounts — the user needs to paste the Salesforce and Gong URLs first.
 
-### Morning Step 3: Generate AE Exec Summaries
+### Morning Step 3: Generate Deal Prep & Recap
 
-After the calendar scan, generate a short exec summary for each AE who has deal meetings scheduled. These summaries help the user prep their AEs before calls.
+After the calendar scan, generate a short exec summary for each deal meeting scheduled. These summaries are organized by call/account so each one can be sent individually to the right stakeholders.
 
-**How to build the summaries:**
+**Stakeholder identification:**
 
-1. **Group today's deal meetings by AE**: For each deal meeting created in Step 1, read the account frontmatter `ae` field. Group all accounts under the same AE.
+For each deal meeting, the "send to" list is:
+1. The **AE** from the account frontmatter (`ae` field) — always included
+2. Any other **internal {config.company} team members** on the calendar event invite (CSMs, managers, other SEs, leadership, etc.)
 
-2. **For each account, read the account file** (`{Account}.md`) and also check the calendar event attendees to understand who will be on the call. Extract:
+Look up internal attendees by matching calendar event attendee emails/names against known {config.company} team members. The user (SE) is excluded from the send list.
+
+**How to build each prep summary:**
+
+1. **For each deal meeting**, read the account file (`{Account}.md`) and check the calendar event attendees to understand who will be on the call. Extract:
    - **Who's on the call**: Look up each external attendee in the account's contacts folder. Note their role, seniority, and how they've participated in past meetings (from meeting notes and ledger). This shapes the entire summary — questions and insights should be relevant to the people actually in the room.
    - **Agenda from calendar**: `/sales-calendar` extracts agenda from the calendar event description (Step 2b). Include if present.
    - **MEDDPICC/TECHMAPS gaps relevant to these attendees**: Only flag gaps that the people on the call can actually address. A technical IC can't answer Paper Process questions. A VP can't answer SDK integration questions. Match gaps to attendee roles.
    - **Deal-moving actions**: Based on the account state and who's on the call, identify 1-2 things that would advance the deal.
 
-3. **Write max 3-4 concise bullet points per account.** The *first bullet must always be the single biggest objective for the call* — what we absolutely need to walk away with. Remaining bullets are supporting context. Each bullet should be actionable, specific, and relevant to the attendees. Avoid generic advice. Shorter is better — these get copy-pasted into Slack.
+2. **Write max 3-4 concise bullet points per meeting.** The *first bullet must always be the single biggest objective for the call* — what we absolutely need to walk away with. Remaining bullets are supporting context. Each bullet should be actionable, specific, and relevant to the attendees. Avoid generic advice. Shorter is better — these get copy-pasted into Slack.
 
 **Add to daily note:**
 
-Insert a new section `## AE Exec Summaries` in the daily note, **after** `## Meetings`. Format it as a Slack-ready text block per AE with a checkbox to send.
+Insert a new section `## Deal Prep` in the daily note, **after** `## Meetings`. Each meeting gets its own subsection with a send checkbox.
 
-**IMPORTANT — Slack-compatible formatting:** The blockquote content will be copied from Obsidian into Slack. Use Slack-compatible markdown:
+**IMPORTANT — Slack-compatible formatting:** The code block content will be copied from Obsidian into Slack. Use Slack-compatible markdown:
 - `*bold*` for emphasis (Slack uses single asterisks, not double)
 - `-` for bullet lists
 - No em dashes (`—`). Use colons, periods, or line breaks instead.
@@ -103,55 +109,49 @@ Insert a new section `## AE Exec Summaries` in the daily note, **after** `## Mee
 - Use bold liberally to make objectives and key names scannable
 
 ````
-## AE Exec Summaries
-### {AE Name}
-- [ ] Send exec summary to [[{AE Name}]]
+## Deal Prep
+### {Account} | {meeting topic}, {time}
+- [ ] Send to [[{AE Name}]], [[{Other Internal Attendee}]]
 ```markdown
-Prep for {Day of Week}, {Mon} {Date}
-
-*{Account 1}* | {meeting topic}, {time}
-Attendees: [{Name}]({linkedin_url}) ({Role}, Champion), *{Name}* ({Role}, EB)
+*{Account}* | {meeting topic}, {time}
+Attendees: [{Name}]({linkedin_url}) ({Role}, Champion), *{Name}* ({Role}, EB), *{Internal Name}* ({config.company})
 - *OBJECTIVE:* {The single most important thing we need from this call}
 - {Supporting context or insight tied to who's on the call}
 - {Gap or action relevant to attendee roles}
+```
 
+### {Account 2} | {meeting topic}, {time}
+- [ ] Send to [[{AE Name}]]
+```markdown
 *{Account 2}* | {meeting topic}, {time}
 Attendees: *{Name}* ({Role}, Detractor)
 - *OBJECTIVE:* {What we need to walk away with}
 - {Supporting insight}
 ```
-
-### {AE Name 2}
-- [ ] Send exec summary to [[{AE Name 2}]]
-```markdown
-Prep for {Day of Week}, {Mon} {Date}
-
-*{Account 3}* | {meeting topic}, {time}
-Attendees: [{Name}]({linkedin_url}) ({Role})
-- *OBJECTIVE:* ...
-- ...
-```
 ````
 
 **Formatting rules:**
-- Wrap each AE's summary content in a ` ```markdown ` fenced code block. This preserves Slack markdown as raw text in Obsidian while providing syntax highlighting for readability. Copy-paste the block content directly into Slack.
+- Each meeting gets its own `### {Account} | {topic}, {time}` heading, send checkbox, and ` ```markdown ` code block
+- The send checkbox lists the AE (always) plus any other internal team members on the calendar invite, as wiki-links: `- [ ] Send to [[AE Name]], [[CSM Name]], [[Manager Name]]`
+- Wrap each meeting's content in a ` ```markdown ` fenced code block. Copy-paste the block content directly into Slack.
 - Use Slack markdown inside code blocks: `*bold*` (single asterisk), `-` for lists
 - *First bullet is always the call objective* in bold (`*OBJECTIVE:*`). This is the single biggest thing we need from this meeting. Be specific: "Get Lee to commit to workshop date" not "Discuss next steps."
 - No em dashes (`—`). Use colons, periods, pipes, or line breaks instead.
-- Use `|` as a separator in the account header line (not em dash)
+- Use `|` as a separator in the heading and account header line (not em dash)
 - **Times must be in Pacific time** (PT). When reading calendar events, use `timeZone: America/Los_Angeles` and append "PT" to times in the summary (e.g., "10:30 AM PT").
 - Bold key names, amounts, dates, and action items so the summary is scannable
-- **Attendee annotations:** After each attendee's role, add their MEDDPICC role in parentheses if they are an Economic Buyer (EB), Champion, Coach, or Detractor. Only add the label if it applies. Examples: `*Holly Clark* (Sr TPM, Champion)`, `*Jeff Doll* (VP Platform Eng, EB)`, `*Michelle Ryals* (Dir Platform Eng, Detractor)`. If the person has no special MEDDPICC role, just show name and title.
+- **Attendee annotations:** After each attendee's role, add their MEDDPICC role in parentheses if they are an Economic Buyer (EB), Champion, Coach, or Detractor. Only add the label if it applies. Examples: `*Jane Smith* (Sr TPM, Champion)`, `*Tim Cook* (VP Platform Eng, EB)`, `*Bob Chen* (Dir Platform Eng, Detractor)`. If the person has no special MEDDPICC role, just show name and title.
 - **LinkedIn hyperlinks:** If a contact has a `linkedin` field in their contact file, hyperlink their name using standard markdown link format: `[Name](https://linkedin.com/in/person)`. Slack renders these as clickable links when pasted. If no LinkedIn URL exists, just bold the name: `*Name*`.
-- **List ALL attendees** from the calendar event, both internal (LD team) and external (customer). Include everyone so the AE knows exactly who will be in the room.
+- **List ALL attendees** from the calendar event, both internal ({config.company} team) and external (customer). Include everyone so stakeholders know exactly who will be in the room.
 - Start each account with the full attendee list with roles
 - Keep bullets short and punchy. One line each, no sub-bullets, max 3-4 per account
 - Tailor insights to the attendees. If a VP is on the call, focus on business value and decision process. If an engineer is on the call, focus on technical gaps and integration questions. Don't suggest asking an IC about budget or a VP about SDK configuration.
 - Reference past interactions with these specific people when possible ("Last call with {Name}, they mentioned X. Follow up.")
+- **Order meetings chronologically** by time within the section.
 
 #### Yesterday's Recap
 
-After the prep section for the upcoming day, add a recap of the previous day's deal meetings. This goes in the same `## AE Exec Summaries` section, after all the prep blocks.
+After the prep section, add a recap of the previous day's deal meetings. This goes in a `## Deal Recap` section, after `## Deal Prep`.
 
 **How to build the recap:**
 
@@ -159,30 +159,30 @@ After the prep section for the upcoming day, add a recap of the previous day's d
 2. For each meeting, read the meeting note (summary, notes, transcript) and the account's latest ledger entry.
 3. Write 1-5 concise bullets per account focused on: what changed in the deal, key learnings, new risks or wins, and next steps committed.
 
+**Stakeholders for recaps:** Same rule as prep — the AE plus any other internal team members who were on the calendar invite for the meeting that happened.
+
 **Format in daily note:**
 
 ````
-### Yesterday's Recap
-#### {AE Name}
+## Deal Recap
+### {Account} | {meeting topic}
+- [ ] Send to [[{AE Name}]], [[{Other Internal Attendee}]]
 ```markdown
-Recap for {Day of Week}, {Mon} {Date}
-
-*{Account 1}* | {meeting topic}
+*{Account}* | {meeting topic}
 - {Key outcome or learning}
 - {Deal change: new stakeholder, risk surfaced, next step locked, etc.}
 ```
 
-#### {AE Name 2}
+### {Account 2} | {meeting topic}
+- [ ] Send to [[{AE Name}]]
 ```markdown
-Recap for {Day of Week}, {Mon} {Date}
-
 *{Account 2}* | {meeting topic}
 - {One-liner if nothing major changed}
 ```
 ````
 
 **Recap rules:**
-- Group recaps by AE, same as prep summaries. Each AE gets their own `#### {AE Name}` heading and ` ```markdown ` code block so it can be copy-pasted individually.
+- Each meeting gets its own `### {Account} | {topic}` heading with a send checkbox listing stakeholders
 - Be very concise. 1 bullet if nothing notable happened, up to 5 if the deal moved significantly.
 - Focus on *what changed* and *what we learned*, not a rehash of the agenda.
 - If a meeting had no notes or transcript yet, note that: "No notes captured yet."
@@ -360,11 +360,11 @@ This creates meeting notes and daily note entries for tomorrow's meetings.
 
 Same as Morning Step 2 — create accounts for unrecognized external meetings and add the URL-paste checklist items.
 
-### Evening Step 4: Generate AE Exec Summaries for Tomorrow
+### Evening Step 4: Generate Deal Prep & Recap for Tomorrow
 
-Same as Morning Step 3, but for tomorrow's deal meetings. Generate exec summaries for each AE with accounts scheduled for tomorrow.
+Same as Morning Step 3, but for tomorrow's deal meetings. Generate deal prep for each meeting scheduled tomorrow.
 
-Add the `## AE Exec Summaries` section to **today's** daily note (the day the workflow runs), using the same format as Morning Step 3. This keeps all prep and recap content in one place for the user to review tonight.
+Add the `## Deal Prep` and `## Deal Recap` sections to **today's** daily note (the day the workflow runs), using the same format as Morning Step 3. This keeps all prep and recap content in one place for the user to review tonight.
 
 ### Evening Step 5: Export PDFs (if enabled)
 
@@ -413,4 +413,4 @@ These accounts need your attention before they can be processed:
 - Do not ask for user input during the workflow — run autonomously from start to finish
 - If Playwright CLI is not configured (`playwright_configured` is not true in config), skip all Gong import steps and note in the report: "Gong imports skipped: Playwright CLI not configured. Run `/sales-setup playwright` to enable."
 - If `skip_gong` is true (from `no gong` argument), skip all Gong import steps. Leave Gong transcript checkboxes unchecked — they will be picked up on a future manual run. Note in the report: "Gong imports skipped: `no gong` flag set." Still proceed with `/sales-summarize-account` and `/sales-salesforce` for accounts that already have transcripts.
-- If `pdf_export` is `true` in config, run `/sales-pdf` after AE Exec Summaries are generated in both morning and evening modes. Export all deal accounts that appear in the prep or recap sections — not just accounts summarized during this run. This ensures fresh PDFs are available for every deal being briefed.
+- If `pdf_export` is `true` in config, run `/sales-pdf` after Deal Prep and Deal Recap are generated in both morning and evening modes. Export all deal accounts that appear in the prep or recap sections — not just accounts summarized during this run. This ensures fresh PDFs are available for every deal being briefed.

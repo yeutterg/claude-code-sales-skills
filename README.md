@@ -40,7 +40,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 
 | Skill | Description |
 |-------|-------------|
-| `/sales-today` | Daily sales workflow: morning prep or evening wrap-up with calendar scan, AE exec summaries, coaching tips, Gong imports, account summaries, Salesforce updates, and PDF exports |
+| `/sales-today` | Daily sales workflow: morning prep or evening wrap-up with calendar scan, per-call deal prep and recap, coaching tips, Gong imports, account summaries, Salesforce updates, and PDF exports |
 | `/sales-calendar` | Scan Google Calendar for upcoming meetings, match them to accounts, extract agendas, generate targeted questions, and auto-create meeting notes |
 | `/sales-create-account` | Create a new account folder structure with template files and business context |
 | `/sales-git` | Commit and push skill changes and auto-regenerate the README |
@@ -60,10 +60,10 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 
 Orchestrates the daily sales workflow based on time of day. Designed to run as a scheduled task in Claude Desktop.
 
-- **Morning** (before noon): scans today's calendar, creates meeting notes, generates per-AE exec summaries with deal insights, adds a daily coaching tip, processes outstanding items from previous days
-- **Evening** (noon or later): processes today's meetings (Gong, summaries, Salesforce), scans tomorrow's calendar, generates exec summaries for tomorrow
+- **Morning** (before noon): scans today's calendar, creates meeting notes, generates per-call deal prep with stakeholder send lists, adds a daily coaching tip, processes outstanding items from previous days
+- **Evening** (noon or later): processes today's meetings (Gong, summaries, Salesforce), scans tomorrow's calendar, generates deal prep for tomorrow
 - **`no gong` flag**: Skip all Gong import steps (useful for automated/scheduled runs where Gong auth may not be available). Can be combined with morning/evening.
-- **AE Exec Summaries**: Groups deal meetings by AE and generates a Slack-ready briefing per AE — attendee-aware with roles and past participation, concise 3-4 bullets per account, Slack-compatible markdown (`*bold*`). Includes a Yesterday's Recap section with outcomes from the prior day's calls.
+- **Deal Prep**: Each meeting gets its own section with attendees, MEDDPICC annotations, and 3-4 actionable bullets. Send checkboxes list the AE plus any other internal team members on the calendar invite. Includes a Deal Recap section with outcomes from the prior day's calls.
 - **Coaching Tip**: Analyzes the SE's actual speaking turns in recent call transcripts and surfaces one specific, actionable improvement grounded in a real moment from a real call. Maintains a persistent coaching log at `{Company}/Resources/Coaching Log.md` that tracks active focus areas, follows up on recurring patterns, detects improvement, and celebrates wins. Auto-creates the `Resources/` folder and `Coaching Log.md` file if they don't exist.
 - Friday evening through Monday morning: also runs `/sales-weekly`
 - Auto-creates accounts for unrecognized external meetings, prompts for Salesforce/Gong URLs
@@ -115,6 +115,7 @@ Imports Gong calls or Granola meetings into Obsidian meeting notes using [Playwr
 
 - Four modes: single Gong call, Granola summary, scan (match existing meetings to unimported recordings), bulk import
 - Gong imports are mandatory: never skips a call that has a recording, even if the meeting file already has notes. If auth fails, keeps prompting until resolved
+- Uses a shared persistent browser session so SSO cookies survive across accounts and runs (authenticate once, import forever)
 - Extracts attendees, briefs, and transcripts in parallel using browser tabs (up to 3 calls at once)
 - Background subagents write to meeting files while the browser continues extracting the next batch
 
@@ -342,7 +343,7 @@ The recommended way to use these skills is to run `/sales-today` as a daily sche
 - Summarizes accounts with new meeting data
 - Pushes updates to Salesforce
 - Scans tomorrow's calendar and creates meeting notes (with agendas, targeted questions, and competitive intel)
-- Generates per-AE exec summaries with deal insights for tomorrow's meetings
+- Generates per-call deal prep with stakeholder send lists for tomorrow's meetings
 - Adds a daily coaching tip based on recent call patterns (tracked in `Resources/Coaching Log.md`)
 - Exports updated account PDFs if PDF export is enabled (via `/sales-pdf`)
 - Creates accounts for any new companies (prompts you to add Salesforce/Gong URLs)

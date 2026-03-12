@@ -29,7 +29,7 @@ npm install -g @playwright/cli@latest
 playwright-cli install
 ```
 
-**Note:** You will likely need to authenticate in the browser each time you run this skill. Gong's SSO session expires frequently, so expect a login prompt on the first page load. Complete the authentication manually and the skill will continue automatically.
+**Note:** You will need to authenticate in the browser the first time you run this skill. After that, the `--persistent` flag preserves your SSO session across runs — you should not need to re-authenticate unless your SSO token expires (typically days/weeks). If a login prompt appears, complete the authentication manually and the skill will continue automatically.
 
 ## Playwright CLI Reference
 
@@ -122,13 +122,9 @@ test -d "{config.vault_path}/{config.company_folder}/Accounts"
 ```
 If the directory does not exist, stop and tell the user: "Obsidian vault not found. Run `/sales-setup` to configure your vault path and create the folder structure."
 
-### Pre-check: Derive Session Name
+### Pre-check: Session Name
 
-Create a unique Playwright session name for this account by converting the account name to a lowercase slug (spaces → underscores, remove special characters). For example:
-- "Acme Corp" → `gong_acme_corp`
-- "Globex Industries" → `gong_globex_industries`
-
-Use this as the `-s={session}` value in all `playwright-cli` commands.
+Use the shared session name `gong` for all Gong operations (`-s=gong`). This ensures SSO cookies persist across accounts and runs via the `--persistent` flag. Do NOT use account-specific session names — a shared session means you authenticate once and it works for all accounts.
 
 ### Pre-check: Verify Playwright CLI
 
@@ -178,12 +174,12 @@ Checking Gong for matching recordings...
 
 1. Open the browser and navigate to the Gong activity page:
    ```bash
-   playwright-cli -s=gong_{account_slug} open {gong_activity_url} --headed --persistent
+   playwright-cli -s=gong open {gong_activity_url} --headed --persistent
    ```
 2. **Login check:** Take a snapshot and check if the page URL contains `sign-in`. If so, tell the user to log in and wait for them to confirm.
 3. Ensure the calls-only filter is active. Use eval to check the checkbox state:
    ```bash
-   playwright-cli -s=gong_{account_slug} eval "() => { var cb = document.querySelector('input[type=checkbox][class*=calls-only], .calls-only-checkbox input'); return cb ? cb.checked : 'not found'; }"
+   playwright-cli -s=gong eval "() => { var cb = document.querySelector('input[type=checkbox][class*=calls-only], .calls-only-checkbox input'); return cb ? cb.checked : 'not found'; }"
    ```
    If not checked, take a snapshot and click the "Calls only" checkbox ref.
 
@@ -192,7 +188,7 @@ Checking Gong for matching recordings...
 Use JavaScript eval to extract all calls from the DOM:
 
 ```bash
-playwright-cli -s=gong_{account_slug} eval "() => { var items = document.querySelectorAll('.activity-item.call-activity'); var results = []; for (var i = 0; i < items.length; i++) { var item = items[i]; var title = item.querySelector('.activity-title'); var dateGroup = item.closest('.activity-items-wrapper'); var dateEl = dateGroup ? dateGroup.querySelector('.activity-date') : null; var dur = item.querySelector('[class*=styles-module]'); var text = item.innerText; var isVoicemail = text.indexOf('voicemail') >= 0; results.push({ i: i, date: dateEl ? dateEl.textContent : '', title: title ? title.textContent : '', duration: dur ? dur.textContent.trim().split('\\n')[0] : '', voicemail: isVoicemail }); } return JSON.stringify(results); }"
+playwright-cli -s=gong eval "() => { var items = document.querySelectorAll('.activity-item.call-activity'); var results = []; for (var i = 0; i < items.length; i++) { var item = items[i]; var title = item.querySelector('.activity-title'); var dateGroup = item.closest('.activity-items-wrapper'); var dateEl = dateGroup ? dateGroup.querySelector('.activity-date') : null; var dur = item.querySelector('[class*=styles-module]'); var text = item.innerText; var isVoicemail = text.indexOf('voicemail') >= 0; results.push({ i: i, date: dateEl ? dateEl.textContent : '', title: title ? title.textContent : '', duration: dur ? dur.textContent.trim().split('\\n')[0] : '', voicemail: isVoicemail }); } return JSON.stringify(results); }"
 ```
 
 ### Step 5S: Get Call URLs
@@ -201,10 +197,10 @@ Click each call entry and extract the "Go to call" URL from the right panel:
 
 ```bash
 # Click call entry N
-playwright-cli -s=gong_{account_slug} eval "() => { var items = document.querySelectorAll('.activity-item.call-activity'); items[{N}].click(); return 'clicked'; }"
+playwright-cli -s=gong eval "() => { var items = document.querySelectorAll('.activity-item.call-activity'); items[{N}].click(); return 'clicked'; }"
 # Wait briefly, then extract URL
 sleep 0.8
-playwright-cli -s=gong_{account_slug} eval "() => { var link = document.querySelector('a[href*=\"/call?\"]'); return link ? link.href : 'none'; }"
+playwright-cli -s=gong eval "() => { var link = document.querySelector('a[href*=\"/call?\"]'); return link ? link.href : 'none'; }"
 ```
 
 ### Step 6S: Match and Import
@@ -223,7 +219,7 @@ Present matches and proceed immediately. Never ask for confirmation.
 
 1. Open the browser and navigate to the Gong activity page:
    ```bash
-   playwright-cli -s=gong_{account_slug} open {activity_page_url} --headed --persistent
+   playwright-cli -s=gong open {activity_page_url} --headed --persistent
    ```
 2. **Login check:** Snapshot and check if the page URL contains `sign-in`. If so, tell user to log in and wait.
 3. Ensure the calls-only filter is active. Snapshot, check the checkbox.
@@ -234,7 +230,7 @@ Present matches and proceed immediately. Never ask for confirmation.
 Use the JavaScript eval approach from Step 4S above to extract all calls. Scroll down to load all entries if needed:
 
 ```bash
-playwright-cli -s=gong_{account_slug} mousewheel 0 5000
+playwright-cli -s=gong mousewheel 0 5000
 ```
 
 Then re-extract the call list to pick up any newly loaded entries.
@@ -250,9 +246,9 @@ Click each non-skipped call entry sequentially and extract the "Go to call" URL:
 
 ```bash
 for each call index N:
-  playwright-cli -s=gong_{account_slug} eval "() => { document.querySelectorAll('.activity-item.call-activity')[{N}].click(); return 'clicked'; }"
+  playwright-cli -s=gong eval "() => { document.querySelectorAll('.activity-item.call-activity')[{N}].click(); return 'clicked'; }"
   sleep 0.8
-  playwright-cli -s=gong_{account_slug} eval "() => { var link = document.querySelector('a[href*=\"/call?\"]'); return link ? link.href : 'none'; }"
+  playwright-cli -s=gong eval "() => { var link = document.querySelector('a[href*=\"/call?\"]'); return link ? link.href : 'none'; }"
 ```
 
 Collect all URLs before proceeding to import.
@@ -296,44 +292,44 @@ Process calls in parallel using browser tabs. Open up to 3 call pages simultaneo
 1. **Open a batch of tabs** (up to 3 calls at once). Tab 0 uses `goto`, additional tabs use `tab-new` + `tab-select` + `goto`:
    ```bash
    # Tab 0: navigate existing tab
-   playwright-cli -s=gong_{account_slug} goto {call_url_1}
+   playwright-cli -s=gong goto {call_url_1}
    # Tab 1: open new tab and navigate
-   playwright-cli -s=gong_{account_slug} tab-new about:blank
-   playwright-cli -s=gong_{account_slug} goto {call_url_2}
+   playwright-cli -s=gong tab-new about:blank
+   playwright-cli -s=gong goto {call_url_2}
    # Tab 2: open new tab and navigate
-   playwright-cli -s=gong_{account_slug} tab-new about:blank
-   playwright-cli -s=gong_{account_slug} goto {call_url_3}
+   playwright-cli -s=gong tab-new about:blank
+   playwright-cli -s=gong goto {call_url_3}
    ```
    Wait 2-3 seconds for pages to load. **Verify each tab loaded** by selecting it and checking the page title or URL — stale/blank tabs produce garbage data.
 
 2. **Pause all videos** on every tab immediately after loading:
    ```bash
    for tab in 0 1 2:
-     playwright-cli -s=gong_{account_slug} tab-select {tab}
-     playwright-cli -s=gong_{account_slug} eval "() => { var v = document.querySelectorAll('video,audio'); for (var i = 0; i < v.length; i++) { v[i].pause(); v[i].muted = true; } return 'ok'; }"
+     playwright-cli -s=gong tab-select {tab}
+     playwright-cli -s=gong eval "() => { var v = document.querySelectorAll('video,audio'); for (var i = 0; i < v.length; i++) { v[i].pause(); v[i].muted = true; } return 'ok'; }"
    ```
 
 3. **Extract briefs from all tabs** — select each tab, click Briefs tab, extract via eval, save to temp file:
    ```bash
-   playwright-cli -s=gong_{account_slug} tab-select {tab}
-   playwright-cli -s=gong_{account_slug} eval "() => { var tabs = document.querySelectorAll('[role=tab]'); for (var i = 0; i < tabs.length; i++) { if (tabs[i].textContent.indexOf('Brief') >= 0) { tabs[i].click(); break; } } return 'ok'; }"
-   playwright-cli -s=gong_{account_slug} eval "() => { var panel = document.querySelector('[role=tabpanel]'); return panel ? panel.innerText : 'none'; }"
+   playwright-cli -s=gong tab-select {tab}
+   playwright-cli -s=gong eval "() => { var tabs = document.querySelectorAll('[role=tab]'); for (var i = 0; i < tabs.length; i++) { if (tabs[i].textContent.indexOf('Brief') >= 0) { tabs[i].click(); break; } } return 'ok'; }"
+   playwright-cli -s=gong eval "() => { var panel = document.querySelector('[role=tabpanel]'); return panel ? panel.innerText : 'none'; }"
    ```
    Save the result to `/tmp/gong_brief_{date}_{slug}.md`
 
 4. **Extract transcripts from all tabs** — click Transcript tab on each, wait for content to load, then extract via eval:
    ```bash
-   playwright-cli -s=gong_{account_slug} tab-select {tab}
-   playwright-cli -s=gong_{account_slug} eval "() => { var tabs = document.querySelectorAll('[role=tab]'); for (var i = 0; i < tabs.length; i++) { if (tabs[i].textContent.indexOf('Transcript') >= 0) { tabs[i].click(); break; } } return 'ok'; }"
+   playwright-cli -s=gong tab-select {tab}
+   playwright-cli -s=gong eval "() => { var tabs = document.querySelectorAll('[role=tab]'); for (var i = 0; i < tabs.length; i++) { if (tabs[i].textContent.indexOf('Transcript') >= 0) { tabs[i].click(); break; } } return 'ok'; }"
    sleep 1
-   playwright-cli -s=gong_{account_slug} eval "() => document.querySelector('[role=tabpanel]').innerText"
+   playwright-cli -s=gong eval "() => document.querySelector('[role=tabpanel]').innerText"
    ```
    Save the result to `/tmp/gong_transcript_{date}_{slug}.txt`. **Verify** the transcript is non-empty before saving — if the tab panel returned empty or very short content, wait another second and retry.
 
 5. **Close extra tabs** (keep tab 0 for the next batch). Close in reverse order to avoid index shifting:
    ```bash
    for i in {tab_count-1} down to 1:
-     playwright-cli -s=gong_{account_slug} tab-close {i}
+     playwright-cli -s=gong tab-close {i}
    ```
    **Important:** Always close ALL extra tabs before starting the next batch. Leftover tabs from a previous batch will have stale content and cause data corruption if accidentally read.
 
@@ -376,7 +372,7 @@ If the call has no recording:
 
 1. Click the **"Transcript"** tab:
    ```bash
-   playwright-cli -s=gong_{account_slug} click {transcript_tab_ref}
+   playwright-cli -s=gong click {transcript_tab_ref}
    ```
 2. Take a snapshot. The transcript will be large.
 3. Save the snapshot path for the subagent to process.
@@ -397,7 +393,7 @@ The subagent reads the brief and transcript files and updates the meeting file:
 
 1. Open the browser and navigate to the Gong call URL:
    ```bash
-   playwright-cli -s=gong_{account_slug} open {gong_call_url} --headed --persistent
+   playwright-cli -s=gong open {gong_call_url} --headed --persistent
    ```
 2. **Login check:** Snapshot and check if the page URL contains `sign-in`. If shown, tell user to log in and wait.
 3. Extract from the call page snapshot:
@@ -427,7 +423,7 @@ Follow CP4 above.
 
 1. Resolve Gong display names to full names using contact files
 2. Update the meeting file per CP5
-3. Close the session: `playwright-cli -s=gong_{account_slug} close`
+3. Close the session: `playwright-cli -s=gong close`
 
 ---
 
@@ -437,7 +433,7 @@ Follow CP4 above.
 
 1. Open the browser and navigate to the Granola URL:
    ```bash
-   playwright-cli -s=granola open {granola_url} --headed
+   playwright-cli -s=gong open {granola_url} --headed --persistent
    ```
 2. **Dismiss prompts:** If a "Download Granola" dialog appears, find and click "Maybe later" via snapshot + click.
 3. Take a snapshot and extract:
@@ -535,7 +531,7 @@ Next steps:
 
 When finished with all imports, close the browser session:
 ```bash
-playwright-cli -s=gong_{account_slug} close
+playwright-cli -s=gong close
 ```
 
 ### Error Handling
@@ -555,7 +551,7 @@ playwright-cli -s=gong_{account_slug} close
 - For Gong: The Briefs tab is extracted BEFORE clicking Transcript to avoid navigating back.
 - For Granola: Shared links only contain summary notes (no transcript available).
 - Parallel processing uses browser tabs (up to 3 at a time) within a single session.
-- Multiple `/sales-gong` invocations for different accounts can run in parallel (different session names).
-- The `--persistent` flag preserves auth cookies across browser restarts.
+- All accounts share a single `gong` session so SSO cookies persist across runs and accounts. This means only one `/sales-gong` can run at a time (no parallel imports for different accounts).
+- The `--persistent` flag preserves auth cookies in the browser profile directory across restarts.
 - All meeting files are created by the main agent before launching subagents to prevent race conditions.
 - Never ask for confirmation. The skill runs fully autonomously — skip voicemail/missed calls and import everything else.
