@@ -300,7 +300,9 @@ Skip any account where the "Paste Salesforce Opportunity URL" or "Paste Gong Act
 
 ### Morning Step 5: Export PDFs (if enabled)
 
-If `pdf_export` is `true` in config, run `/sales-pdf` to export accounts that were summarized during this run (Morning Step 4). Pass only the accounts that had `/sales-summarize-account` run successfully in Step 4.
+If `pdf_export` is `true` in config, run `/sales-pdf` for all deal accounts that appear in the AE Exec Summaries (Step 3) — both prep accounts (today's meetings) and recap accounts (yesterday's meetings). This ensures every deal the user is briefing their AE on has a fresh PDF ready to share.
+
+Collect the list of unique account names from both the prep and recap sections, then run `/sales-pdf {account}` for each one.
 
 ### Morning Step 6: Weekly Review (if applicable)
 
@@ -366,7 +368,9 @@ Add the `## AE Exec Summaries` section to **today's** daily note (the day the wo
 
 ### Evening Step 5: Export PDFs (if enabled)
 
-If `pdf_export` is `true` in config, run `/sales-pdf` to export accounts that were summarized during this run (Evening Step 1). Pass only the accounts that had `/sales-summarize-account` run successfully in Step 1.
+If `pdf_export` is `true` in config, run `/sales-pdf` for all deal accounts that appear in the AE Exec Summaries (Step 4) — both prep accounts (tomorrow's meetings) and recap accounts (today's meetings). This ensures every deal the user is briefing their AE on has a fresh PDF ready to share.
+
+Collect the list of unique account names from both the prep and recap sections, then run `/sales-pdf {account}` for each one.
 
 ### Evening Step 6: Weekly Review (if applicable)
 
@@ -409,4 +413,4 @@ These accounts need your attention before they can be processed:
 - Do not ask for user input during the workflow — run autonomously from start to finish
 - If Playwright CLI is not configured (`playwright_configured` is not true in config), skip all Gong import steps and note in the report: "Gong imports skipped: Playwright CLI not configured. Run `/sales-setup playwright` to enable."
 - If `skip_gong` is true (from `no gong` argument), skip all Gong import steps. Leave Gong transcript checkboxes unchecked — they will be picked up on a future manual run. Note in the report: "Gong imports skipped: `no gong` flag set." Still proceed with `/sales-summarize-account` and `/sales-salesforce` for accounts that already have transcripts.
-- If `pdf_export` is `true` in config, run `/sales-pdf` after all account processing is complete (after summarize + salesforce steps) in both morning and evening modes. Export only accounts that were summarized during this run.
+- If `pdf_export` is `true` in config, run `/sales-pdf` after AE Exec Summaries are generated in both morning and evening modes. Export all deal accounts that appear in the prep or recap sections — not just accounts summarized during this run. This ensures fresh PDFs are available for every deal being briefed.
