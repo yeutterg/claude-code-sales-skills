@@ -126,12 +126,44 @@ Find the `## Salesforce Updates` section in the account file. Extract ONLY the c
 - If the `## Salesforce Updates` section doesn't exist, warn the user: "No ## Salesforce Updates section found in {Account}.md. Run /sales-summarize-account {Account} first to generate it." Then stop.
 - If the code block is empty, warn the user: "The Salesforce Updates code block is empty for {Account}. Run /sales-summarize-account {Account} first to populate it." Then stop.
 
+### Step 4.5P: Check SE Ownership on Each Opportunity
+
+Before pushing, verify that the current user is allowed to update each opportunity's SE status field. The rule: only push to opportunities where you are the mapped SE or where no SE is assigned. Do not overwrite another SE's status.
+
+1. Get the access token and instance URL (same as Step 5P below).
+
+2. Get the current user's Salesforce User ID:
+   ```sql
+   SELECT Id FROM User WHERE Email = '{config.salesforce_username}' LIMIT 1
+   ```
+
+3. For each opportunity ID from Step 3P, query the SE lookup fields:
+   ```sql
+   SELECT Id, {config.salesforce_se_lookup_fields joined by commas}
+   FROM Opportunity WHERE Id = '{opp_id}'
+   ```
+
+4. Classify each opportunity:
+   - **Mine** (SE field matches current user's ID) → push
+   - **Unmapped** (all SE fields are null/empty) → push
+   - **Another SE's** (SE field is set to a different user) → **skip**
+
+5. If any opportunities are skipped, report them:
+   ```
+   Skipped (another SE assigned):
+   - {opp_label} ({opp_id}): assigned to {other SE name}
+   ```
+
+6. Continue to Step 5P with only the eligible (mine + unmapped) opportunity IDs.
+
+If ALL opportunities are skipped (all assigned to other SEs), warn the user and stop: "All opportunities for {Account} are assigned to other SEs. No updates pushed."
+
 ### Step 5P: Push to Salesforce
 
 The `sf data update record --values` approach does NOT work for multiline content (it parses content as key=value pairs and breaks on special characters). Use the REST API with curl instead.
 
 1. Write the extracted content to a temp file at `/tmp/sf_update.txt` using the Write tool
-2. Get the access token and instance URL:
+2. Get the access token and instance URL (reuse from Step 4.5P if already retrieved):
 
 ```bash
 sf org display --target-org {config.salesforce_username} --json 2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin)['result']; print(d['accessToken']); print(d['instanceUrl'])"
@@ -918,7 +950,7 @@ Output format:
 
 | Account | Opportunity | Stage | Amount | SE |
 |---------|-------------|-------|--------|----|
-| Acme Corp | [Acme - NB - 2026](sf_url) | 3 - POV | $50,000 | Greg Yeutter (me) |
+| Acme Corp | [Acme - NB - 2026](sf_url) | 3 - POV | $50,000 | {config.name} (me) |
 | Acme Corp | [Acme - Renewal - 2026](sf_url) | 1 - Validate Fit | $100,000 | — |
 
 ## Accounts with No Open Opportunities
