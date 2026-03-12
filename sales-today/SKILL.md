@@ -113,6 +113,8 @@ Insert a new section `## Deal Prep` in the daily note, **after** `## Meetings`. 
 ### {Account} | {meeting topic}, {time}
 - [ ] Send to [[{AE Name}]], [[{Other Internal Attendee}]]
 ```markdown
+Prep: {Day of Week}, {Mon} {Date}
+
 *{Account}* | {meeting topic}, {time}
 Attendees: [{Name}]({linkedin_url}) ({Role}, Champion), *{Name}* ({Role}, EB), *{Internal Name}* ({config.company})
 - *OBJECTIVE:* {The single most important thing we need from this call}
@@ -123,6 +125,8 @@ Attendees: [{Name}]({linkedin_url}) ({Role}, Champion), *{Name}* ({Role}, EB), *
 ### {Account 2} | {meeting topic}, {time}
 - [ ] Send to [[{AE Name}]]
 ```markdown
+Prep: {Day of Week}, {Mon} {Date}
+
 *{Account 2}* | {meeting topic}, {time}
 Attendees: *{Name}* ({Role}, Detractor)
 - *OBJECTIVE:* {What we need to walk away with}
@@ -168,6 +172,8 @@ After the prep section, add a recap of the previous day's deal meetings. This go
 ### {Account} | {meeting topic}
 - [ ] Send to [[{AE Name}]], [[{Other Internal Attendee}]]
 ```markdown
+Recap: {Day of Week}, {Mon} {Date}
+
 *{Account}* | {meeting topic}
 - {Key outcome or learning}
 - {Deal change: new stakeholder, risk surfaced, next step locked, etc.}
@@ -176,6 +182,8 @@ After the prep section, add a recap of the previous day's deal meetings. This go
 ### {Account 2} | {meeting topic}
 - [ ] Send to [[{AE Name}]]
 ```markdown
+Recap: {Day of Week}, {Mon} {Date}
+
 *{Account 2}* | {meeting topic}
 - {One-liner if nothing major changed}
 ```
