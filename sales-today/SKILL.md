@@ -164,6 +164,34 @@ Attendees: *{Name}* ({Role}, Detractor)
 - Reference past interactions with these specific people when possible ("Last call with {Name}, they mentioned X. Follow up.")
 - **Order meetings chronologically** by time within the section.
 
+#### Write Prep to Meeting Files
+
+After generating the daily note `## Deal Prep` section, also write the prep content into each meeting file's `## Prep` section. This makes the prep self-contained in the meeting file so it's visible when the user opens the note before a call.
+
+For each deal meeting in the prep:
+
+1. Find the meeting file at `{config.vault_path}/{config.company_folder}/Accounts/{Account}/meetings/YYYY-MM-DD {Topic}.md`
+2. Locate the `## Prep` section (created by `/sales-meeting` or `/sales-calendar`)
+3. Write the prep bullets (objective + supporting context) directly under `## Prep`. Use standard Obsidian markdown (not Slack markdown), since this content lives in the vault:
+   - Use `**bold**` (double asterisk) instead of `*bold*` (single)
+   - Use `[[wiki-links]]` for people and accounts
+   - Include the attendee list, objective, and supporting bullets
+   - If `## Prep` already has content (e.g., from `/sales-calendar`'s `### Questions to Ask`), insert the exec summary bullets above any existing subsections
+
+Example of what gets written to the meeting file:
+
+```markdown
+## Prep
+**Attendees:** [[Jane Smith]] (Sr TPM, Champion), [[Bob Chen]] (VP Platform Eng, EB), [[Greg Yeutter]], [[Dylan McMahan]]
+- **OBJECTIVE:** Get Jane to confirm POV success criteria before the team expands evaluation
+- Aritzia's retail tech group is also evaluating: ask about timeline alignment between the two teams
+- MEDDPICC gap: Decision Process is empty. Jane can speak to this since she ran the last vendor evaluation.
+### Questions to Ask
+- {questions from /sales-calendar, if any}
+```
+
+This step runs silently — no need to report it separately. The daily note `## Deal Prep` section remains the Slack-ready version; the meeting file `## Prep` is the Obsidian-native version.
+
 #### Yesterday's Recap
 
 After the prep section, add a recap of the previous day's deal meetings. This goes in a `## Deal Recap` section, after `## Deal Prep`.
@@ -394,6 +422,8 @@ Same as Morning Step 2 — create accounts for unrecognized external meetings an
 Same as Morning Step 3, but for tomorrow's deal meetings. Generate deal prep for each meeting scheduled tomorrow.
 
 Add the `## Deal Prep` and `## Deal Recap` sections to **today's** daily note (the day the workflow runs), using the same format as Morning Step 3. This keeps all prep and recap content in one place for the user to review tonight.
+
+**Also write prep to meeting files** — same as Morning Step 3's "Write Prep to Meeting Files" substep. Write the Obsidian-native prep content into each tomorrow's meeting file's `## Prep` section.
 
 ### Evening Step 5: Export PDFs (if enabled)
 

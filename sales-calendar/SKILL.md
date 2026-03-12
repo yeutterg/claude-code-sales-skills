@@ -135,6 +135,8 @@ attendees:
 ## Summary
 ## Agenda
 {If the event had an extracted agenda from Step 2b, insert it here as bullet points. Otherwise, leave this section empty.}
+## Prep
+{Leave empty — `/sales-today` will populate this with exec summary bullets after generating deal prep.}
 ### Questions to Ask
 {Generated questions — see Step 4, substep 4a/4b below.}
 ## Attendees

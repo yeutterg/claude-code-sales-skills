@@ -12,6 +12,8 @@ Create a meeting note for a sales account and link it in today's daily note.
 - `account`: The account name (e.g., "Acme Corp", "Globex")
 - `topic`: The meeting topic (e.g., "Experimentation Demo", "Discovery Call")
 - `date` (optional): Meeting date in YYYY-MM-DD format. Defaults to today.
+- `agenda` (optional): Agenda text to populate the `## Agenda` section. Typically passed by `/sales-calendar` from the calendar event description.
+- `prep` (optional): Prep content (exec summary bullets) to populate the `## Prep` section. Typically passed by `/sales-today` after generating deal prep.
 
 Example: `/sales-meeting Acme Corp Discovery Call`
 
@@ -77,6 +79,9 @@ attendees: []
 - [ ]
 ## Summary
 ## Agenda
+{If agenda was provided, insert it here as bullet points. Otherwise, leave empty below the heading.}
+## Prep
+{If prep content was provided, insert it here. Otherwise, leave empty below the heading.}
 ## Attendees
 ```dataview
 TABLE WITHOUT ID file.link AS "Name", default(account, team) AS "Company/Team", role AS "Role", notes AS "Notes"
