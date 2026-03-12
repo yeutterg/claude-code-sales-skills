@@ -132,7 +132,7 @@ If a default exists from config: "What is the absolute path to your Obsidian vau
 **Question 6 — Company Folder:**
 Propose a folder name derived from the company name: "Your account notes will be stored under `{vault_path}/{Company}/Accounts/`. Would you like a different folder name?"
 
-The default should be the company name as entered (e.g., "Acme Corp", "Globex"). Accept any alternative.
+The default should be the company name as entered (e.g., "LaunchDarkly", "Acme Corp"). Accept any alternative.
 
 If a default exists from config: "Company folder name? (current: {company_folder})"
 

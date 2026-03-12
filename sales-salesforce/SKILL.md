@@ -1,16 +1,17 @@
 ---
-description: Push SE Status to Salesforce, scan accounts for opportunities and deal context, or discover all your open opportunities across Salesforce. Use this skill whenever the user mentions Salesforce, opportunities, deal updates, SE status, or wants to see all their accounts.
-argument-hint: <account> or scan <account> or scan open <account> or my accounts
+description: Push SE Status to Salesforce, scan accounts for opportunities and deal context, discover all your open opportunities, or generate an SE mapping report across all AEs. Use this skill whenever the user mentions Salesforce, opportunities, deal updates, SE status, SE mapping, or wants to see all their accounts.
+argument-hint: <account> or scan <account> or scan open <account> or my accounts or mapping
 ---
 
 # Salesforce Integration
 
-Four modes:
+Five modes:
 
 - **Push mode** (default): `/sales-salesforce <account>` — pushes SE Status to linked opportunities
 - **Scan mode**: `/sales-salesforce scan <account>` — imports ALL opportunities with historical deal context
 - **Scan open mode**: `/sales-salesforce scan open <account>` — pulls current deal context from open opportunities only
 - **My accounts mode**: `/sales-salesforce my accounts` — discovers all open opportunities you're on, cross-references with Obsidian, and helps onboard missing accounts
+- **Mapping mode**: `/sales-salesforce mapping` — generates a report of SE assignments across all open opportunities, grouped by AE
 
 ## Arguments
 
@@ -18,6 +19,7 @@ Four modes:
 - `scan` (optional): Prefix to import all opportunities with history
 - `scan open` (optional): Prefix to pull deal context from open opportunities
 - `my accounts` (optional): List all your open opportunities and onboard missing accounts
+- `mapping` (optional): Generate SE mapping report across all open opportunities
 
 ## Prerequisites
 
@@ -76,6 +78,7 @@ Store all values as `config.*` for use throughout this skill.
 ### Step 1: Detect Mode and Parse Arguments
 
 Parse `$ARGUMENTS`:
+- If the arguments match `mapping` (case-insensitive), go to **Mapping Mode** below.
 - If the arguments match `my accounts` (case-insensitive), go to **My Accounts Mode** below.
 - If the arguments start with `scan open` (case-insensitive), extract the account name after "scan open" and go to **Scan Open Mode** below.
 - If the arguments start with `scan` (case-insensitive), extract the account name after "scan" and go to **Scan Mode** below.
@@ -827,3 +830,107 @@ Next steps for new accounts:
 1. Import Gong history: /sales-gong {Account}
 2. Summarize account: /sales-summarize-account {Account}
 ```
+
+---
+
+## Mapping Mode
+
+Generates an SE mapping report across all open Salesforce opportunities for accounts already in Obsidian. Shows which opportunities have you as SE, which have another SE, and which have no SE assigned.
+
+### Step 2MAP: Discover SE Fields
+
+Different Salesforce orgs use different field names for the Solutions Engineer. Rather than hardcoding, discover the field dynamically:
+
+1. Call the Opportunity describe endpoint:
+   ```
+   GET {instance_url}/services/data/v62.0/sobjects/Opportunity/describe
+   ```
+
+2. Search the returned fields for SE-related lookup fields (type: `reference`, referenceTo: `User`). Look for fields where the name or label contains: `SE`, `Solutions_Engineer`, `Sales_Engineer`, `Technical_Resource`, `Presales`, `Overlay`, or `Specialist_SE`.
+
+3. Identify the primary SE field(s). Save the field API names and their relationship names (e.g., `Sales_Engineer__c` with relationship `Sales_Engineer__r`).
+
+4. If `{config.salesforce_se_lookup_fields}` is already configured, use those as the primary fields. The describe call is a fallback for unconfigured orgs.
+
+### Step 3MAP: Collect Obsidian Account IDs
+
+For each account folder in `{config.vault_path}/{config.company_folder}/Accounts/`:
+
+1. Read the account file and extract the `salesforce_account` field from frontmatter
+2. Parse the Salesforce Account ID from the URL (15-18 char alphanumeric after `/Account/`)
+3. If no `salesforce_account` exists, try extracting the Account ID by querying any `salesforce_opportunity` URLs
+4. Track which accounts have SF Account IDs and which don't
+
+Handle duplicate Account IDs (multiple Obsidian folders pointing to the same SF Account) by matching the SF Account Name back to the correct Obsidian folder.
+
+### Step 4MAP: Query Open Opportunities
+
+**For accounts with SF Account IDs:** Query open opportunities by Account ID in batches of 20:
+
+```sql
+SELECT Id, Name, StageName, Amount, CloseDate, Type,
+    Account.Name, Account.Id, AccountId,
+    Owner.Name,
+    {se_field}, {se_field_relationship}.Name
+FROM Opportunity
+WHERE AccountId IN ('{batch_ids}') AND IsClosed = false
+ORDER BY Account.Name, Name
+```
+
+**For accounts without SF Account IDs:** Query all remaining open opportunities and match by name. Use smart name matching:
+- Strip common suffixes (Inc, LLC, Corp, Ltd, Technologies, Services, Healthcare)
+- For short names (3 chars or fewer like "ABS", "RH"), require exact match or match followed by space/dash — substring matching causes too many false positives
+- For longer names, check if the Obsidian name is contained in the SF name or vice versa
+- Also try matching on first word if it's 5+ characters
+
+### Step 5MAP: Build and Classify Results
+
+For each matched opportunity, classify the SE assignment:
+1. **Mapped to me**: SE field matches the current user's Salesforce User ID
+2. **Mapped to another SE**: SE field is set to a different user
+3. **Unmapped**: SE field is empty/null
+
+Get the current user's Salesforce User ID:
+```sql
+SELECT Id, Name FROM User WHERE Email = '{config.salesforce_username}' LIMIT 1
+```
+
+### Step 6MAP: Generate Report
+
+Group results by AE (Opportunity Owner), sorted by:
+1. AEs with opportunities mapped to the current user (first)
+2. AEs with opportunities mapped to other SEs
+3. AEs with only unmapped opportunities
+4. Within each AE, sort opportunities: mine first, then other SE, then unmapped
+
+Output format:
+
+```
+# SE Mapping Report (Obsidian Accounts)
+
+**Scope:** {N} Obsidian accounts with open SF opportunities ({total} total accounts)
+**Open opportunities:** {total_opps}
+- Mapped to me: {count}
+- Mapped to another SE: {count}
+- No SE assigned: {count}
+
+## {AE Name} ({N} opps: {mine} mine, {other} other SE, {unmapped} unmapped)
+
+| Account | Opportunity | Stage | Amount | SE |
+|---------|-------------|-------|--------|----|
+| Acme Corp | [Acme - NB - 2026](sf_url) | 3 - POV | $50,000 | Greg Yeutter (me) |
+| Acme Corp | [Acme - Renewal - 2026](sf_url) | 1 - Validate Fit | $100,000 | — |
+
+## Accounts with No Open Opportunities
+- {account names with no matching open SF opps}
+
+## Data Issues
+- {any duplicate Account IDs or matching problems found}
+```
+
+### Rules
+- Only scan accounts that have folders in Obsidian — do not query all of Salesforce
+- Use Account IDs for matching wherever possible; fall back to name matching only when no SF ID exists
+- Short Obsidian folder names (3 chars or fewer) must not substring-match against unrelated accounts
+- Flag duplicate Account IDs across Obsidian folders as data issues
+- Report the SE field names discovered so the user can verify them

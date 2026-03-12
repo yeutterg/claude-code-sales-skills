@@ -48,7 +48,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 | `/sales-meeting` | Create meeting notes for a sales account and link them in the daily note |
 | `/sales-pdf` | Export account files to PDF with clean formatting via pandoc and Playwright |
 | `/sales-review-learnings` | Review patterns and insights discovered by skills: competitors, objections, feature requests, model performance, and template drift |
-| `/sales-salesforce` | Push SE Status to Salesforce, scan accounts for opportunities and deal context, or discover all your open opportunities across Salesforce |
+| `/sales-salesforce` | Push SE Status to Salesforce, scan accounts for opportunities and deal context, discover all your open opportunities, or generate an SE mapping report across all AEs |
 | `/sales-setup` | Post-clone setup: configure vault path, name, role, company, symlinks, and optional Salesforce CLI / Playwright CLI / Google Calendar |
 | `/sales-summarize-account` | Summarize all meeting notes, update MEDDPICC/TECHMAPS/CoM, enrich contacts, refresh business context |
 | `/sales-weekly` | Weekly review of all accounts with open Salesforce opportunities: pulls deal context, scores deal health (Red/Yellow/Green), summarizes activity, updates ledgers and Salesforce |
@@ -156,14 +156,15 @@ Reviews and acts on patterns discovered by `/sales-summarize-account` and `/sale
 
 ### `/sales-salesforce`
 
-**Usage:** `/sales-salesforce <account>` or `scan <account>` or `scan open <account>` or `my accounts`
+**Usage:** `/sales-salesforce <account>` or `scan <account>` or `scan open <account>` or `my accounts` or `mapping`
 
-Four modes for Salesforce integration:
+Five modes for Salesforce integration:
 
 - **Push** (default): pushes the Salesforce Updates section to all linked Opportunities via REST API. Clears any `(status)` ledger entry added by `/sales-weekly`, then marks the daily note checkbox complete
 - **Scan**: imports ALL opportunities for an account with historical deal context, creates per-opportunity files, populates a deal history narrative in the account file and ledger
 - **Scan open**: pulls current deal context (stage, amount, close date, MEDDPICC fields, AE/CSM notes) from open opportunities only and merges into the account file
 - **My accounts**: discovers all open opportunities where you are the SE, cross-references with Obsidian, onboards missing accounts via `/sales-create-account`, and creates daily note todos
+- **Mapping**: generates an SE mapping report across all open opportunities, grouped by AE
 
 ### `/sales-setup`
 
@@ -233,6 +234,7 @@ graph LR
 
     calendar --> meeting1["/sales-meeting"]
     calendar --> create2["/sales-create-account"]
+    gong1 --> meeting2["/sales-meeting"]
     weekly --> summarize2["/sales-summarize-account"]
     weekly --> salesforce2["/sales-salesforce"]
     weekly --> create3["/sales-create-account"]
@@ -242,6 +244,7 @@ graph LR
     create1 --> summarize3["/sales-summarize-account"]
     summarize1 --> salesforce4["/sales-salesforce"]
     salesforce1 --> create4["/sales-create-account"]
+    salesforce1 --> gong3["/sales-gong"]
 ```
 
 ## Prerequisites
