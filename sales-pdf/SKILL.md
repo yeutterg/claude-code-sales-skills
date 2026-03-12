@@ -68,7 +68,7 @@ Apply these transformations in order:
    ```
    | Name | Company | Role | Influence | Email | LinkedIn | Notes |
    |------|---------|------|-----------|-------|----------|-------|
-   | Cooper Watts | Acme Corp | Principal Architect | Champion | ... | [LinkedIn](...) | ... |
+   | Tim Cook | Acme Corp | Principal Architect | Champion | ... | [LinkedIn](...) | ... |
    ```
    Sort by influence (Champion > Coach > Detractor > empty), then alphabetically by name.
 
@@ -105,7 +105,7 @@ Apply these transformations in order:
    ```
    > **Title**
    ```
-   Preserve the rest of the callout content as regular blockquote lines.
+   Preserve the rest of the callout content as regular blockquote lines. **IMPORTANT:** Each `> - **Field:** value` line in the callout must remain on its own line with a line break between items. Do NOT collapse multiple bullet points into a single paragraph. When the callout contains a list of fields (e.g., MEDDPICC summary with Metrics, Economic Buyer, etc.), each field must be a separate `<br>`-terminated line or a separate list item in the output. Insert `  ` (two trailing spaces) or `<br>` at the end of each blockquote line to force line breaks in the HTML output.
 
 10. **Remove empty table rows:** Remove table rows where all cells (after the header separator) are empty or contain only whitespace.
 
@@ -127,7 +127,7 @@ pandoc "/tmp/sales-pdf-{Account}.md" \
   -f markdown -t html5 \
   --standalone --embed-resources \
   --css /tmp/sales-pdf-style.css \
-  --metadata title="{Account}" \
+  --metadata pagetitle="{Account}" \
   -o "/tmp/sales-pdf-{Account}.html"
 ```
 
@@ -256,3 +256,4 @@ a { color: #4a90d9; }
 - Don't export accounts that have no content beyond the template (check if the file has MEDDPICC content or ledger entries)
 - Use port 18765 for the temp server to avoid conflicts
 - Never hardcode vault paths, company names, or account names. Use `{config.*}` references throughout.
+- URLs must be clickable in the final PDF. Pandoc converts markdown links (`[text](url)`) to HTML `<a>` tags automatically. Playwright's `page.pdf()` preserves these as clickable hyperlinks. Ensure that Salesforce, Gong, LinkedIn, and news article URLs from the account file are preserved through preprocessing (steps 7-8 convert wiki-links to plain text, but standard markdown links `[text](url)` must pass through unchanged).
