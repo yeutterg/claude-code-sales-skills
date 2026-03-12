@@ -1,9 +1,9 @@
 {
-  "skill_name": "sales-summarize-account",
+  "skill_name": "ld-summarize-account",
   "evals": [
     {
       "id": 1,
-      "prompt": "/sales-summarize-account Acme Corp",
+      "prompt": "/ld-summarize-account Acme Corp",
       "expected_output": "Processes all meetings via subagents, updates ledger, MEDDPICC, TECHMAPS, CoM, tech stack, architecture, contacts, Salesforce updates",
       "files": [],
       "expectations": [
@@ -26,9 +26,28 @@
         "Missing contacts created with correct template",
         "Contacts enriched with role and LinkedIn via subagents",
         "Daily note checkbox marked complete",
-        "/sales-git skill invoked to commit and push",
+        "/ld-git skill invoked to commit and push",
         "No blank line between heading and first bullet",
         "Product names match config"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/ld-summarize-account Acme Corp",
+      "expected_output": "Salesforce Updates section follows correct structure: latest entry at top, MEDDPICC/TECHMAPS/TECH STACK in middle, DEAL HISTORY with older entries at bottom",
+      "files": [],
+      "expectations": [
+        "Salesforce Updates section exists inside a triple-backtick code block",
+        "First line of code block is the LATEST meeting entry only (most recent date, format: - M/D {initials}: {summary})",
+        "Only ONE entry appears above the MEDDPICC section",
+        "MEDDPICC section has fields on separate lines with '- Field: value' format",
+        "TECHMAPS section has fields on separate lines with '- Field: value' format",
+        "TECH STACK is a single comma-separated line",
+        "DEAL HISTORY section at the bottom contains the second most recent entry and all older entries",
+        "DEAL HISTORY entries ordered newest first",
+        "The latest entry's date does NOT appear in DEAL HISTORY (no duplication)",
+        "Date format: M/D (no leading zeros) for current year, M/D/YY for prior years",
+        "Deal history entries are concise (~15-25 words each)"
       ]
     }
   ]

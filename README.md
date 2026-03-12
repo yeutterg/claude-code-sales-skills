@@ -63,7 +63,7 @@ Orchestrates the daily sales workflow based on time of day. Designed to run as a
 - **Morning** (before noon): scans today's calendar, creates meeting notes, generates per-call deal prep with stakeholder send lists, adds a daily coaching tip, processes outstanding items from previous days
 - **Evening** (noon or later): processes today's meetings (call imports, summaries, Salesforce updates), scans tomorrow's calendar, generates deal prep for tomorrow
 - **`no gong` flag**: Skip all Gong import steps (useful for automated/scheduled runs where Gong auth may not be available). Can be combined with morning/evening.
-- **Deal Prep**: Each meeting gets its own section with attendees, MEDDPICC annotations, and 3-4 actionable bullets. Send checkboxes list the AE plus any other internal team members on the calendar invite. Includes a Deal Recap section with outcomes from the prior day's calls.
+- **Deal Prep**: Each meeting gets its own section with attendees, MEDDPICC annotations, and 3-4 actionable bullets. Send checkboxes list the AE plus any other internal team members on the calendar invite. Includes a Deal Recap section with outcomes from the prior day's calls. Both Deal Prep and Deal Recap use collapsible `<details>` blocks so the heading and send checkbox are always visible and the full content expands on demand.
 - **Coaching Tip**: Analyzes the SE's actual speaking turns in recent call transcripts and surfaces one specific, actionable improvement grounded in a real moment from a real call. Maintains a persistent coaching log at `{Company}/Resources/Coaching Log.md` that tracks active focus areas, follows up on recurring patterns, detects improvement, and celebrates wins. Auto-creates the `Resources/` folder and `Coaching Log.md` file if they don't exist.
 - Friday evening through Monday morning: also runs `/sales-weekly`
 - Auto-creates accounts for unrecognized external meetings, prompts for Salesforce/Gong URLs
@@ -90,7 +90,7 @@ Scans Google Calendar for upcoming meetings, identifies which ones map to existi
 Creates a new account folder structure with template files and populates business context from the web.
 
 - Creates account folder with full directory structure (meetings, contacts, templates)
-- Optionally accepts a Gong activity URL, Salesforce Account URL, or Salesforce Opportunity URL (any combination, any order)
+- Optionally accepts a Gong activity URL, Salesforce Account URL, or Salesforce Opportunity URL (any combination, any order). Auto-detects URL type by checking path segments (`/Account/` vs `/Opportunity/`)
 - Salesforce Account URL: runs `/sales-salesforce scan` to discover all open and closed opportunities
 - Salesforce Opportunity URL: looks up the parent account, then scans all opportunities
 - Opens the Gong browser early (Step 0) so you can authenticate while setup runs in the background
@@ -104,7 +104,7 @@ Creates a new account folder structure with template files and populates busines
 Commits and pushes any changes to the skills GitHub repo.
 
 - Pulls latest upstream updates, scans SKILL.md files for proprietary information, auto-fixes leaks
-- Regenerates README.md from skill frontmatter
+- Regenerates README.md from skill frontmatter and actual cross-skill dependency graph
 - Commits, pushes, and syncs to public repo with `sales-` naming
 
 ### `/sales-gong`
@@ -125,8 +125,9 @@ Imports Gong calls or Granola meetings into Obsidian meeting notes using [Playwr
 
 Creates a meeting note for a sales account and links it in today's daily note.
 
-- Creates a meeting note and links it in today's daily note with a standard checklist
-- Checklist: call transcript, summarize account, push to Salesforce, send stakeholder update
+- Creates a meeting note at `Accounts/{Account}/meetings/YYYY-MM-DD {Topic}.md` using a standard template with Tasks, Summary, Agenda, Attendees, Notes, External Summary, and Transcript sections
+- Links to the meeting in today's daily note with a standard four-item checklist: copy call transcript, run `/sales-summarize-account`, run `/sales-salesforce`, send stakeholder update
+- Skips daily note entry for past (historical) meetings -- only today's and future meetings get checklist items
 - Supports creating multiple meetings at once with freeform date/topic input
 
 ### `/sales-pdf`
@@ -135,13 +136,13 @@ Creates a meeting note for a sales account and links it in today's daily note.
 
 Exports account markdown files to professionally formatted PDFs. Preprocesses Obsidian-specific syntax (dataview queries, wiki-links, callouts, transclusion embeds), resolves inline field references from frontmatter, generates contacts and meetings tables, converts to HTML via pandoc, and prints to PDF via Playwright MCP.
 
-- No arguments or `today`: exports accounts that were summarized during the current `/sales-today` run
+- No arguments or `today`: exports accounts that were summarized during the current `/sales-today` run (reads today's daily note for completed `/sales-summarize-account` checkboxes)
 - Specific account name: exports just that account
 - `all`: exports every account with substantive content (skips template-only files)
 - PDFs are organized into date subfolders: `{pdf_path}/{YYYY-MM-DD}/{YYYY-MM-DD} {Account}.pdf`
 - Requires `pandoc` (`brew install pandoc`) and Playwright MCP (`/sales-setup playwright`)
 - Enable via `/sales-setup` (sets `pdf_export: true` and `pdf_path` in config)
-- Called automatically by `/sales-today` after account summaries complete
+- Called automatically by `/sales-today` after deal prep and recap are generated
 
 ### `/sales-review-learnings`
 
@@ -150,8 +151,8 @@ Exports account markdown files to professionally formatted PDFs. Preprocesses Ob
 Reviews and acts on patterns discovered by `/sales-summarize-account` and `/sales-weekly`.
 
 - Groups by category: competitors, objections, feature requests, technical patterns, portfolio insights
-- Surfaces model performance alerts and template drift
-- Interactive: keep, act (create a task), or dismiss each item
+- Surfaces model performance alerts (task types with >20% failure rate) and template drift (sections frequently edited by the user)
+- Interactive: keep, act (create a task in today's daily note), or dismiss each item
 
 ### `/sales-salesforce`
 
@@ -159,10 +160,10 @@ Reviews and acts on patterns discovered by `/sales-summarize-account` and `/sale
 
 Four modes for Salesforce integration:
 
-- **Push** (default): pushes Salesforce Updates section to linked Opportunities via REST API
-- **Scan:** imports all opportunities with historical deal context
-- **Scan open:** pulls current deal context from open opportunities
-- **My accounts:** discovers all open opportunities where you are the SE, onboards missing accounts
+- **Push** (default): pushes the Salesforce Updates section to all linked Opportunities via REST API. Clears any `(status)` ledger entry added by `/sales-weekly`, then marks the daily note checkbox complete
+- **Scan**: imports ALL opportunities for an account with historical deal context, creates per-opportunity files, populates a deal history narrative in the account file and ledger
+- **Scan open**: pulls current deal context (stage, amount, close date, MEDDPICC fields, AE/CSM notes) from open opportunities only and merges into the account file
+- **My accounts**: discovers all open opportunities where you are the SE, cross-references with Obsidian, onboards missing accounts via `/sales-create-account`, and creates daily note todos
 
 ### `/sales-setup`
 
@@ -171,9 +172,11 @@ Four modes for Salesforce integration:
 Guided onboarding for the Obsidian sales skills. Re-run anytime to pull upstream updates and re-apply your config.
 
 - Guided onboarding: role, company, name, vault path, company folder
-- Searches the web for your company's products and lets you review them
-- Creates persistent config at `~/.claude/skills/sales-config.md`
-- Optionally configures Salesforce CLI (with custom field auto-discovery), Playwright CLI, and Google Calendar
+- Searches the web for your company's products and competitors, lets you review and edit the list
+- Creates persistent config at `~/.claude/skills/sales-config.md` with all integration settings
+- Creates symlinks in `~/.claude/skills/` so Claude Code can find the skills
+- Optionally configures Salesforce CLI (with custom field auto-discovery for MEDDPICC, deal health, and SE lookup fields), Playwright CLI, and Google Calendar
+- `salesforce`, `playwright`, or `calendar` arguments run only that sub-setup
 - Re-run anytime to pull upstream updates
 
 ### `/sales-summarize-account`
@@ -182,11 +185,12 @@ Guided onboarding for the Obsidian sales skills. Re-run anytime to pull upstream
 
 Summarizes all meeting notes for an account and updates the account page.
 
-- Processes unsummarized meeting notes via parallel subagents
-- Updates: deal ledger, MEDDPICC, Command of the Message, TECHMAPS, tech stack, architecture diagram, Salesforce updates
-- Enriches contacts with LinkedIn profiles
-- Refreshes business context with latest company news
-- Adaptive model selection, pattern discovery, and template drift detection
+- Processes unsummarized meeting notes via parallel subagents (each meeting is handled independently)
+- Simultaneously pulls the latest deal context from Salesforce (Scan Open mode) and refreshes business context via web search
+- Updates: deal ledger, MEDDPICC, Command of the Message, TECHMAPS, tech stack, architecture diagram, Salesforce Updates section
+- Enriches contacts with LinkedIn profiles and job titles via parallel subagents
+- Renames generic meeting files (e.g., "Call") to descriptive titles based on what was discussed
+- Adaptive model selection, pattern discovery (new competitors, objections, feature requests), and template drift detection
 
 ### `/sales-weekly`
 
@@ -194,10 +198,12 @@ Summarizes all meeting notes for an account and updates the account page.
 
 Portfolio-wide sweep of all accounts with open Salesforce opportunities. Designed to run autonomously: start it and walk away.
 
-- **Deal Risk Radar**: Scores each open opportunity as Green/Yellow/Red based on 9 signals (champion engagement, stage velocity, stakeholder breadth, competitive pressure, etc.). Pushes health score to Salesforce if configured (`SE_Opportunity_Health__c` or equivalent)
-- Auto-summarizes meetings with transcripts, adds ledger entries, pushes to Salesforce
-- Weekly retro: cross-account patterns (competitors, objections, tech stacks), queues discoveries for review
-- Auto-fixes bad opportunity URLs and handles newly closed opportunities
+- **Deal Risk Radar**: Scores each open opportunity as Green/Yellow/Red based on 9 signals (champion engagement, stage velocity, stakeholder breadth, competitive pressure, etc.). Pushes health score to Salesforce if `salesforce_deal_health_field` is configured
+- Processes all active accounts in parallel via subagents -- each subagent handles one account end-to-end: Salesforce deal context pull, auto-summarization of any meetings with transcripts, weekly status ledger entry, and Salesforce push
+- Handles newly closed opportunities automatically (clears the frontmatter field, notes in the report)
+- Auto-fixes bad opportunity URLs (Account URLs mistakenly in the opportunity field)
+- Weekly retro: cross-account patterns (competitors, objections, tech stacks), queues discoveries for `/sales-review-learnings`
+- Also run automatically by `/sales-today` on Friday evenings through Monday mornings
 
 ### `/schedule-usps-pickup`
 
@@ -208,7 +214,7 @@ Schedules a USPS package pickup using the USPS website via Playwright CLI browse
 - Flexible input: specify counts with optional service types (ground, priority, express, return, international, other) separated by commas
 - Defaults to USPS Ground Advantage if no service type given, and next available business day if no date specified
 - Supports date formats: M/D, MM/DD, or day-of-week (e.g., "friday", "saturday", "tomorrow")
-- Pre-fills address and contact info, selects Mail Room as pickup location, submits automatically without confirmation
+- Pre-fills address and contact info from config, selects Mail Room as pickup location, submits automatically without confirmation
 - Reports confirmation number, date, and package breakdown when complete
 
 ## Skill Dependency Graph
@@ -227,19 +233,15 @@ graph LR
 
     calendar --> meeting1["/sales-meeting"]
     calendar --> create2["/sales-create-account"]
-    gong1 --> meeting2["/sales-meeting"]
-    gong1 --> summarize2["/sales-summarize-account"]
-    weekly --> summarize3["/sales-summarize-account"]
+    weekly --> summarize2["/sales-summarize-account"]
     weekly --> salesforce2["/sales-salesforce"]
     weekly --> create3["/sales-create-account"]
     weekly --> review["/sales-review-learnings"]
     create1 --> salesforce3["/sales-salesforce"]
     create1 --> gong2["/sales-gong"]
-    create1 --> summarize4["/sales-summarize-account"]
+    create1 --> summarize3["/sales-summarize-account"]
     summarize1 --> salesforce4["/sales-salesforce"]
     salesforce1 --> create4["/sales-create-account"]
-    salesforce1 --> gong3["/sales-gong"]
-    salesforce1 --> summarize5["/sales-summarize-account"]
 ```
 
 ## Prerequisites
@@ -278,7 +280,8 @@ Vault/
 >     │       ├── meetings.base         # Dataview table config for meetings
 >     │       ├── contacts.base         # Dataview table config for contacts
 >     │       ├── meetings/             # Meeting notes (YYYY-MM-DD Topic.md)
->     │       └── contacts/             # Contact cards ({Person Name}.md)
+>     │       ├── contacts/             # Contact cards ({Person Name}.md)
+>     │       └── opportunities/        # Per-opportunity files (created by /sales-salesforce scan)
 >     └── Resources/
 >         └── Coaching Log.md           # Persistent coaching tip history and focus areas
 > ```
@@ -314,7 +317,7 @@ To pull upstream updates later, just run `/sales-setup` -- it checks for updates
 
 Run `/sales-setup` in Claude Code. It will:
 - Ask for your role, company, name, and Obsidian vault path
-- Search for your company's products and let you review them
+- Search for your company's products and competitors and let you review them
 - Create a persistent config file at `~/.claude/skills/sales-config.md`
 - Create symlinks in `~/.claude/skills/`
 - Set up your vault folder structure
@@ -388,7 +391,7 @@ After each new meeting:
 
 2. **Take your own notes** during the call in the meeting file.
 
-3. **Add external transcripts** once your call recording tool finishes processing. Paste the summary and transcript into the meeting note.
+3. **Add external transcripts** once Gong (or other tools) finish processing. Paste the summary and transcript into the meeting note.
 
 4. **Re-summarize:**
    ```

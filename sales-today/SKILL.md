@@ -112,6 +112,9 @@ Insert a new section `## Deal Prep` in the daily note, **after** `## Meetings`. 
 ## Deal Prep
 ### {Account} | {meeting topic}, {time}
 - [ ] Send to [[{AE Name}]], [[{Other Internal Attendee}]]
+<details>
+<summary>Prep details</summary>
+
 ```markdown
 Prep: {Day of Week}, {Mon} {Date}
 
@@ -122,8 +125,13 @@ Attendees: [{Name}]({linkedin_url}) ({Role}, Champion), *{Name}* ({Role}, EB), *
 - {Gap or action relevant to attendee roles}
 ```
 
+</details>
+
 ### {Account 2} | {meeting topic}, {time}
 - [ ] Send to [[{AE Name}]]
+<details>
+<summary>Prep details</summary>
+
 ```markdown
 Prep: {Day of Week}, {Mon} {Date}
 
@@ -132,10 +140,12 @@ Attendees: *{Name}* ({Role}, Detractor)
 - *OBJECTIVE:* {What we need to walk away with}
 - {Supporting insight}
 ```
+
+</details>
 ````
 
 **Formatting rules:**
-- Each meeting gets its own `### {Account} | {topic}, {time}` heading, send checkbox, and ` ```markdown ` code block
+- Each meeting gets its own `### {Account} | {topic}, {time}` heading, send checkbox, and a `<details>` block wrapping the ` ```markdown ` code block. The `<details>` tag makes the content collapsible in Obsidian — the heading and checkbox are always visible, and the user expands to see the prep content. Use `<summary>Prep details</summary>` for prep and `<summary>Recap details</summary>` for recaps. A blank line is required between `<summary>` and the code fence for Obsidian to render the markdown inside correctly
 - The send checkbox lists the AE (always) plus any other internal team members on the calendar invite, as wiki-links: `- [ ] Send to [[AE Name]], [[CSM Name]], [[Manager Name]]`
 - Wrap each meeting's content in a ` ```markdown ` fenced code block. Copy-paste the block content directly into Slack.
 - Use Slack markdown inside code blocks: `*bold*` (single asterisk), `-` for lists
@@ -172,6 +182,9 @@ After the prep section, add a recap of the previous day's deal meetings. This go
 ## Deal Recap
 ### {Account} | {meeting topic}
 - [ ] Send to [[{AE Name}]], [[{Other Internal Attendee}]]
+<details>
+<summary>Recap details</summary>
+
 ```markdown
 Recap: {Day of Week}, {Mon} {Date}
 
@@ -180,14 +193,21 @@ Recap: {Day of Week}, {Mon} {Date}
 - {Deal change: new stakeholder, risk surfaced, next step locked, etc.}
 ```
 
+</details>
+
 ### {Account 2} | {meeting topic}
 - [ ] Send to [[{AE Name}]]
+<details>
+<summary>Recap details</summary>
+
 ```markdown
 Recap: {Day of Week}, {Mon} {Date}
 
 *{Account 2}* | {meeting topic}
 - {One-liner if nothing major changed}
 ```
+
+</details>
 ````
 
 **Recap rules:**
