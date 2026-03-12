@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "/ld-salesforce Acme Corp",
+      "prompt": "/sales-salesforce Acme Corp",
       "expected_output": "Pushes SE Status to Salesforce — no deal context pull, just push",
       "files": [],
       "expectations": [
@@ -17,13 +17,13 @@
         "JSON payload built with HTML formatting (newlines to <br>, bold headers)",
         "REST API PATCH to /services/data/v62.0/sobjects/Opportunity/{id} with {config.salesforce_se_status_field} field",
         "Temp files cleaned up after update",
-        "Daily note checkbox for /ld-salesforce Acme Corp marked complete",
+        "Daily note checkbox for /sales-salesforce Acme Corp marked complete",
         "Success report includes Opportunity ID and content preview"
       ]
     },
     {
       "id": 2,
-      "prompt": "/ld-salesforce NonExistentAccount",
+      "prompt": "/sales-salesforce NonExistentAccount",
       "expected_output": "Reports error when account file doesn't exist",
       "files": [],
       "expectations": [
@@ -34,7 +34,7 @@
     },
     {
       "id": 3,
-      "prompt": "/ld-salesforce AccountWithNoOpps",
+      "prompt": "/sales-salesforce AccountWithNoOpps",
       "expected_output": "Warns user when no opportunity URLs are in frontmatter",
       "files": [],
       "expectations": [
@@ -46,7 +46,7 @@
     },
     {
       "id": 4,
-      "prompt": "/ld-salesforce scan Initech",
+      "prompt": "/sales-salesforce scan Initech",
       "expected_output": "Imports all opportunities with historical deal context, creates files, builds Dataview table",
       "files": [],
       "expectations": [
@@ -76,7 +76,7 @@
     },
     {
       "id": 5,
-      "prompt": "/ld-salesforce scan AccountWithNoSalesforceUrl",
+      "prompt": "/sales-salesforce scan AccountWithNoSalesforceUrl",
       "expected_output": "Falls back to extracting Account ID from an existing opportunity URL when salesforce_account is missing",
       "files": [],
       "expectations": [
@@ -91,7 +91,7 @@
     },
     {
       "id": 6,
-      "prompt": "/ld-salesforce scan AccountWithNoIds",
+      "prompt": "/sales-salesforce scan AccountWithNoIds",
       "expected_output": "Asks user for Salesforce Account URL when no IDs can be determined",
       "files": [],
       "expectations": [
@@ -105,7 +105,7 @@
     },
     {
       "id": 7,
-      "prompt": "/ld-salesforce scan Initech",
+      "prompt": "/sales-salesforce scan Initech",
       "expected_output": "Handles account with all closed opportunities correctly — notes discrepancy if account is an existing customer",
       "files": [],
       "expectations": [
@@ -119,7 +119,7 @@
     },
     {
       "id": 8,
-      "prompt": "/ld-salesforce scan AccountWithMultipleOpenOpps",
+      "prompt": "/sales-salesforce scan AccountWithMultipleOpenOpps",
       "expected_output": "Multiple open opportunities are correctly linked in frontmatter with type-based suffixes",
       "files": [],
       "expectations": [
@@ -132,7 +132,7 @@
     },
     {
       "id": 9,
-      "prompt": "/ld-salesforce scan AccountWithMixedHistory",
+      "prompt": "/sales-salesforce scan AccountWithMixedHistory",
       "expected_output": "Granularity scales with recency — recent opps get detailed timelines, old opps get one-liners",
       "files": [],
       "expectations": [
@@ -146,7 +146,7 @@
     },
     {
       "id": 10,
-      "prompt": "/ld-salesforce scan AccountWithDuplicateOppNames",
+      "prompt": "/sales-salesforce scan AccountWithDuplicateOppNames",
       "expected_output": "Disambiguates opportunity files when multiple opps share the same name",
       "files": [],
       "expectations": [
@@ -159,7 +159,7 @@
     },
     {
       "id": 11,
-      "prompt": "/ld-salesforce scan open Acme Corp",
+      "prompt": "/sales-salesforce scan open Acme Corp",
       "expected_output": "Pulls deal context from open opportunities, updates MEDDPICC and ledger, flags stale fields",
       "files": [],
       "expectations": [
@@ -182,20 +182,20 @@
     },
     {
       "id": 12,
-      "prompt": "/ld-salesforce scan open AccountWithNoOpps",
+      "prompt": "/sales-salesforce scan open AccountWithNoOpps",
       "expected_output": "Warns user to run scan first when no opportunity URLs exist",
       "files": [],
       "expectations": [
         "Mode detected as scan open",
         "Account file read successfully",
         "No salesforce_opportunity fields found or all empty",
-        "Warning tells user to run /ld-salesforce scan {Account} first",
+        "Warning tells user to run /sales-salesforce scan {Account} first",
         "No SOQL queries executed"
       ]
     },
     {
       "id": 13,
-      "prompt": "/ld-salesforce scan open Acme Corp",
+      "prompt": "/sales-salesforce scan open Acme Corp",
       "expected_output": "Filters noise from AE/CSM notes — includes milestones, excludes routine outreach",
       "files": [],
       "expectations": [
@@ -208,7 +208,7 @@
     },
     {
       "id": 14,
-      "prompt": "/ld-salesforce Acme Corp",
+      "prompt": "/sales-salesforce Acme Corp",
       "expected_output": "Validates that the Salesforce Updates section has correct structure: latest entry at top, older entries in DEAL HISTORY",
       "files": [],
       "expectations": [
@@ -227,7 +227,7 @@
     },
     {
       "id": 15,
-      "prompt": "/ld-salesforce MultiOppAccount",
+      "prompt": "/sales-salesforce MultiOppAccount",
       "expected_output": "Pushes to ALL linked opportunities (primary + expansion + renewal) and reports per-opp results",
       "files": [],
       "expectations": [

@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "/ld-calendar",
+      "prompt": "/sales-calendar",
       "expected_output": "Scans today or tomorrow's calendar (based on time of day), creates meeting notes for deal meetings, updates daily notes",
       "files": [],
       "expectations": [
@@ -17,13 +17,13 @@
         "Attendees populated from calendar event display names, user's own email excluded",
         "Daily note updated with full wiki-link paths and 4-item checklist",
         "Existing meeting files not overwritten",
-        "Unrecognized external meetings listed with suggested /ld-create-account commands",
+        "Unrecognized external meetings listed with suggested /sales-create-account commands",
         "Report table shows deal meetings, prep, internal, skipped, and unrecognized"
       ]
     },
     {
       "id": 2,
-      "prompt": "/ld-calendar week",
+      "prompt": "/sales-calendar week",
       "expected_output": "Scans Monday through Friday of the current week, creates meeting notes for all days",
       "files": [],
       "expectations": [
@@ -35,7 +35,7 @@
     },
     {
       "id": 3,
-      "prompt": "/ld-calendar next week",
+      "prompt": "/sales-calendar next week",
       "expected_output": "Scans Monday through Friday of the following week",
       "files": [],
       "expectations": [
@@ -46,7 +46,7 @@
     },
     {
       "id": 4,
-      "prompt": "/ld-calendar 2026-04-15",
+      "prompt": "/sales-calendar 2026-04-15",
       "expected_output": "Scans a specific date",
       "files": [],
       "expectations": [
@@ -56,7 +56,7 @@
     },
     {
       "id": 5,
-      "prompt": "/ld-calendar tomorrow",
+      "prompt": "/sales-calendar tomorrow",
       "expected_output": "Scans tomorrow regardless of time of day",
       "files": [],
       "expectations": [

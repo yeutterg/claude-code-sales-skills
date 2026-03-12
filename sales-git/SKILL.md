@@ -78,7 +78,7 @@ Report what was fixed.
 - Skill command names (`/sales-meeting`, `/sales-salesforce`, etc.) -- these are the skill identifiers, not proprietary info
 - Generic examples already using placeholder names (Acme Corp, Jane Smith, etc.)
 - Config variable references like `{config.vault_path}` -- these ARE the correct pattern
-- The word "LaunchDarkly" when it appears as a default value suggestion (e.g., "default: LaunchDarkly") in ld-setup only
+- The company name when it appears as a default value suggestion (e.g., "default: {company}") in sales-setup only
 
 ### Step 3: Check Git Status
 

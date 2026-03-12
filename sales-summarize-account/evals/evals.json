@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "/ld-summarize-account Acme Corp",
+      "prompt": "/sales-summarize-account Acme Corp",
       "expected_output": "Processes all meetings via subagents, updates ledger, MEDDPICC, TECHMAPS, CoM, tech stack, architecture, contacts, Salesforce updates",
       "files": [],
       "expectations": [
@@ -26,14 +26,14 @@
         "Missing contacts created with correct template",
         "Contacts enriched with role and LinkedIn via subagents",
         "Daily note checkbox marked complete",
-        "/ld-git skill invoked to commit and push",
+        "/sales-git skill invoked to commit and push",
         "No blank line between heading and first bullet",
         "Product names match config"
       ]
     },
     {
       "id": 2,
-      "prompt": "/ld-summarize-account Acme Corp",
+      "prompt": "/sales-summarize-account Acme Corp",
       "expected_output": "Salesforce Updates section follows correct structure: latest entry at top, MEDDPICC/TECHMAPS/TECH STACK in middle, DEAL HISTORY with older entries at bottom",
       "files": [],
       "expectations": [

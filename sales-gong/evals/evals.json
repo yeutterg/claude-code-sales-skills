@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "/ld-gong Acme Corp https://app.gong.io/call?id=1234567890&account-id=9876543210",
+      "prompt": "/sales-gong Acme Corp https://app.gong.io/call?id=1234567890&account-id=9876543210",
       "expected_output": "Imports a single Gong call: opens browser, extracts brief and transcript, writes to meeting file",
       "files": [],
       "expectations": [
@@ -13,7 +13,7 @@
         "Playwright CLI used to open browser with --headed --persistent flags",
         "Login check performed (snapshot or URL check for sign-in page)",
         "Call date, title, duration, and attendees extracted from the call page",
-        "Existing meeting file matched by date and topic, or new one created via /ld-meeting",
+        "Existing meeting file matched by date and topic, or new one created via /sales-meeting",
         "Brief extracted from Briefs tab BEFORE clicking Transcript",
         "Video/audio elements paused immediately after page load",
         "Transcript tab clicked and content extracted via eval",
@@ -28,7 +28,7 @@
     },
     {
       "id": 2,
-      "prompt": "/ld-gong Acme Corp https://app.gong.io/account/activity?id=123456",
+      "prompt": "/sales-gong Acme Corp https://app.gong.io/account/activity?id=123456",
       "expected_output": "Bulk imports all calls from the Gong activity page using parallel tab processing",
       "files": [],
       "expectations": [
@@ -51,7 +51,7 @@
     },
     {
       "id": 3,
-      "prompt": "/ld-gong Acme Corp",
+      "prompt": "/sales-gong Acme Corp",
       "expected_output": "Scan mode: matches existing meetings without gong_url to Gong recordings by date",
       "files": [],
       "expectations": [
@@ -67,7 +67,7 @@
     },
     {
       "id": 4,
-      "prompt": "/ld-gong Acme Corp https://notes.granola.ai/t/abcd1234-5678-efgh-ijkl-mnopqrstuvwx",
+      "prompt": "/sales-gong Acme Corp https://notes.granola.ai/t/abcd1234-5678-efgh-ijkl-mnopqrstuvwx",
       "expected_output": "Imports a Granola summary into an existing or new meeting file",
       "files": [],
       "expectations": [
@@ -84,7 +84,7 @@
     },
     {
       "id": 5,
-      "prompt": "/ld-gong Acme Corp https://app.gong.io/call?id=999 (non-recorded call)",
+      "prompt": "/sales-gong Acme Corp https://app.gong.io/call?id=999 (non-recorded call)",
       "expected_output": "Handles non-recorded calls by updating attendees and gong_url only",
       "files": [],
       "expectations": [

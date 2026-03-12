@@ -3,15 +3,15 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "/ld-today morning",
+      "prompt": "/sales-today morning",
       "expected_output": "Morning workflow: scan today's calendar, handle new accounts, process outstanding items from previous days",
       "files": [],
       "expectations": [
         "Config read and calendar_configured checked",
         "Mode forced to morning",
         "Current date and day of week determined",
-        "/ld-calendar invoked with no arguments (defaults to today in morning)",
-        "Unrecognized external meetings trigger /ld-create-account for each new company",
+        "/sales-calendar invoked with no arguments (defaults to today in morning)",
+        "Unrecognized external meetings trigger /sales-create-account for each new company",
         "New accounts get URL-paste checklist items in daily note (NOT auto-processed)",
         "Past daily note entries with unchecked items processed: Gong scan, summarize, Salesforce push",
         "Accounts missing salesforce_opportunity or gong_url URLs skipped (not auto-processed)",
@@ -21,36 +21,36 @@
     },
     {
       "id": 2,
-      "prompt": "/ld-today evening",
+      "prompt": "/sales-today evening",
       "expected_output": "Evening workflow: process today's meetings, scan tomorrow's calendar, handle new accounts",
       "files": [],
       "expectations": [
         "Mode forced to evening",
         "Today's daily note read for unchecked deal meeting items",
-        "/ld-gong scan run for accounts with unchecked Gong transcript items",
-        "/ld-summarize-account run for accounts with unchecked summarize items",
-        "/ld-salesforce run for accounts with unchecked Salesforce items",
-        "/ld-calendar tomorrow invoked to set up tomorrow's meetings",
-        "Unrecognized external meetings handled with /ld-create-account",
+        "/sales-gong scan run for accounts with unchecked Gong transcript items",
+        "/sales-summarize-account run for accounts with unchecked summarize items",
+        "/sales-salesforce run for accounts with unchecked Salesforce items",
+        "/sales-calendar tomorrow invoked to set up tomorrow's meetings",
+        "Unrecognized external meetings handled with /sales-create-account",
         "Report shows today's processing results and tomorrow's calendar setup"
       ]
     },
     {
       "id": 3,
-      "prompt": "/ld-today (Friday evening)",
+      "prompt": "/sales-today (Friday evening)",
       "expected_output": "Evening workflow plus weekly review triggered by Friday detection",
       "files": [],
       "expectations": [
         "Day of week detected as Friday (5) with evening mode",
         "run_weekly flag set to true",
         "Normal evening workflow runs first",
-        "/ld-weekly runs AFTER all daily processing completes",
+        "/sales-weekly runs AFTER all daily processing completes",
         "Weekly review summary included in final report"
       ]
     },
     {
       "id": 4,
-      "prompt": "/ld-today (no calendar configured)",
+      "prompt": "/sales-today (no calendar configured)",
       "expected_output": "Warns about missing calendar config but continues with non-calendar steps",
       "files": [],
       "expectations": [
@@ -63,7 +63,7 @@
     },
     {
       "id": 5,
-      "prompt": "/ld-today (no Playwright configured)",
+      "prompt": "/sales-today (no Playwright configured)",
       "expected_output": "Skips Gong imports when Playwright CLI is not configured",
       "files": [],
       "expectations": [
