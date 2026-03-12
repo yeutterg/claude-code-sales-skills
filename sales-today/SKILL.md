@@ -236,6 +236,10 @@ Then create `Coaching Log.md` with this template:
 type: coaching-log
 ---
 
+## Playbook
+
+Personalized scripts and techniques refined from transcript analysis. The coaching system checks these during tip generation and flags deviations.
+
 ## Active Focus Areas
 
 ## Retired
@@ -245,6 +249,7 @@ type: coaching-log
 
 This file tracks:
 
+- **Playbook**: Personalized scripts and techniques (introductions, objection handling, etc.) refined from transcript analysis. When generating tips, check if the user deviated from their own playbook — that's a high-value coaching moment.
 - **Active Focus Areas**: Patterns currently being worked on, with observation dates and frequency
 - **Retired**: Patterns the user has improved on
 - **Tip History**: Chronological log of every tip given
@@ -258,12 +263,15 @@ This file tracks:
    - If improved consistently across 3+ calls, move to Retired with a note
    - Make today's coaching tip a positive reinforcement: "In the {Account} call, you did X. That landed well because Y. Keep it up."
 
-3. **Generate the tip.** Either:
+3. **Check the Playbook.** If the log has a `## Playbook` section with personalized scripts (introductions, objection handling, etc.), compare the user's actual behavior in transcripts against their playbook. Deviations are high-value coaching moments — "You have a tight 15-word AI intro in your playbook, but in the Acme call you fell back to the 3-sentence version."
+
+4. **Generate the tip.** Either:
+   - **Flag a playbook deviation** with the specific moment and the playbook script they should have used
    - **Follow up** on an active pattern with a new example from today's transcripts
    - **Introduce a new pattern** if all active areas are improving or retired
    - **Reinforce improvement** if the user fixed something
 
-4. **Update the log** after generating the tip:
+5. **Update the log** after generating the tip:
    - Add to Tip History: `- M/D: {tip summary} | Account: {account} | Focus: {category} | Status: {new/recurring/improved/retired}`
    - If this is a new pattern, add it to Active Focus Areas with the date and account
    - If following up on an existing pattern, increment the count in Active Focus Areas
@@ -290,11 +298,15 @@ Process accounts in parallel using subagents where possible.
 
 Skip any account where the "Paste Salesforce Opportunity URL" or "Paste Gong Activity URL" checkboxes exist and are unchecked — the user hasn't provided the URLs yet.
 
-### Morning Step 5: Weekly Review (if applicable)
+### Morning Step 5: Export PDFs (if enabled)
+
+If `pdf_export` is `true` in config, run `/sales-pdf` to export accounts that were summarized during this run (Morning Step 4). Pass only the accounts that had `/sales-summarize-account` run successfully in Step 4.
+
+### Morning Step 6: Weekly Review (if applicable)
 
 If `run_weekly` is true, run `/sales-weekly`.
 
-### Morning Step 6: Report
+### Morning Step 7: Report
 
 Output a summary:
 ```
@@ -312,6 +324,8 @@ Morning workflow complete.
 ## Pending Action
 These accounts need your attention before they can be processed:
 - {Account}: Paste Salesforce URL and Gong URL into account file
+
+{If pdf_export enabled: ## PDFs Exported\n- {N} account PDFs exported to {pdf_path}}
 
 {If weekly ran: ## Weekly Review\n{weekly summary}}
 ```
@@ -350,11 +364,15 @@ Same as Morning Step 3, but for tomorrow's deal meetings. Generate exec summarie
 
 Add the `## AE Exec Summaries` section to **today's** daily note (the day the workflow runs), using the same format as Morning Step 3. This keeps all prep and recap content in one place for the user to review tonight.
 
-### Evening Step 5: Weekly Review (if applicable)
+### Evening Step 5: Export PDFs (if enabled)
+
+If `pdf_export` is `true` in config, run `/sales-pdf` to export accounts that were summarized during this run (Evening Step 1). Pass only the accounts that had `/sales-summarize-account` run successfully in Step 1.
+
+### Evening Step 6: Weekly Review (if applicable)
 
 If `run_weekly` is true, run `/sales-weekly`.
 
-### Evening Step 6: Report
+### Evening Step 7: Report
 
 Output a summary:
 ```
@@ -373,6 +391,8 @@ Evening workflow complete.
 These accounts need your attention before they can be processed:
 - {Account}: Paste Salesforce URL and Gong URL into account file
 
+{If pdf_export enabled: ## PDFs Exported\n- {N} account PDFs exported to {pdf_path}}
+
 {If weekly ran: ## Weekly Review\n{weekly summary}}
 ```
 
@@ -389,3 +409,4 @@ These accounts need your attention before they can be processed:
 - Do not ask for user input during the workflow — run autonomously from start to finish
 - If Playwright CLI is not configured (`playwright_configured` is not true in config), skip all Gong import steps and note in the report: "Gong imports skipped: Playwright CLI not configured. Run `/sales-setup playwright` to enable."
 - If `skip_gong` is true (from `no gong` argument), skip all Gong import steps. Leave Gong transcript checkboxes unchecked — they will be picked up on a future manual run. Note in the report: "Gong imports skipped: `no gong` flag set." Still proceed with `/sales-summarize-account` and `/sales-salesforce` for accounts that already have transcripts.
+- If `pdf_export` is `true` in config, run `/sales-pdf` after all account processing is complete (after summarize + salesforce steps) in both morning and evening modes. Export only accounts that were summarized during this run.

@@ -207,6 +207,8 @@ calendar_mode: {all or deals}
 calendar_include_prep: {true/false}
 calendar_configured: {true/false}
 gong_workspace_id: {workspace ID or empty}
+pdf_export: {true/false}
+pdf_path: {PDF output path or empty}
 products:
   - name: {Product Name}
     description: {brief description}
@@ -229,7 +231,7 @@ It is read by skills at runtime and survives repo updates.
 To reconfigure or pull updates, run `/sales-setup` again.
 ```
 
-If the config already existed, preserve the `salesforce_username`, `salesforce_instance_url`, `salesforce_se_status_field`, `salesforce_deal_health_field`, `salesforce_se_lookup_fields`, `salesforce_custom_fields`, `salesforce_configured`, `playwright_configured`, `calendar_id`, `calendar_user_emails`, `calendar_mode`, `calendar_include_prep`, `calendar_configured`, `gong_workspace_id`, `public_repo_path`, and `setup_date` values from the old config. Update `last_updated` to today.
+If the config already existed, preserve the `salesforce_username`, `salesforce_instance_url`, `salesforce_se_status_field`, `salesforce_deal_health_field`, `salesforce_se_lookup_fields`, `salesforce_custom_fields`, `salesforce_configured`, `playwright_configured`, `calendar_id`, `calendar_user_emails`, `calendar_mode`, `calendar_include_prep`, `calendar_configured`, `gong_workspace_id`, `pdf_export`, `pdf_path`, `public_repo_path`, and `setup_date` values from the old config. Update `last_updated` to today.
 
 ### Step 6: Create Symlinks
 
@@ -314,7 +316,20 @@ Options:
 - **Yes** — Run the **Playwright CLI Setup** flow below
 - **No** — Skip
 
-### Step 13: Report
+### Step 13: PDF Export (Optional)
+
+Ask the user: "Would you like to export account PDFs daily when running `/sales-today`? This generates clean, shareable PDFs of your account files. (y/n)"
+
+Options:
+- **Yes:**
+  1. Suggest default path: `{VAULT_PATH}/{COMPANY_FOLDER}/PDFs` and ask: "Where should PDFs be saved? (default: `{VAULT_PATH}/{COMPANY_FOLDER}/PDFs`)"
+  2. Accept the default or a custom path
+  3. Create the PDFs folder if it doesn't exist: `mkdir -p "{chosen_path}"`
+  4. Update config with `pdf_export: true` and `pdf_path: {chosen_path}`
+- **No:**
+  - Set `pdf_export: false` in config, leave `pdf_path` empty
+
+### Step 14: Report
 
 Output a summary of everything that was done:
 
@@ -336,6 +351,7 @@ Setup complete!
   Salesforce: {configured/not configured}
   Calendar:   {configured/not configured}
   Playwright: {configured/not configured}
+  PDF Export: {enabled (path) / not configured}
 
 To pull updates and re-apply your config, just run /sales-setup again.
 ```

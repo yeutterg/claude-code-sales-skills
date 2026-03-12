@@ -5,17 +5,18 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 ## Table of Contents
 
 - [Skills](#skills)
-  - [`/sales-today`](#ld-today)
-  - [`/sales-calendar`](#ld-calendar)
-  - [`/sales-create-account`](#ld-create-account)
-  - [`/sales-git`](#ld-git)
-  - [`/sales-gong`](#ld-gong)
-  - [`/sales-meeting`](#ld-meeting)
-  - [`/sales-review-learnings`](#ld-review-learnings)
-  - [`/sales-salesforce`](#ld-salesforce)
+  - [`/sales-today`](#sales-today)
+  - [`/sales-calendar`](#sales-calendar)
+  - [`/sales-create-account`](#sales-create-account)
+  - [`/sales-git`](#sales-git)
+  - [`/sales-gong`](#sales-gong)
+  - [`/sales-meeting`](#sales-meeting)
+  - [`/sales-pdf`](#sales-pdf)
+  - [`/sales-review-learnings`](#sales-review-learnings)
+  - [`/sales-salesforce`](#sales-salesforce)
   - [`/sales-setup`](#sales-setup)
-  - [`/sales-summarize-account`](#ld-summarize-account)
-  - [`/sales-weekly`](#ld-weekly)
+  - [`/sales-summarize-account`](#sales-summarize-account)
+  - [`/sales-weekly`](#sales-weekly)
   - [`/schedule-usps-pickup`](#schedule-usps-pickup)
 - [Skill Dependency Graph](#skill-dependency-graph)
 - [Prerequisites](#prerequisites)
@@ -39,12 +40,13 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 
 | Skill | Description |
 |-------|-------------|
-| `/sales-today` | Daily sales workflow: morning prep or evening wrap-up with calendar scan, AE exec summaries, coaching tips, Gong imports, account summaries, and Salesforce updates |
+| `/sales-today` | Daily sales workflow: morning prep or evening wrap-up with calendar scan, AE exec summaries, coaching tips, Gong imports, account summaries, Salesforce updates, and PDF exports |
 | `/sales-calendar` | Scan Google Calendar for upcoming meetings, match them to accounts, extract agendas, generate targeted questions, and auto-create meeting notes |
 | `/sales-create-account` | Create a new account folder structure with template files and business context |
 | `/sales-git` | Commit and push skill changes and auto-regenerate the README |
 | `/sales-gong` | Import Gong calls or Granola meetings into Obsidian meeting notes, or bulk import all calls for an account |
 | `/sales-meeting` | Create meeting notes for a sales account and link them in the daily note |
+| `/sales-pdf` | Export account files to PDF with clean formatting via pandoc and Playwright |
 | `/sales-review-learnings` | Review patterns and insights discovered by skills: competitors, objections, feature requests, model performance, and template drift |
 | `/sales-salesforce` | Push SE Status to Salesforce, scan accounts for opportunities and deal context, or discover all your open opportunities across Salesforce |
 | `/sales-setup` | Post-clone setup: configure vault path, name, role, company, symlinks, and optional Salesforce CLI / Playwright CLI / Google Calendar |
@@ -126,6 +128,19 @@ Creates a meeting note for a sales account and links it in today's daily note.
 - Checklist: Gong transcript, summarize account, push to Salesforce, send stakeholder update
 - Supports creating multiple meetings at once with freeform date/topic input
 
+### `/sales-pdf`
+
+**Usage:** `/sales-pdf [account | all | today]`
+
+Exports account markdown files to professionally formatted PDFs. Preprocesses Obsidian-specific syntax (dataview queries, wiki-links, callouts, transclusion embeds), resolves inline field references from frontmatter, generates contacts and meetings tables, converts to HTML via pandoc, and prints to PDF via Playwright MCP.
+
+- No arguments or `today`: exports accounts that were summarized during the current `/sales-today` run
+- Specific account name: exports just that account
+- `all`: exports every account with substantive content (skips template-only files)
+- Requires `pandoc` (`brew install pandoc`) and Playwright MCP (`/sales-setup playwright`)
+- Enable via `/sales-setup` (sets `pdf_export: true` and `pdf_path` in config)
+- Called automatically by `/sales-today` after account summaries complete
+
 ### `/sales-review-learnings`
 
 **Usage:** `/sales-review-learnings`
@@ -206,6 +221,7 @@ graph LR
     today --> salesforce1["/sales-salesforce"]
     today --> create1["/sales-create-account"]
     today --> weekly["/sales-weekly"]
+    today --> pdf["/sales-pdf"]
 
     calendar --> meeting1["/sales-meeting"]
     calendar --> create2["/sales-create-account"]
@@ -228,6 +244,7 @@ graph LR
   - In Dataview settings, enable **Enable Inline Queries** (required for inline expressions like `` `= this.ae` `` to render in account files)
 - *Optional, for `/sales-salesforce`:* [Homebrew](https://brew.sh) and [Salesforce CLI](https://developer.salesforce.com/tools/salesforcecli) (`brew install sf`)
 - *Optional, for `/sales-gong`:* [Playwright CLI](https://github.com/microsoft/playwright-cli) (`npm install -g @playwright/cli@latest`)
+- *Optional, for `/sales-pdf`:* [pandoc](https://pandoc.org) (`brew install pandoc`) and Playwright MCP (same as `/sales-gong`)
 - *Optional, for `/sales-calendar`:* Claude.ai Google Calendar integration (connect your Google account in Claude Desktop Settings > Integrations, then run `/sales-setup calendar`)
 
 ## Obsidian Vault Setup
@@ -270,19 +287,19 @@ You can add additional folders under `{Company}/` as you see fit (for example, c
 1. Fork this repo on GitHub
 2. Clone your fork:
    ```bash
-   git clone https://github.com/<your-username>/claude-code-obsidian-commands.git ~/repos/claude-code-obsidian-commands
+   git clone https://github.com/<your-username>/claude-code-sales-skills.git ~/repos/claude-code-sales-skills
    ```
 3. Add upstream so you can pull future updates from the original repo:
    ```bash
-   cd ~/repos/claude-code-obsidian-commands
-   git remote add upstream https://github.com/<original-author>/claude-code-obsidian-commands.git
+   cd ~/repos/claude-code-sales-skills
+   git remote add upstream https://github.com/<original-author>/claude-code-sales-skills.git
    ```
 
 To pull upstream updates later, just run `/sales-setup` — it checks for updates automatically.
 
 > **Updating from an older version?** If your `/sales-setup` doesn't pull updates automatically, run this once to get current:
 > ```bash
-> cd ~/repos/claude-code-obsidian-commands
+> cd ~/repos/claude-code-sales-skills
 > git fetch upstream
 > git merge upstream/main --no-edit
 > ```
@@ -326,6 +343,7 @@ The recommended way to use these skills is to run `/sales-today` as a daily sche
 - Scans tomorrow's calendar and creates meeting notes (with agendas, targeted questions, and competitive intel)
 - Generates per-AE exec summaries with deal insights for tomorrow's meetings
 - Adds a daily coaching tip based on recent call patterns (tracked in `Resources/Coaching Log.md`)
+- Exports updated account PDFs if PDF export is enabled (via `/sales-pdf`)
 - Creates accounts for any new companies (prompts you to add Salesforce/Gong URLs)
 - Runs `/sales-weekly` on Friday evenings (includes Deal Risk Radar with Red/Yellow/Green scoring)
 
@@ -479,7 +497,7 @@ Contributions are welcome! If you've built a new skill, improved an existing one
 
 **Guidelines:**
 - Keep skill instructions clear and self-contained. Another user should be able to use your skill without extra context.
-- If your skill adds a new `ld-*` directory, `/sales-git` will automatically pick it up for the README.
+- If your skill adds a new `sales-*` directory, `/sales-git` will automatically pick it up for the README.
 - Test your skill on at least one real account before submitting.
 - Don't include vault-specific paths, company names, or personal info. Use `{config.*}` references and `/sales-setup` handles personalization.
 - `/sales-git` will check for proprietary information before committing and auto-fix any leaks.
