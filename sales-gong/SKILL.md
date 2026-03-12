@@ -539,12 +539,12 @@ Next steps:
 
 ### Cleanup
 
-**Do NOT close the browser session after imports.** The persistent session preserves SSO cookies across runs and accounts. Closing it forces the user to re-authenticate on the next run.
-
-Only close the session if the user explicitly asks to close it:
+After all imports for this invocation are complete, close the browser session:
 ```bash
 playwright-cli -s=gong close
 ```
+
+The `--profile` flag means SSO cookies are saved to disk in the persistent browser profile, so closing the session does NOT lose authentication. The user will not need to re-authenticate on the next run — the profile directory retains cookies across sessions.
 
 ### Error Handling
 

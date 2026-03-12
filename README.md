@@ -1,6 +1,6 @@
 # Claude Code Skills for Sales Teams
 
-Claude Code skills for managing sales accounts, meeting notes, and deal documentation in [Obsidian](https://obsidian.md). Automates the RevOps workflow: calendar scanning, Gong transcript imports, MEDDPICC tracking, Salesforce updates, and SE coaching.
+Claude Code skills for managing sales accounts, meeting notes, and deal documentation in [Obsidian](https://obsidian.md). Automates the RevOps workflow: calendar scanning, call transcript imports, MEDDPICC tracking, Salesforce updates, and SE coaching.
 
 ## Table of Contents
 
@@ -40,7 +40,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 
 | Skill | Description |
 |-------|-------------|
-| `/sales-today` | Daily sales workflow: morning prep or evening wrap-up with calendar scan, per-call deal prep and recap, coaching tips, Gong imports, account summaries, Salesforce updates, and PDF exports |
+| `/sales-today` | Daily sales workflow: morning prep or evening wrap-up with calendar scan, per-call deal prep and recap, coaching tips, call imports, account summaries, Salesforce updates, and PDF exports |
 | `/sales-calendar` | Scan Google Calendar for upcoming meetings, match them to accounts, extract agendas, generate targeted questions, and auto-create meeting notes |
 | `/sales-create-account` | Create a new account folder structure with template files and business context |
 | `/sales-git` | Commit and push skill changes and auto-regenerate the README |
@@ -61,7 +61,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 Orchestrates the daily sales workflow based on time of day. Designed to run as a scheduled task in Claude Desktop.
 
 - **Morning** (before noon): scans today's calendar, creates meeting notes, generates per-call deal prep with stakeholder send lists, adds a daily coaching tip, processes outstanding items from previous days
-- **Evening** (noon or later): processes today's meetings (Gong, summaries, Salesforce), scans tomorrow's calendar, generates deal prep for tomorrow
+- **Evening** (noon or later): processes today's meetings (call imports, summaries, Salesforce updates), scans tomorrow's calendar, generates deal prep for tomorrow
 - **`no gong` flag**: Skip all Gong import steps (useful for automated/scheduled runs where Gong auth may not be available). Can be combined with morning/evening.
 - **Deal Prep**: Each meeting gets its own section with attendees, MEDDPICC annotations, and 3-4 actionable bullets. Send checkboxes list the AE plus any other internal team members on the calendar invite. Includes a Deal Recap section with outcomes from the prior day's calls.
 - **Coaching Tip**: Analyzes the SE's actual speaking turns in recent call transcripts and surfaces one specific, actionable improvement grounded in a real moment from a real call. Maintains a persistent coaching log at `{Company}/Resources/Coaching Log.md` that tracks active focus areas, follows up on recurring patterns, detects improvement, and celebrates wins. Auto-creates the `Resources/` folder and `Coaching Log.md` file if they don't exist.
@@ -94,7 +94,7 @@ Creates a new account folder structure with template files and populates busines
 - Salesforce Account URL: runs `/sales-salesforce scan` to discover all open and closed opportunities
 - Salesforce Opportunity URL: looks up the parent account, then scans all opportunities
 - Opens the Gong browser early (Step 0) so you can authenticate while setup runs in the background
-- Triggers automatic Gong historical import if Playwright CLI is configured — never skips imports
+- Triggers automatic Gong historical import if Playwright CLI is configured -- never skips imports
 - After imports complete, runs `/sales-summarize-account` to populate MEDDPICC, deal ledger, and all account sections
 
 ### `/sales-git`
@@ -105,7 +105,7 @@ Commits and pushes any changes to the skills GitHub repo.
 
 - Pulls latest upstream updates, scans SKILL.md files for proprietary information, auto-fixes leaks
 - Regenerates README.md from skill frontmatter
-- Commits, pushes, and syncs to public repo with `ld-` to `sales-` renaming
+- Commits, pushes, and syncs to public repo with `sales-` naming
 
 ### `/sales-gong`
 
@@ -115,7 +115,7 @@ Imports Gong calls or Granola meetings into Obsidian meeting notes using [Playwr
 
 - Four modes: single Gong call, Granola summary, scan (match existing meetings to unimported recordings), bulk import
 - Gong imports are mandatory: never skips a call that has a recording, even if the meeting file already has notes. If auth fails, keeps prompting until resolved
-- Uses a shared persistent browser session so SSO cookies survive across accounts and runs (authenticate once, import forever)
+- Uses a shared persistent browser session so SSO cookies survive across accounts and runs (authenticate once, import forever). After all imports complete, closes the browser session -- the profile retains cookies for next time
 - Extracts attendees, briefs, and transcripts in parallel using browser tabs (up to 3 calls at once)
 - Background subagents write to meeting files while the browser continues extracting the next batch
 
@@ -126,7 +126,7 @@ Imports Gong calls or Granola meetings into Obsidian meeting notes using [Playwr
 Creates a meeting note for a sales account and links it in today's daily note.
 
 - Creates a meeting note and links it in today's daily note with a standard checklist
-- Checklist: Gong transcript, summarize account, push to Salesforce, send stakeholder update
+- Checklist: call transcript, summarize account, push to Salesforce, send stakeholder update
 - Supports creating multiple meetings at once with freeform date/topic input
 
 ### `/sales-pdf`
@@ -228,15 +228,18 @@ graph LR
     calendar --> meeting1["/sales-meeting"]
     calendar --> create2["/sales-create-account"]
     gong1 --> meeting2["/sales-meeting"]
-    weekly --> summarize2["/sales-summarize-account"]
+    gong1 --> summarize2["/sales-summarize-account"]
+    weekly --> summarize3["/sales-summarize-account"]
     weekly --> salesforce2["/sales-salesforce"]
     weekly --> create3["/sales-create-account"]
     weekly --> review["/sales-review-learnings"]
     create1 --> salesforce3["/sales-salesforce"]
     create1 --> gong2["/sales-gong"]
-    create1 --> summarize3["/sales-summarize-account"]
+    create1 --> summarize4["/sales-summarize-account"]
     summarize1 --> salesforce4["/sales-salesforce"]
     salesforce1 --> create4["/sales-create-account"]
+    salesforce1 --> gong3["/sales-gong"]
+    salesforce1 --> summarize5["/sales-summarize-account"]
 ```
 
 ## Prerequisites
@@ -294,10 +297,10 @@ You can add additional folders under `{Company}/` as you see fit (for example, c
 3. Add upstream so you can pull future updates from the original repo:
    ```bash
    cd ~/repos/claude-code-sales-skills
-   git remote add upstream https://github.com/<original-author>/claude-code-sales-skills.git
+   git remote add upstream https://github.com/yeutterg/claude-code-sales-skills.git
    ```
 
-To pull upstream updates later, just run `/sales-setup` — it checks for updates automatically.
+To pull upstream updates later, just run `/sales-setup` -- it checks for updates automatically.
 
 > **Updating from an older version?** If your `/sales-setup` doesn't pull updates automatically, run this once to get current:
 > ```bash
@@ -322,7 +325,7 @@ Run `/sales-setup` in Claude Code. It will:
 
 ### 3. Set up the daily scheduled task
 
-The recommended way to use these skills is to run `/sales-today` as a daily scheduled task. It handles calendar scanning, Gong imports, account summaries, and Salesforce updates automatically.
+The recommended way to use these skills is to run `/sales-today` as a daily scheduled task. It handles calendar scanning, call imports, account summaries, and Salesforce updates automatically.
 
 **Set up in Claude Desktop:**
 
@@ -339,7 +342,7 @@ The recommended way to use these skills is to run `/sales-today` as a daily sche
 **Why evening?** Gong typically needs 1-2 hours to process recordings. Running in the evening ensures today's calls are available for import. The evening run also scans tomorrow's calendar so your meeting notes are ready before the next day starts. On Fridays, it automatically triggers the weekly portfolio review.
 
 **What it does each run:**
-- Imports Gong transcripts for today's meetings
+- Imports call transcripts for today's meetings
 - Summarizes accounts with new meeting data
 - Pushes updates to Salesforce
 - Scans tomorrow's calendar and creates meeting notes (with agendas, targeted questions, and competitive intel)
@@ -385,7 +388,7 @@ After each new meeting:
 
 2. **Take your own notes** during the call in the meeting file.
 
-3. **Add external transcripts** once Gong (or other tools) finish processing. Paste the summary and transcript into the meeting note.
+3. **Add external transcripts** once your call recording tool finishes processing. Paste the summary and transcript into the meeting note.
 
 4. **Re-summarize:**
    ```
@@ -466,8 +469,8 @@ Here are some directions you could take this:
 
 - **Gong API integration:** `/sales-gong` currently uses Playwright CLI for browser automation. A native Gong API or MCP server integration would be faster and more reliable
 - ~~**Google Calendar integration**~~ (done)
-- ~~**Competitive intelligence**~~ (done — `/sales-calendar` now generates competitive probing questions from cross-account learnings)
-- ~~**Deal health scoring**~~ (done — `/sales-weekly` scores deals Red/Yellow/Green and pushes to Salesforce)
+- ~~**Competitive intelligence**~~ (done -- `/sales-calendar` now generates competitive probing questions from cross-account learnings)
+- ~~**Deal health scoring**~~ (done -- `/sales-weekly` scores deals Red/Yellow/Green and pushes to Salesforce)
 - **Pipeline dashboard:** Create a skill that reads all account files and generates a summary table with deal stage, next call, and MEDDPICC completeness
 - **Stakeholder map gaps:** Analyze contacts and MEDDPICC to identify missing personas (e.g., no Economic Buyer contact, single-threaded deals)
 - **Win/loss pattern matching:** Compare new account profiles against past accounts to surface winning strategies and common failure modes

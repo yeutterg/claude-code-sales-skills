@@ -97,27 +97,53 @@ Apply these transformations in order:
    - `` `= this.next_call_agenda` `` → Replace with the `next_call_agenda` value (format as comma-separated if it's a YAML list)
    - For any other `` `= this.*` `` expressions where the field exists in frontmatter, substitute the value. If the field is empty or not found, remove the expression.
 
-7. **Force line breaks on consecutive bold-label lines:** Lines like `**AE:** value`, `**SE:** value`, `**Next Call:** value` at the top of the file appear on consecutive lines with no blank line between them. Pandoc collapses these into a single paragraph. Add two trailing spaces (`  `) at the end of each line that starts with `**` and is followed by another `**` line, to force `<br>` in the HTML output. This also applies to the `**Links:**` line.
+7. **Remove empty field labels FIRST:** Remove lines that are just a bold label with nothing after it, like `**AE:** ` or `**Champion:** ` (bold text followed by colon, optional space, and nothing else). This MUST happen before step 8, because removing empty lines changes which lines are consecutive — and step 8 needs to see the final set of consecutive lines.
 
-8. **Convert wiki-links with display text:** Replace `[[path/to/file|Display Text]]` with just `Display Text`.
+8. **Force line breaks on consecutive bold-label lines:** Lines like `**AE:** value`, `**SE:** value`, `**Next Call:** value` at the top of the file appear on consecutive lines with no blank line between them. Pandoc collapses these into a single paragraph. For every line that starts with `**` and is immediately followed by another line starting with `**`, append two spaces (`  `) to the end. This tells pandoc to insert a `<br>` tag. Also add trailing `  ` to the `**Links:**` line.
 
-9. **Convert simple wiki-links:** Replace `[[simple link]]` with just `simple link`.
+   Why this matters: without trailing spaces, pandoc treats consecutive lines as a single paragraph, rendering all fields on one line in the PDF. The two trailing spaces are the standard markdown mechanism for forcing a line break within a paragraph.
 
-10. **Convert Obsidian callouts:** Transform `> [!type] Title` into a blockquote with bold title:
+9. **Convert wiki-links with display text:** Replace `[[path/to/file|Display Text]]` with just `Display Text`.
+
+10. **Convert simple wiki-links:** Replace `[[simple link]]` with just `simple link`.
+
+11. **Convert Obsidian callouts and force blockquote line breaks:** Transform `> [!type] Title` into `> **Title**`. Then, for ALL consecutive blockquote lines (lines starting with `> `), append two trailing spaces (`  `) to each line that is followed by another `> ` line. This is the same mechanism as step 8 — pandoc needs trailing spaces to insert `<br>` tags within blockquote paragraphs.
+
+   Without this, summary callouts like MEDDPICC, TECHMAPS, Command of the Message, and Tech Stack will render all their bullet fields collapsed into a single paragraph in the PDF.
+
+   Example — before:
    ```
-   > **Title**
+   > **Summary**
+   > - **Metrics:** 500+ flags, 2M MAU
+   > - **Economic Buyer:** John Smith (VP Eng)
+   > - **Decision Criteria:** Mobile-first
    ```
-   Preserve the rest of the callout content as regular blockquote lines. **IMPORTANT:** Each `> - **Field:** value` line in the callout must remain on its own line with a line break between items. Do NOT collapse multiple bullet points into a single paragraph. When the callout contains a list of fields (e.g., MEDDPICC summary with Metrics, Economic Buyer, etc.), each field must be a separate `<br>`-terminated line or a separate list item in the output. Insert `  ` (two trailing spaces) or `<br>` at the end of each blockquote line to force line breaks in the HTML output.
+   After adding trailing spaces:
+   ```
+   > **Summary**··
+   > - **Metrics:** 500+ flags, 2M MAU··
+   > - **Economic Buyer:** John Smith (VP Eng)··
+   > - **Decision Criteria:** Mobile-first
+   ```
+   (where `··` represents two trailing space characters)
 
-11. **Remove empty table rows:** Remove table rows where all cells (after the header separator) are empty or contain only whitespace.
-
-12. **Remove empty field labels:** Remove lines that are just a bold label with nothing after it, like `**AE:** ` or `**Champion:** ` (bold text followed by colon, optional space, and nothing else).
+12. **Remove empty table rows:** Remove table rows where all cells (after the header separator) are empty or contain only whitespace.
 
 13. **Add H1 title:** Prepend `# {Account Name}` as the first line.
 
 14. **Add generation date:** Add `*Generated {YYYY-MM-DD}*` on the line after the title, followed by a blank line.
 
 Save the preprocessed markdown to a temp file (e.g., `/tmp/sales-pdf-{Account}.md`).
+
+### Step 2e: Verify Line Breaks (recommended)
+
+After preprocessing, run the verification script to confirm line breaks are correct:
+```bash
+python3 {skill_path}/evals/verify_linebreaks.py /tmp/sales-pdf-{Account}.md
+```
+This checks that the intro section and all summary callouts (MEDDPICC, TECHMAPS, Command of the Message, Tech Stack) have proper `<br>` tags in the HTML output. If any checks fail, review the preprocessed markdown — the most common issues are:
+- Empty field labels not removed before trailing spaces were added (step 7 must precede step 8)
+- Blockquote lines missing trailing spaces (step 11)
 
 ### Step 3: Convert to HTML via pandoc (for each account)
 

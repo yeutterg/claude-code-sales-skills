@@ -1,0 +1,76 @@
+{
+  "skill_name": "ld-pdf",
+  "evals": [
+    {
+      "id": 1,
+      "name": "intro-linebreaks",
+      "prompt": "Preprocess the test fixture and verify the intro section (AE, SE, Deal Type, Next Call, Next Call Agenda) renders with each field on its own line, not collapsed into a single paragraph.",
+      "expected_output": "HTML output has <br /> tags between each bold-label field in the intro paragraph. AE, SE, Deal Type, Next Call, and Next Call Agenda each appear on separate visual lines.",
+      "files": ["evals/test_fixture.md"],
+      "assertions": [
+        {
+          "name": "intro-fields-have-linebreaks",
+          "type": "script",
+          "description": "The intro section (AE/SE/Deal Type/Next Call) must have <br> tags between consecutive bold-label lines. At least N-1 breaks for N fields.",
+          "check": "python evals/verify_linebreaks.py --check-html {html_output}"
+        },
+        {
+          "name": "empty-csm-removed",
+          "type": "content",
+          "description": "The CSM field is empty in the fixture and should be removed entirely, not rendered as a blank label.",
+          "check": "HTML must NOT contain '<strong>CSM:</strong>' followed by only whitespace before the next <br> or <strong>"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "meddpicc-summary-linebreaks",
+      "prompt": "Preprocess the test fixture and verify the MEDDPICC summary callout renders each field (Metrics, Economic Buyer, Decision Criteria, etc.) on its own line.",
+      "expected_output": "The blockquote after the MEDDPICC heading has <br /> tags between each bullet field. Each '- **Field:** value' item appears on a separate line.",
+      "files": ["evals/test_fixture.md"],
+      "assertions": [
+        {
+          "name": "meddpicc-callout-has-linebreaks",
+          "type": "script",
+          "description": "MEDDPICC summary blockquote must have <br> tags between the 8 MEDDPICC fields (Metrics through Competition). At least 7 line breaks expected.",
+          "check": "python evals/verify_linebreaks.py --check-html {html_output}"
+        },
+        {
+          "name": "no-collapsed-bullets",
+          "type": "content",
+          "description": "No bullet items should be collapsed together (pattern: 'value - <strong>' without a preceding line break indicates collapsed items)."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "techmaps-summary-linebreaks",
+      "prompt": "Preprocess the test fixture and verify the TECHMAPS summary callout renders each field on its own line.",
+      "expected_output": "The blockquote after the TECHMAPS heading has <br /> tags between fields. Technical Requirements, Environment, Competitors, Hero, Metrics, Alignment, Plan, and Support each appear on separate lines.",
+      "files": ["evals/test_fixture.md"],
+      "assertions": [
+        {
+          "name": "techmaps-callout-has-linebreaks",
+          "type": "script",
+          "description": "TECHMAPS summary blockquote must have <br> tags between fields.",
+          "check": "python evals/verify_linebreaks.py --check-html {html_output}"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "com-summary-linebreaks",
+      "prompt": "Preprocess the test fixture and verify the Command of the Message summary callout renders Before/Pain/Required/After on separate lines.",
+      "expected_output": "The blockquote after the Command of the Message heading has <br /> tags between the Before, Pain, Required, and After fields.",
+      "files": ["evals/test_fixture.md"],
+      "assertions": [
+        {
+          "name": "com-callout-has-linebreaks",
+          "type": "script",
+          "description": "CoM summary blockquote must have <br> tags between the 4 fields.",
+          "check": "python evals/verify_linebreaks.py --check-html {html_output}"
+        }
+      ]
+    }
+  ]
+}
