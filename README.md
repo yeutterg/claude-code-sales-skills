@@ -17,7 +17,6 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
   - [`/sales-summarize-account`](#sales-summarize-account)
   - [`/sales-today`](#sales-today)
   - [`/sales-weekly`](#sales-weekly)
-  - [`/schedule-usps-pickup`](#schedule-usps-pickup)
 - [Skill Dependency Graph](#skill-dependency-graph)
 - [Prerequisites](#prerequisites)
 - [Obsidian Vault Setup](#obsidian-vault-setup)
@@ -52,7 +51,6 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 | `/sales-summarize-account` | Summarize all meeting notes, update MEDDPICC/TECHMAPS/CoM, enrich contacts, refresh business context |
 | `/sales-today` | Daily sales workflow — morning prep or evening wrap-up with calendar scan, Gong imports, account summaries, and Salesforce updates |
 | `/sales-weekly` | Weekly review of all accounts with open Salesforce opportunities — pulls deal context, summarizes activity, updates ledgers and Salesforce |
-| `/schedule-usps-pickup` | Schedule a USPS package pickup for the next available day |
 
 ### `/sales-calendar`
 
@@ -125,12 +123,6 @@ Orchestrates the daily sales workflow based on time of day. Designed to run as a
 **Usage:** `/sales-weekly`
 
 Portfolio-wide sweep of all accounts with open Salesforce opportunities. Designed to run autonomously: start it and walk away. Scores each open opportunity as Green/Yellow/Red based on 9 signals (champion engagement, stage velocity, stakeholder breadth, competitive pressure, etc.) and pushes health scores to Salesforce. Processes all active accounts in parallel via subagents: Salesforce deal context pull, auto-summarization of any meetings with transcripts, weekly status ledger entry, and Salesforce push. Handles newly closed opportunities automatically. Auto-fixes bad opportunity URLs. Performs a weekly retro with cross-account patterns (competitors, objections, tech stacks) and queues discoveries for `/sales-review-learnings`. Also run automatically by `/sales-today` on Friday evenings through Monday mornings.
-
-### `/schedule-usps-pickup`
-
-**Usage:** `/schedule-usps-pickup <count> [service type], <count> [service type] [date]`
-
-Schedules a USPS package pickup using the USPS website via Playwright CLI browser automation. Flexible input: specify counts with optional service types (ground, priority, express, return, international, other) separated by commas. Defaults to USPS Ground Advantage if no service type given, and next available business day if no date specified. Supports date formats: M/D, MM/DD, or day-of-week. Pre-fills address and contact info from config, selects Mail Room as pickup location, submits automatically without confirmation. Reports confirmation number, date, and package breakdown when complete.
 
 ## Skill Dependency Graph
 
