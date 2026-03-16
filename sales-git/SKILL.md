@@ -141,8 +141,14 @@ Brief paragraph describing what the skill does, its inputs, and key behaviors. G
 ## Prerequisites
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (CLI)
-- [Obsidian](https://obsidian.md) with the [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin enabled
-  - In Dataview settings, enable **Enable Inline Queries** -- this is required for inline expressions like `` `= this.ae` `` to render in account files
+- [Obsidian](https://obsidian.md) with the following community plugins enabled and configured:
+  - [Dataview](https://github.com/blacksmithgu/obsidian-dataview):
+    - Enable **Enable JavaScript Queries** -- required for `dataviewjs` blocks
+    - Enable **Enable Inline Queries** -- required for inline expressions like `` `= this.ae` `` to render in account files
+    - Enable **Enable Inline JavaScript Queries** -- required for inline JS expressions
+  - [Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks):
+    - Set **Global task filter** to remove any default filter so all tasks are tracked
+    - Enable **Set done date on every completed task** -- useful for tracking when action items were completed
 - *Optional, for `/sales-salesforce`:* [Homebrew](https://brew.sh) and [Salesforce CLI](https://developer.salesforce.com/tools/salesforcecli) (`brew install sf`)
 - *Optional, for `/sales-gong`:* [Homebrew](https://brew.sh) and [Playwright MCP](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md) (`claude mcp add playwright -- npx @playwright/mcp@latest --browser chromium`)
 

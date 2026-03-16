@@ -45,12 +45,12 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 | `/sales-gong` | Import Gong calls or Granola meetings into Obsidian meeting notes, or bulk import all calls for an account |
 | `/sales-meeting` | Create meeting notes for a sales account and link them in the daily note |
 | `/sales-pdf` | Export account files to PDF with clean formatting via pandoc and Playwright |
-| `/sales-review-learnings` | Review patterns and insights discovered by skills — competitors, objections, feature requests, model performance, and template drift. Use when the daily note flags new skill learnings for review. |
+| `/sales-review-learnings` | Review patterns and insights discovered by skills -- competitors, objections, feature requests, model performance, and template drift. Use when the daily note flags new skill learnings for review. |
 | `/sales-salesforce` | Push SE Status to Salesforce, scan accounts for opportunities and deal context, discover all your open opportunities, or generate an SE mapping report across all AEs. Use this skill whenever the user mentions Salesforce, opportunities, deal updates, SE status, SE mapping, or wants to see all their accounts. |
 | `/sales-setup` | Post-clone setup: configure vault path, name, role, company, symlinks, and optional Salesforce CLI / Playwright CLI / Google Calendar. Re-run anytime to pull upstream updates and re-apply your config. |
 | `/sales-summarize-account` | Summarize all meeting notes, update MEDDPICC/TECHMAPS/CoM, enrich contacts, refresh business context |
-| `/sales-today` | Daily sales workflow — morning prep or evening wrap-up with calendar scan, Gong imports, account summaries, and Salesforce updates |
-| `/sales-weekly` | Weekly review of all accounts with open Salesforce opportunities — pulls deal context, summarizes activity, updates ledgers and Salesforce |
+| `/sales-today` | Daily sales workflow -- morning prep or evening wrap-up with calendar scan, Gong imports, account summaries, and Salesforce updates |
+| `/sales-weekly` | Weekly review of all accounts with open Salesforce opportunities -- pulls deal context, summarizes activity, updates ledgers and Salesforce |
 
 ### `/sales-calendar`
 
@@ -62,7 +62,7 @@ Scans Google Calendar for upcoming meetings, identifies which ones map to existi
 
 **Usage:** `/sales-create-account <account name> [gong_url] [salesforce_url]`
 
-Creates a new account folder structure with template files and populates business context from the web. Optionally accepts a Gong activity URL, Salesforce Account URL, or Salesforce Opportunity URL (any combination, any order). Auto-detects URL type by checking path segments. Opens the Gong browser early (Step 0) so you can authenticate while setup runs in the background. If a Salesforce URL is provided, runs `/sales-salesforce scan` to discover all open and closed opportunities. Triggers automatic Gong historical import if Playwright CLI is configured. After imports complete, runs `/sales-summarize-account` to populate MEDDPICC, deal ledger, and all account sections.
+Creates a new account folder structure with template files and populates business context from the web. Optionally accepts a Gong activity URL, Salesforce Account URL, or Salesforce Opportunity URL (any combination, any order). Auto-detects URL type by checking path segments. Opens the Gong browser early so you can authenticate while setup runs in the background. If a Salesforce URL is provided, runs `/sales-salesforce scan` to discover all open and closed opportunities. Triggers automatic Gong historical import if Playwright CLI is configured. After imports complete, runs `/sales-summarize-account` to populate MEDDPICC, deal ledger, and all account sections.
 
 ### `/sales-git`
 
@@ -74,7 +74,7 @@ Commits and pushes any changes to the skills GitHub repo. Pulls latest upstream 
 
 **Usage:** `/sales-gong <account name> [gong_or_granola_url]`
 
-Imports Gong calls or Granola meetings into Obsidian meeting notes using [Playwright CLI](https://github.com/microsoft/playwright-cli) for browser automation. Four modes: single Gong call, Granola summary, scan (match existing meetings to unimported recordings), and bulk import. Gong imports are mandatory: never skips a call that has a recording, even if the meeting file already has notes. Uses a shared persistent browser session with the user's own browser profile (for password manager extensions and saved SSO cookies). Extracts attendees, briefs, and transcripts in parallel using browser tabs (up to 3 calls at once). Background subagents write to meeting files while the browser continues extracting the next batch.
+Imports Gong calls or Granola meetings into Obsidian meeting notes using Playwright CLI for browser automation. Four modes: single Gong call, Granola summary, scan (match existing meetings to unimported recordings), and bulk import. Gong imports are mandatory: never skips a call that has a recording, even if the meeting file already has notes. Uses a shared persistent browser session with the user's own browser profile (for password manager extensions and saved SSO cookies). Extracts attendees, briefs, and transcripts in parallel using browser tabs (up to 3 calls at once). Background subagents write to meeting files while the browser continues extracting the next batch.
 
 ### `/sales-meeting`
 
@@ -155,12 +155,16 @@ graph LR
 ## Prerequisites
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (CLI)
-- [Obsidian](https://obsidian.md) with the [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin enabled
-  - In Dataview settings, enable **Enable Inline Queries** (required for inline expressions like `` `= this.ae` `` to render in account files)
+- [Obsidian](https://obsidian.md) with the following community plugins enabled and configured:
+  - [Dataview](https://github.com/blacksmithgu/obsidian-dataview):
+    - Enable **Enable JavaScript Queries** -- required for `dataviewjs` blocks
+    - Enable **Enable Inline Queries** -- required for inline expressions like `` `= this.ae` `` to render in account files
+    - Enable **Enable Inline JavaScript Queries** -- required for inline JS expressions
+  - [Tasks](https://github.com/obsidian-tasks-group/obsidian-tasks):
+    - Set **Global task filter** to remove any default filter so all tasks are tracked
+    - Enable **Set done date on every completed task** -- useful for tracking when action items were completed
 - *Optional, for `/sales-salesforce`:* [Homebrew](https://brew.sh) and [Salesforce CLI](https://developer.salesforce.com/tools/salesforcecli) (`brew install sf`)
-- *Optional, for `/sales-gong`:* [Playwright CLI](https://github.com/microsoft/playwright-cli) (`npm install -g @playwright/cli@latest`)
-- *Optional, for `/sales-pdf`:* [pandoc](https://pandoc.org) (`brew install pandoc`) and Playwright MCP (same as `/sales-gong`)
-- *Optional, for `/sales-calendar`:* Claude.ai Google Calendar integration (connect your Google account in Claude Desktop Settings > Integrations, then run `/sales-setup calendar`)
+- *Optional, for `/sales-gong`:* [Homebrew](https://brew.sh) and [Playwright MCP](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md) (`claude mcp add playwright -- npx @playwright/mcp@latest --browser chromium`)
 
 ## Obsidian Vault Setup
 
