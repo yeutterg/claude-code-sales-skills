@@ -369,26 +369,22 @@ If `run_weekly` is true, run `/sales-weekly`.
 
 ### Morning Step 7: Report
 
-Output a summary:
+Output a concise summary of what was accomplished, followed by warnings for anything that couldn't be processed:
+
 ```
 Morning workflow complete.
 
-## Calendar
 - {N} meetings set up for today
-- {N} new accounts created (pending Salesforce/Gong URLs)
+- {N} Gong transcripts imported, {N} accounts summarized, {N} Salesforce pushes
+- {N} new accounts created
+{If pdf_export enabled: - {N} PDFs exported}
+{If weekly ran: - Weekly review complete: {brief summary}}
 
-## Catch-Up (from previous days)
-- {N} Gong transcripts imported
-- {N} accounts summarized
-- {N} Salesforce updates pushed
-
-## Pending Action
-These accounts need your attention before they can be processed:
-- {Account}: Paste Salesforce URL and Gong URL into account file
-
-{If pdf_export enabled: ## PDFs Exported\n- {N} account PDFs exported to {pdf_path}}
-
-{If weekly ran: ## Weekly Review\n{weekly summary}}
+## Warnings
+{Only if issues exist}
+- {Account}: No Salesforce/Gong URLs — paste into account file to enable processing
+- {Account}: Gong recording not found
+- {Account}: Salesforce push failed — {reason}
 ```
 
 ---
@@ -439,39 +435,63 @@ If `run_weekly` is true, run `/sales-weekly`.
 
 ### Evening Step 7: Report
 
-Output a summary:
+Output a concise summary of what was accomplished, followed by warnings for anything that couldn't be processed:
+
 ```
 Evening workflow complete.
 
-## Today's Meetings Processed
-- {N} Gong transcripts imported
-- {N} accounts summarized
-- {N} Salesforce updates pushed
-
-## Tomorrow's Calendar
+- {N} Gong transcripts imported, {N} accounts summarized, {N} Salesforce pushes
 - {N} meetings set up for tomorrow
-- {N} new accounts created (pending Salesforce/Gong URLs)
+- {N} new accounts created
+{If pdf_export enabled: - {N} PDFs exported}
+{If weekly ran: - Weekly review complete: {brief summary}}
 
-## Pending Action
-These accounts need your attention before they can be processed:
-- {Account}: Paste Salesforce URL and Gong URL into account file
-
-{If pdf_export enabled: ## PDFs Exported\n- {N} account PDFs exported to {pdf_path}}
-
-{If weekly ran: ## Weekly Review\n{weekly summary}}
+## Warnings
+{Only if issues exist}
+- {Account}: No Salesforce/Gong URLs — paste into account file to enable processing
+- {Account}: Gong recording not found
+- {Account}: Salesforce push failed — {reason}
 ```
 
 ---
 
 ## Rules
 
-- Never run `/sales-summarize-account` or `/sales-salesforce` on an account that has no `salesforce_opportunity` in its frontmatter — skip and report it in the "Pending Action" section
-- Never run `/sales-gong` on an account that has no `gong_url` in its frontmatter — skip and report it
-- When processing multiple accounts, use subagents to parallelize the work
+### Autonomy — CRITICAL
+
+**This workflow runs fully autonomously from start to finish. NEVER ask for user input, confirmation, or clarification.** The user should be able to invoke `/sales-today` and walk away. Specifically:
+
+- **NEVER ask** which accounts to process — process ALL accounts that have unchecked items
+- **NEVER ask** whether to run summarize/salesforce — just run them for every account that has the required URLs
+- **NEVER report items as "pending" and wait** — run everything you can, then report what happened and what couldn't be processed at the very end
+- **NEVER pause between steps** to ask if the user wants to continue — always continue
+- **NEVER ask** about tomorrow's meetings or meeting details — use the calendar data as-is
+- If something fails or can't be processed (missing URLs, no Gong recording, auth expired), **silently skip it** and include it in the final warnings section
+
+The ONLY time the workflow should stop and address the user is if Gong authentication is required (SSO login prompt). In that case, prompt once and wait for auth, then continue automatically.
+
+### Processing Rules
+
+- Never run `/sales-summarize-account` or `/sales-salesforce` on an account that has no `salesforce_opportunity` in its frontmatter — skip silently and list in warnings
+- Never run `/sales-gong` on an account that has no `gong_url` in its frontmatter — skip silently
+- When processing multiple accounts, use subagents to parallelize the work. Launch ALL account processing (Gong imports, summarize, salesforce) as background agents and collect results at the end
 - Check off daily note items as they are completed (change `- [ ]` to `- [x]`)
-- If a Gong import fails (e.g., recording not yet available), leave the checkbox unchecked and note it in the report — it will be picked up on the next run
+- If a Gong import fails (e.g., recording not yet available), leave the checkbox unchecked — it will be picked up on the next run
 - If `/sales-weekly` is triggered, run it AFTER all daily processing is complete
-- Do not ask for user input during the workflow — run autonomously from start to finish
-- If Playwright CLI is not configured (`playwright_configured` is not true in config), skip all Gong import steps and note in the report: "Gong imports skipped: Playwright CLI not configured. Run `/sales-setup playwright` to enable."
-- If `skip_gong` is true (from `no gong` argument), skip all Gong import steps. Leave Gong transcript checkboxes unchecked — they will be picked up on a future manual run. Note in the report: "Gong imports skipped: `no gong` flag set." Still proceed with `/sales-summarize-account` and `/sales-salesforce` for accounts that already have transcripts.
-- If `pdf_export` is `true` in config, run `/sales-pdf` after Deal Prep and Deal Recap are generated in both morning and evening modes. Export all deal accounts that appear in the prep or recap sections — not just accounts summarized during this run. This ensures fresh PDFs are available for every deal being briefed.
+- If Playwright CLI is not configured (`playwright_configured` is not true in config), skip all Gong import steps and note in warnings: "Gong imports skipped: Playwright CLI not configured."
+- If `skip_gong` is true (from `no gong` argument), skip all Gong import steps. Leave Gong transcript checkboxes unchecked. Still proceed with `/sales-summarize-account` and `/sales-salesforce` for accounts that already have transcripts.
+- If `pdf_export` is `true` in config, run `/sales-pdf` after Deal Prep and Deal Recap are generated in both morning and evening modes. Export all deal accounts that appear in the prep or recap sections.
+
+### Report Format
+
+The final report should be a concise summary of what was DONE, followed by WARNINGS for anything that couldn't be completed. Do not list "pending action" items that require user input mid-workflow — instead, list them as warnings at the end so the user can address them later.
+
+```
+{Morning/Evening} workflow complete.
+
+{Concise bullet list of what was accomplished}
+
+## Warnings
+{Only if there were issues — accounts skipped, Gong not found, auth failures, missing URLs, etc.}
+- {Account}: {reason it was skipped}
+```
