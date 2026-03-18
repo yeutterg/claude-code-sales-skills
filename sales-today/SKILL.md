@@ -32,6 +32,8 @@ Run `date "+%Y-%m-%d %H:%M %u %A"` to get:
 - Day of week number (1=Monday, 7=Sunday)
 - Day name
 
+**CRITICAL: Use the output of this `date` command as the single source of truth for the current date and day of week.** Do not infer the day name from context, memory, or prior conversation. The date command output is authoritative. If it says Tuesday, it is Tuesday. Use this exact day name in all Deal Prep and Deal Recap headers (e.g., "Prep: Tuesday, Mar 17" not "Prep: Monday, Mar 17").
+
 **Flag detection:**
 - If arguments contain `no gong` (case-insensitive): set `skip_gong = true`. Remove `no gong` from the arguments before parsing mode.
 
@@ -182,9 +184,9 @@ Example of what gets written to the meeting file:
 
 ```markdown
 ## Prep
-**Attendees:** [[Jane Smith]] (Sr TPM, Champion), [[Bob Chen]] (VP Platform Eng, EB), [[Greg Yeutter]], [[Dylan McMahan]]
+**Attendees:** [[Jane Smith]] (Sr TPM, Champion), [[Bob Chen]] (VP Platform Eng, EB), [[{config.name}]], [[AE Name]]
 - **OBJECTIVE:** Get Jane to confirm POV success criteria before the team expands evaluation
-- Aritzia's retail tech group is also evaluating: ask about timeline alignment between the two teams
+- Acme Corp's retail tech group is also evaluating: ask about timeline alignment between the two teams
 - MEDDPICC gap: Decision Process is empty. Jane can speak to this since she ran the last vendor evaluation.
 ### Questions to Ask
 - {questions from /sales-calendar, if any}

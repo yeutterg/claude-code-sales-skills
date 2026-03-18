@@ -5,18 +5,18 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 ## Table of Contents
 
 - [Skills](#skills)
-  - [`/sales-calendar`](#sales-calendar)
-  - [`/sales-create-account`](#sales-create-account)
-  - [`/sales-git`](#sales-git)
-  - [`/sales-gong`](#sales-gong)
-  - [`/sales-meeting`](#sales-meeting)
-  - [`/sales-pdf`](#sales-pdf)
-  - [`/sales-review-learnings`](#sales-review-learnings)
-  - [`/sales-salesforce`](#sales-salesforce)
+  - [`/sales-calendar`](#ld-calendar)
+  - [`/sales-create-account`](#ld-create-account)
+  - [`/sales-git`](#ld-git)
+  - [`/sales-gong`](#ld-gong)
+  - [`/sales-meeting`](#ld-meeting)
+  - [`/sales-pdf`](#ld-pdf)
+  - [`/sales-review-learnings`](#ld-review-learnings)
+  - [`/sales-salesforce`](#ld-salesforce)
   - [`/sales-setup`](#sales-setup)
-  - [`/sales-summarize-account`](#sales-summarize-account)
-  - [`/sales-today`](#sales-today)
-  - [`/sales-weekly`](#sales-weekly)
+  - [`/sales-summarize-account`](#ld-summarize-account)
+  - [`/sales-today`](#ld-today)
+  - [`/sales-weekly`](#ld-weekly)
 - [Skill Dependency Graph](#skill-dependency-graph)
 - [Prerequisites](#prerequisites)
 - [Obsidian Vault Setup](#obsidian-vault-setup)
@@ -68,7 +68,7 @@ Creates a new account folder structure with template files and populates busines
 
 **Usage:** `/sales-git`
 
-Commits and pushes any changes to the skills GitHub repo. Pulls latest upstream updates, scans SKILL.md files for proprietary information, and auto-fixes leaks. Regenerates README.md from skill frontmatter and actual cross-skill dependency graph. Commits, pushes, and syncs to public repo with `sales-` naming.
+Commits and pushes any changes to the skills GitHub repo. Pulls latest upstream updates, scans SKILL.md files for proprietary information, and auto-fixes leaks. Regenerates README.md from skill frontmatter and actual cross-skill dependency graph. Commits, pushes, and syncs to public repo with `ld-` to `sales-` renaming.
 
 ### `/sales-gong`
 
@@ -212,7 +212,7 @@ You can add additional folders under `{Company}/` as you see fit (for example, c
 3. Add upstream so you can pull future updates from the original repo:
    ```bash
    cd ~/repos/claude-code-sales-skills
-   git remote add upstream https://github.com/yeutterg/claude-code-sales-skills.git
+   git remote add upstream https://github.com/<original-author>/claude-code-sales-skills.git
    ```
 
 To pull upstream updates later, just run `/sales-setup` -- it checks for updates automatically.
