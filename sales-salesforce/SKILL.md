@@ -111,20 +111,57 @@ This step runs in ALL modes (Push, Scan, Scan Open) immediately after reading th
 Parse the frontmatter and collect ALL Salesforce opportunity fields. These can be:
 - `salesforce_opportunity` — the primary/default opportunity
 - `salesforce_opportunity_*` — additional opportunities (e.g., `salesforce_opportunity_expansion`, `salesforce_opportunity_renewal`, `salesforce_opportunity_ai`, etc.)
+- `salesforce_opportunity_alt` — opportunity in an alternate Salesforce org/account (some customers span multiple SF entities)
+- `salesforce_opportunity_alt_*` — additional opportunities in the alternate org
+- `salesforce_account_alt` — alternate Salesforce account URL (for reference, not pushed to)
+- `salesforce_account_alt_name` — display name for the alternate account
 
-Any frontmatter key matching `salesforce_opportunity` or `salesforce_opportunity_*` (anything after the second underscore) is a valid opportunity field.
+Any frontmatter key matching `salesforce_opportunity*` (with or without `_alt`) is a valid opportunity field. The `_alt` variants are treated identically to regular opportunity fields for pushing SE Notes and Deal Health. The `_alt_name` fields are informational only (not pushed to).
 
 For each opportunity field found, extract the Opportunity record ID — this is the 15 or 18-character alphanumeric ID that appears after `/Opportunity/` in the URL (e.g., from `{config.salesforce_instance_url}/lightning/r/Opportunity/0061Q00000AbCdEFGH/view`, extract `0061Q00000AbCdEFGH`).
 
 - If NO opportunity fields are found or all are empty, warn the user: "No Salesforce opportunity URLs found in frontmatter for {Account}. Please add at least one `salesforce_opportunity` field to the account file frontmatter and try again." Then stop.
 - Skip any opportunity fields that are empty.
 
-### Step 4P: Extract the Salesforce Updates Content
+### Step 4P: Extract and Structure the Salesforce Updates Content
 
 Find the `## Salesforce Updates` section in the account file. Extract ONLY the content inside the triple-backtick code block (everything between the opening ``` and closing ```).
 
 - If the `## Salesforce Updates` section doesn't exist, warn the user: "No ## Salesforce Updates section found in {Account}.md. Run /sales-summarize-account {Account} first to generate it." Then stop.
 - If the code block is empty, warn the user: "The Salesforce Updates code block is empty for {Account}. Run /sales-summarize-account {Account} first to populate it." Then stop.
+
+**Structure the content for Salesforce SE Notes:**
+
+The SE Notes field in Salesforce should follow this structure:
+
+```
+{Most recent dated entry only}
+
+STAGE RECOMMENDATION: S{N} - {Stage Name}
+Key risks:
+- {Risk 1, very short}
+- {Risk 2, very short}
+
+MEDDPICC:
+{...}
+
+TECHMAPS:
+{...}
+
+TECH STACK:
+{...}
+
+DEAL HISTORY:
+- {Most recent entry (same as above)}
+- {Previous entry}
+- {Older entries...}
+```
+
+**Rules for structuring:**
+1. **Only the most recent dated entry goes above MEDDPICC.** If the code block has multiple dated entries (e.g., "3/17 GY:", "3/16 GY:", "3/13 GY:"), keep only the newest one at the top. Move ALL older entries to the DEAL HISTORY section at the bottom.
+2. **Add a STAGE RECOMMENDATION line** between the latest entry and MEDDPICC. Read the `## CEP Stage Analysis` section from the account file. Extract the recommended stage and key risks. Format as shorthand: "S4 - EB Approval" not the full text. Key risks should be 5-8 words each, no more than 3-4 risks.
+3. **If a (status) entry exists** from `/sales-weekly`, it can appear alongside the most recent entry at the top (both above MEDDPICC), since it provides weekly context.
+4. **DEAL HISTORY should contain all dated entries** in reverse chronological order, including the most recent one (which also appears at the top for quick scanning).
 
 ### Step 4.5P: Check SE Ownership on Each Opportunity
 
@@ -176,7 +213,7 @@ python3 -c "
 import json, re
 content = open('/tmp/sf_update.txt').read()
 # Bold section headers (lines that are all-caps labels followed by a colon or standalone)
-content = re.sub(r'^(MEDDPICC|TECHMAPS|TECH STACK|DEAL HISTORY):?', r'<b>\1</b>', content, flags=re.MULTILINE)
+content = re.sub(r'^(STAGE RECOMMENDATION|MEDDPICC|TECHMAPS|TECH STACK|DEAL HISTORY):?', r'<b>\1</b>', content, flags=re.MULTILINE)
 html_content = content.replace('\n', '<br>')
 print(json.dumps({'{config.salesforce_se_status_field}': html_content}))
 " > /tmp/sf_update.json
@@ -206,6 +243,41 @@ Continue pushing to remaining opportunities even if one fails — report all suc
 ```bash
 rm -f /tmp/sf_update.txt /tmp/sf_update.json
 ```
+
+### Step 5.5P: Push Tech Validation Fields (LD-specific)
+
+After pushing SE Status and Deal Health, also update the Tech Validation Type and Status fields if a `## CEP Stage Analysis` section exists in the account file.
+
+1. Read the account file and look for the `## CEP Stage Analysis` section
+2. If it contains a `**Tech Validation:**` line, extract the Type and Status values
+3. Map to Salesforce fields:
+   - `Evaluation_Type__c` (Tech Validation Type): one of `Deep Dive Demo`, `Guided POV`, `Self-Guided Trial`, `Skipped`, `Workshop`, `Stalled`
+   - `POV_Status__c` (Tech Validation Status): one of `Planning`, `In-Progress`, `Extended`, `Completed`
+
+4. Build a JSON payload and push to each eligible opportunity:
+
+```bash
+python3 -c "
+import json
+print(json.dumps({
+    'Evaluation_Type__c': '{type_value}',
+    'POV_Status__c': '{status_value}'
+}))
+" > /tmp/sf_techval.json
+
+curl -s -w '\nHTTP_CODE:%{http_code}' -X PATCH \
+  '{instance_url}/services/data/v62.0/sobjects/Opportunity/{id}' \
+  -H 'Authorization: Bearer {access_token}' \
+  -H 'Content-Type: application/json' \
+  -d @/tmp/sf_techval.json
+```
+
+5. If no CEP Stage Analysis section exists, skip silently
+6. Report which opportunities were updated with what Tech Validation values
+
+**Note:** These fields (`Evaluation_Type__c`, `POV_Status__c`) are LaunchDarkly-specific. The public `/sales-cep` skill does NOT push these fields.
+
+---
 
 ### Step 6P: Clear Weekly Status Entry
 

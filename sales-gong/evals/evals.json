@@ -3,17 +3,18 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "/sales-gong Acme Corp https://app.gong.io/call?id=1234567890&account-id=9876543210",
+      "prompt": "/ld-gong Acme Corp https://app.gong.io/call?id=1234567890&account-id=9876543210",
       "expected_output": "Imports a single Gong call: opens browser, extracts brief and transcript, writes to meeting file",
       "files": [],
       "expectations": [
         "Mode detected as Single Gong Import from gong.io/call URL",
         "Config read and vault path verified",
-        "Session name derived from account name (gong_acme_corp)",
-        "Playwright CLI used to open browser with --headed --persistent flags",
+        "Session name is always -s=gong (shared session, never account-specific)",
+        "Existing session checked via tab-list before opening new browser",
+        "Playwright CLI used with --headed --persistent flags",
         "Login check performed (snapshot or URL check for sign-in page)",
         "Call date, title, duration, and attendees extracted from the call page",
-        "Existing meeting file matched by date and topic, or new one created via /sales-meeting",
+        "Existing meeting file matched by date and topic, or new one created via /ld-meeting",
         "Brief extracted from Briefs tab BEFORE clicking Transcript",
         "Video/audio elements paused immediately after page load",
         "Transcript tab clicked and content extracted via eval",
@@ -28,7 +29,7 @@
     },
     {
       "id": 2,
-      "prompt": "/sales-gong Acme Corp https://app.gong.io/account/activity?id=123456",
+      "prompt": "/ld-gong Acme Corp https://app.gong.io/account/activity?id=123456",
       "expected_output": "Bulk imports all calls from the Gong activity page using parallel tab processing",
       "files": [],
       "expectations": [
@@ -51,7 +52,7 @@
     },
     {
       "id": 3,
-      "prompt": "/sales-gong Acme Corp",
+      "prompt": "/ld-gong Acme Corp",
       "expected_output": "Scan mode: matches existing meetings without gong_url to Gong recordings by date",
       "files": [],
       "expectations": [
@@ -67,7 +68,7 @@
     },
     {
       "id": 4,
-      "prompt": "/sales-gong Acme Corp https://notes.granola.ai/t/abcd1234-5678-efgh-ijkl-mnopqrstuvwx",
+      "prompt": "/ld-gong Acme Corp https://notes.granola.ai/t/abcd1234-5678-efgh-ijkl-mnopqrstuvwx",
       "expected_output": "Imports a Granola summary into an existing or new meeting file",
       "files": [],
       "expectations": [
@@ -84,7 +85,7 @@
     },
     {
       "id": 5,
-      "prompt": "/sales-gong Acme Corp https://app.gong.io/call?id=999 (non-recorded call)",
+      "prompt": "/ld-gong Acme Corp https://app.gong.io/call?id=999 (non-recorded call)",
       "expected_output": "Handles non-recorded calls by updating attendees and gong_url only",
       "files": [],
       "expectations": [
@@ -93,6 +94,58 @@
         "Meeting file frontmatter updated with gong_url and attendees",
         "No brief or transcript extraction attempted",
         "Logged as 'no recording' in the report"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "/ld-gong Acme Corp https://app.gong.io/call?id=555 (meeting file already has Granola summary)",
+      "expected_output": "Appends Gong data alongside existing Granola content using subheadings, never overwrites",
+      "files": [],
+      "expectations": [
+        "Import NOT skipped despite meeting file already having External Summary content from Granola",
+        "Existing Granola content in ## External Summary fully preserved",
+        "New Gong brief added under ### Gong Brief subheading within ## External Summary",
+        "Transcript added under ### Gong Transcript subheading within ## Transcript",
+        "Append Rules enforced: subheadings used when section already has content",
+        "gong_url still set in frontmatter even though file had prior content"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "/ld-gong Acme Corp https://app.gong.io/call?id=777 (SSO login required mid-import)",
+      "expected_output": "Pauses for authentication, polls until user logs in, never skips the import",
+      "files": [],
+      "expectations": [
+        "Page URL checked and sign-in page detected",
+        "User told to log in to the browser window",
+        "Polling every 5 seconds for up to 2 minutes to check if auth succeeded",
+        "After 2 minutes without auth, user reminded again (never gives up)",
+        "Import resumes automatically once auth succeeds",
+        "Import NEVER skipped due to auth issues"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "/ld-gong Acme Corp (scan mode with gong_url set but External Summary empty)",
+      "expected_output": "Re-imports calls where gong_url was set but brief/transcript content was never extracted",
+      "files": [],
+      "expectations": [
+        "Meeting files with gong_url set but empty External Summary and Transcript identified as needing import",
+        "These files included in the candidate list alongside files with empty gong_url",
+        "Existing gong_url in frontmatter does NOT cause the file to be skipped",
+        "Brief and transcript extracted and written to the file"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "/ld-gong Acme Corp https://app.gong.io/call?id=333 (eval syntax validation)",
+      "expected_output": "All JavaScript eval calls use arrow function syntax and avoid regex literals",
+      "files": [],
+      "expectations": [
+        "All eval commands wrapped in arrow function: '() => expr' or '() => { stmts; return val; }'",
+        "No regex literals used inside eval (no /foo/.test() patterns)",
+        "String methods like indexOf() or new RegExp() used instead of regex literals",
+        "Video/audio pausing uses querySelectorAll with for loop, not forEach"
       ]
     }
   ]

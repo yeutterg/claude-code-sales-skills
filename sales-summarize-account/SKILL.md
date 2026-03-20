@@ -53,8 +53,9 @@ The new execution order is:
 4. Phase 4a: Create missing contact files (quick, needed before enrichment)
 5. Phase 4b + Phase 3: Launch contact enrichment subagents IN PARALLEL with account file updates
 6. Collect enrichment results, update contact files
-7. Phase 5: Update daily note
-8. Phase 6: Self-improvement
+7. Phase 4c: CEP Stage Analysis (after Phase 3 account updates are complete)
+8. Phase 5: Update daily note
+9. Phase 6: Self-improvement
 
 ---
 
@@ -503,6 +504,16 @@ And a full contact roster:
 | Person A | VP Eng | linkedin.com/in/... | already complete |
 | Person B | Sr Dev | linkedin.com/in/... | enriched |
 | Person C | | | not found |
+
+---
+
+### Phase 4c: CEP Stage Analysis
+
+After Phase 3 account updates are complete (MEDDPICC, ledger, SF Updates all current), run a CEP stage analysis.
+
+Read the CEP stage definitions from `~/.claude/skills/sales-cep/SKILL.md` and evaluate the account against them. Add or update a `## CEP Stage Analysis` section in the account file, positioned **above** `## MEDDPICC`.
+
+Use the format defined in `~/.claude/skills/sales-cep/SKILL.md`. Keep bullet points short (5-10 words max). Key Risks section first, then Completed, then Not yet completed. The recommended stage is the **highest stage where all exit criteria are met**.
 
 ---
 

@@ -3,27 +3,31 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "/sales-salesforce Acme Corp",
+      "prompt": "/ld-salesforce Acme Corp",
       "expected_output": "Pushes SE Status to Salesforce — no deal context pull, just push",
       "files": [],
       "expectations": [
         "Checks sf CLI is installed and authenticated",
+        "Reads config from ~/.claude/skills/ld-config.md and extracts all required values",
         "Account file read from {config.company_folder}/Accounts/Acme Corp/Acme Corp.md",
+        "Auto-correct check performed for swapped salesforce_account/salesforce_opportunity URLs",
         "Opportunity ID extracted from salesforce_opportunity frontmatter field",
         "No deal context fields queried (push mode only pushes)",
-        "Salesforce Updates code block content extracted",
-        "Content written to temp file /tmp/sf_update.txt",
-        "Access token obtained via sf org display",
-        "JSON payload built with HTML formatting (newlines to <br>, bold headers)",
+        "Salesforce Updates code block content extracted (between triple backticks)",
+        "Content written to temp file /tmp/sf_update.txt using Write tool",
+        "Access token obtained via sf org display --target-org {config.salesforce_username} --json",
+        "JSON payload built with HTML formatting (newlines to <br>, bold MEDDPICC/TECHMAPS/TECH STACK/DEAL HISTORY headers)",
         "REST API PATCH to /services/data/v62.0/sobjects/Opportunity/{id} with {config.salesforce_se_status_field} field",
-        "Temp files cleaned up after update",
-        "Daily note checkbox for /sales-salesforce Acme Corp marked complete",
-        "Success report includes Opportunity ID and content preview"
+        "HTTP 204 interpreted as success",
+        "Temp files /tmp/sf_update.txt and /tmp/sf_update.json cleaned up after update",
+        "Ledger.md checked for (status) entry and removed if found",
+        "Daily note checkbox for /ld-salesforce Acme Corp marked complete with [completion:: YYYY-MM-DD]",
+        "Success report includes Opportunity ID, label, and first 5 lines of content preview"
       ]
     },
     {
       "id": 2,
-      "prompt": "/sales-salesforce NonExistentAccount",
+      "prompt": "/ld-salesforce NonExistentAccount",
       "expected_output": "Reports error when account file doesn't exist",
       "files": [],
       "expectations": [
@@ -34,7 +38,7 @@
     },
     {
       "id": 3,
-      "prompt": "/sales-salesforce AccountWithNoOpps",
+      "prompt": "/ld-salesforce AccountWithNoOpps",
       "expected_output": "Warns user when no opportunity URLs are in frontmatter",
       "files": [],
       "expectations": [
@@ -46,13 +50,14 @@
     },
     {
       "id": 4,
-      "prompt": "/sales-salesforce scan Initech",
+      "prompt": "/ld-salesforce scan Initech",
       "expected_output": "Imports all opportunities with historical deal context, creates files, builds Dataview table",
       "files": [],
       "expectations": [
         "Checks sf CLI is installed and authenticated",
         "Mode detected as scan from 'scan' prefix in arguments",
         "Account file read from {config.company_folder}/Accounts/Initech/Initech.md",
+        "Auto-correct check performed for swapped salesforce_account/salesforce_opportunity URLs",
         "Salesforce Account ID extracted from salesforce_account frontmatter field",
         "Access token obtained via sf org display",
         "SOQL queries executed for Opportunities, OpportunityFieldHistory, Events, and Notes",
@@ -62,21 +67,23 @@
         "Older opportunities (1-3 years) batched into one subagent with key milestones only",
         "Historical opportunities (3+ years) batched into one subagent with one-line summaries",
         "opportunities/ subdirectory created under account folder",
-        "Individual opportunity .md files created with correct frontmatter",
+        "Individual opportunity .md files created with correct frontmatter (account, opportunity_name, stage, amount, close_date, type, status, salesforce_url, created_date)",
+        "Filenames sanitized: invalid characters (/ \\ : * ? \" < > |) replaced with -",
         "Duplicate opportunity names disambiguated with close date or ID suffix",
-        "opportunities.base file created with Dataview table configuration",
+        "opportunities.base file created with Dataview table configuration (table view, sorted by close_date desc)",
         "Opportunity History section added to account file with ![[opportunities.base]] embed",
         "Salesforce Deal History narrative added under Opportunity History with chronological milestones",
         "Deal Ledger updated with Salesforce History section at bottom",
         "Overall pattern analysis included (e.g., noting all closed-lost but existing customer)",
-        "salesforce_account field preserved in frontmatter",
+        "salesforce_account field preserved or set in frontmatter",
+        "Links line updated to include Salesforce Account link",
         "Temp files cleaned up",
         "Summary table output with opportunity count, open/won/lost breakdown, and deal history summary"
       ]
     },
     {
       "id": 5,
-      "prompt": "/sales-salesforce scan AccountWithNoSalesforceUrl",
+      "prompt": "/ld-salesforce scan AccountWithNoSalesforceUrl",
       "expected_output": "Falls back to extracting Account ID from an existing opportunity URL when salesforce_account is missing",
       "files": [],
       "expectations": [
@@ -91,7 +98,7 @@
     },
     {
       "id": 6,
-      "prompt": "/sales-salesforce scan AccountWithNoIds",
+      "prompt": "/ld-salesforce scan AccountWithNoIds",
       "expected_output": "Asks user for Salesforce Account URL when no IDs can be determined",
       "files": [],
       "expectations": [
@@ -105,7 +112,7 @@
     },
     {
       "id": 7,
-      "prompt": "/sales-salesforce scan Initech",
+      "prompt": "/ld-salesforce scan Initech",
       "expected_output": "Handles account with all closed opportunities correctly — notes discrepancy if account is an existing customer",
       "files": [],
       "expectations": [
@@ -119,7 +126,7 @@
     },
     {
       "id": 8,
-      "prompt": "/sales-salesforce scan AccountWithMultipleOpenOpps",
+      "prompt": "/ld-salesforce scan AccountWithMultipleOpenOpps",
       "expected_output": "Multiple open opportunities are correctly linked in frontmatter with type-based suffixes",
       "files": [],
       "expectations": [
@@ -132,7 +139,7 @@
     },
     {
       "id": 9,
-      "prompt": "/sales-salesforce scan AccountWithMixedHistory",
+      "prompt": "/ld-salesforce scan AccountWithMixedHistory",
       "expected_output": "Granularity scales with recency — recent opps get detailed timelines, old opps get one-liners",
       "files": [],
       "expectations": [
@@ -146,7 +153,7 @@
     },
     {
       "id": 10,
-      "prompt": "/sales-salesforce scan AccountWithDuplicateOppNames",
+      "prompt": "/ld-salesforce scan AccountWithDuplicateOppNames",
       "expected_output": "Disambiguates opportunity files when multiple opps share the same name",
       "files": [],
       "expectations": [
@@ -159,43 +166,45 @@
     },
     {
       "id": 11,
-      "prompt": "/sales-salesforce scan open Acme Corp",
+      "prompt": "/ld-salesforce scan open Acme Corp",
       "expected_output": "Pulls deal context from open opportunities, updates MEDDPICC and ledger, flags stale fields",
       "files": [],
       "expectations": [
         "Checks sf CLI is installed and authenticated",
         "Mode detected as 'scan open' from prefix",
         "Account file read successfully",
+        "Auto-correct check performed for swapped salesforce_account/salesforce_opportunity URLs",
         "Opportunity IDs extracted from salesforce_opportunity frontmatter fields",
-        "Deal context fields queried for each open opportunity (MEDDPICC, notes, stage history, ARR, forecast)",
-        "Stage history queried for each opportunity",
+        "Deal context fields queried for each open opportunity (standard fields + {config.salesforce_custom_fields})",
+        "Stage history queried for each opportunity (last 10 entries)",
         "Raw results saved to /tmp/sf_deal_context.json",
-        "Subagent launched to process deal context",
+        "Subagent launched with model: sonnet to process deal context",
         "Subagent reads account file and Ledger.md for cross-referencing",
         "New MEDDPICC info from Salesforce appended with (from Salesforce) attribution",
-        "Ledger updated if deal has progressed since last entry",
+        "Existing manually-written MEDDPICC content NOT overwritten",
+        "Ledger updated if deal has progressed since last entry, format: - M/D {initials} (from SF): {summary}",
         "Stale fields flagged (stage, close date, ARR, forecast changes)",
         "AE/CSM activity summarized — milestones included, routine outreach filtered out",
         "Temp files cleaned up",
-        "Report shows per-opportunity summary with stage, amount, forecast, days in stage"
+        "Report shows per-opportunity summary with stage, amount, forecast, days in stage, last activity"
       ]
     },
     {
       "id": 12,
-      "prompt": "/sales-salesforce scan open AccountWithNoOpps",
+      "prompt": "/ld-salesforce scan open AccountWithNoOpps",
       "expected_output": "Warns user to run scan first when no opportunity URLs exist",
       "files": [],
       "expectations": [
         "Mode detected as scan open",
         "Account file read successfully",
         "No salesforce_opportunity fields found or all empty",
-        "Warning tells user to run /sales-salesforce scan {Account} first",
+        "Warning tells user to run /ld-salesforce scan {Account} first",
         "No SOQL queries executed"
       ]
     },
     {
       "id": 13,
-      "prompt": "/sales-salesforce scan open Acme Corp",
+      "prompt": "/ld-salesforce scan open Acme Corp",
       "expected_output": "Filters noise from AE/CSM notes — includes milestones, excludes routine outreach",
       "files": [],
       "expectations": [
@@ -208,7 +217,7 @@
     },
     {
       "id": 14,
-      "prompt": "/sales-salesforce Acme Corp",
+      "prompt": "/ld-salesforce Acme Corp",
       "expected_output": "Validates that the Salesforce Updates section has correct structure: latest entry at top, older entries in DEAL HISTORY",
       "files": [],
       "expectations": [
@@ -227,7 +236,7 @@
     },
     {
       "id": 15,
-      "prompt": "/sales-salesforce MultiOppAccount",
+      "prompt": "/ld-salesforce MultiOppAccount",
       "expected_output": "Pushes to ALL linked opportunities (primary + expansion + renewal) and reports per-opp results",
       "files": [],
       "expectations": [
@@ -237,6 +246,549 @@
         "If one push fails, remaining pushes still attempted",
         "Report includes labels from frontmatter key (e.g., 'expansion', 'renewal')",
         "Temp files cleaned up after all pushes complete"
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "/ld-salesforce Acme Corp (where SE field on opp is assigned to another SE)",
+      "expected_output": "Skips opportunities assigned to other SEs, only pushes to own or unmapped opps",
+      "files": [],
+      "expectations": [
+        "Current user's Salesforce User ID retrieved via SOQL: SELECT Id FROM User WHERE Email = '{config.salesforce_username}'",
+        "Each opportunity's SE lookup fields queried ({config.salesforce_se_lookup_fields})",
+        "Opportunity classified as 'Mine' when SE field matches current user's ID",
+        "Opportunity classified as 'Unmapped' when all SE fields are null/empty",
+        "Opportunity classified as 'Another SE's' when SE field is set to a different user",
+        "Skipped opportunities reported with other SE's name and opp ID",
+        "Push proceeds only for eligible (mine + unmapped) opportunities",
+        "Skipped opps do NOT receive the REST API PATCH call"
+      ]
+    },
+    {
+      "id": 17,
+      "prompt": "/ld-salesforce AccountWhereAllOppsAssignedToOtherSEs",
+      "expected_output": "All opportunities skipped, user warned, no updates pushed",
+      "files": [],
+      "expectations": [
+        "SE ownership check performed on all opportunities",
+        "All opportunities classified as 'Another SE's'",
+        "Warning message: 'All opportunities for {Account} are assigned to other SEs. No updates pushed.'",
+        "No REST API PATCH calls made for SE status",
+        "No temp files created for update payload",
+        "No daily note checkbox marked complete"
+      ]
+    },
+    {
+      "id": 18,
+      "prompt": "/ld-salesforce MixedOwnershipAccount (2 opps mine, 1 opp another SE, 1 unmapped)",
+      "expected_output": "Pushes to own opps and unmapped, skips other SE's opp, reports all",
+      "files": [],
+      "expectations": [
+        "4 opportunities parsed from frontmatter",
+        "SE ownership check classifies: 2 as 'Mine', 1 as 'Another SE's', 1 as 'Unmapped'",
+        "REST API PATCH sent to 3 opportunities (2 mine + 1 unmapped)",
+        "1 opportunity skipped with report: 'Skipped (another SE assigned): {label} ({id}): assigned to {name}'",
+        "Success report shows 3 updated, 1 skipped",
+        "Skipped opp clearly identified by its frontmatter label"
+      ]
+    },
+    {
+      "id": 19,
+      "prompt": "/ld-salesforce my accounts",
+      "expected_output": "Discovers all open opportunities where user is SE, cross-references with Obsidian, onboards missing accounts",
+      "files": [],
+      "expectations": [
+        "Mode detected as 'my accounts' from arguments",
+        "Access token obtained via sf org display",
+        "Current user's Salesforce User ID retrieved",
+        "SOQL query uses {config.salesforce_se_lookup_fields} with OR logic to find open opps",
+        "Results grouped by Account.Name using AccountId as key",
+        "Full table presented: Account, Opportunity, Stage, Amount, Close Date, AE, In Obsidian?",
+        "Cross-reference with existing Obsidian account folders (case-insensitive, strips Inc/LLC/Corp)",
+        "Accounts separated into: existing, missing (actionable), skipped (renewal-only)",
+        "Renewal-only accounts identified by Type field containing 'renewal' (case-insensitive)",
+        "Actionable missing accounts auto-created via /ld-create-account with SF Account URL",
+        "Each account scanned via /ld-salesforce scan open after creation",
+        "Daily note todos added for newly created accounts (Gong import + summarize)",
+        "Comprehensive summary report with counts by category"
+      ]
+    },
+    {
+      "id": 20,
+      "prompt": "/ld-salesforce my accounts (with renewal-only accounts)",
+      "expected_output": "Renewal-only accounts listed but not onboarded",
+      "files": [],
+      "expectations": [
+        "Accounts where ALL opportunities are renewal types (Renewal, Auto-Renewal, Renewal - Auto) classified as skipped",
+        "Skipped accounts listed in report for visibility but NO folder created",
+        "Accounts with at least one non-renewal opp treated as actionable",
+        "Skipped section in report shows account name, opp count, type, amount",
+        "No /ld-create-account invoked for renewal-only accounts",
+        "No daily note todos added for renewal-only accounts"
+      ]
+    },
+    {
+      "id": 21,
+      "prompt": "/ld-salesforce my accounts (all accounts already in Obsidian)",
+      "expected_output": "All accounts found in Obsidian, scanned for deal context, no new accounts created",
+      "files": [],
+      "expectations": [
+        "All Salesforce accounts matched to existing Obsidian folders",
+        "No /ld-create-account invocations (none missing)",
+        "'In Obsidian?' column shows 'Yes' for all accounts",
+        "Each account scanned via /ld-salesforce scan open for latest deal context",
+        "No daily note todos added (no new accounts)",
+        "Report shows 0 newly created, lists existing accounts with opp counts"
+      ]
+    },
+    {
+      "id": 22,
+      "prompt": "/ld-salesforce mapping",
+      "expected_output": "Generates SE mapping report across all open opportunities grouped by AE",
+      "files": [],
+      "expectations": [
+        "Mode detected as 'mapping' from arguments",
+        "SE fields discovered via Opportunity describe endpoint or {config.salesforce_se_lookup_fields}",
+        "All Obsidian account folders scanned for salesforce_account frontmatter",
+        "Account IDs extracted from frontmatter URLs",
+        "Open opportunities queried by Account ID in batches of 20",
+        "Accounts without SF Account IDs queried by name matching",
+        "Short names (3 chars or fewer) require exact match to avoid false positives",
+        "Current user's Salesforce User ID retrieved for classification",
+        "Each opp classified: mapped to me, mapped to another SE, or unmapped",
+        "Results grouped by AE (Opportunity Owner) with correct sort order",
+        "AEs with 'my' opps listed first, then other SEs, then unmapped only",
+        "Report includes scope, total counts, and per-AE breakdown table",
+        "Accounts with no open SF opps listed separately",
+        "Data issues (duplicate Account IDs, matching problems) flagged"
+      ]
+    },
+    {
+      "id": 23,
+      "prompt": "/ld-salesforce mapping (with duplicate Account IDs across Obsidian folders)",
+      "expected_output": "Flags duplicate Account IDs as data issues, matches correctly by SF Account Name",
+      "files": [],
+      "expectations": [
+        "Duplicate Salesforce Account IDs detected across multiple Obsidian folders",
+        "SF Account Name queried to resolve correct Obsidian folder match",
+        "Duplicates listed in Data Issues section of report",
+        "Opportunities still correctly attributed despite duplicate IDs",
+        "No opportunities double-counted"
+      ]
+    },
+    {
+      "id": 24,
+      "prompt": "/ld-salesforce mapping (with accounts that have no SF ID)",
+      "expected_output": "Falls back to name matching for accounts without salesforce_account field",
+      "files": [],
+      "expectations": [
+        "Accounts without salesforce_account identified during collection",
+        "Falls back to salesforce_opportunity to extract Account ID if available",
+        "Remaining accounts matched by name: common suffixes stripped (Inc, LLC, Corp, Ltd, Technologies, Services, Healthcare)",
+        "Short folder names (3 chars or fewer like ABS, RH) require exact match or match followed by space/dash",
+        "Longer names use substring matching in either direction",
+        "First word matching attempted for names 5+ characters"
+      ]
+    },
+    {
+      "id": 25,
+      "prompt": "/ld-salesforce Acme Corp (account has ## CEP Stage Analysis with Tech Validation)",
+      "expected_output": "Pushes Tech Validation Type and Status fields to Salesforce after SE Status push",
+      "files": [],
+      "expectations": [
+        "SE Status pushed first via normal Step 5P flow",
+        "Account file checked for ## CEP Stage Analysis section",
+        "**Tech Validation:** line parsed for Type and Status values",
+        "Type mapped to Evaluation_Type__c: one of Deep Dive Demo, Guided POV, Self-Guided Trial, Skipped, Workshop, Stalled",
+        "Status mapped to POV_Status__c: one of Planning, In-Progress, Extended, Completed",
+        "JSON payload built with both Evaluation_Type__c and POV_Status__c",
+        "REST API PATCH sent to each eligible opportunity with tech validation fields",
+        "Report includes which opportunities were updated with what Tech Validation values",
+        "Tech validation push is separate from SE Status push (different payload)"
+      ]
+    },
+    {
+      "id": 26,
+      "prompt": "/ld-salesforce Acme Corp (account has NO ## CEP Stage Analysis section)",
+      "expected_output": "Skips Tech Validation push silently, only pushes SE Status",
+      "files": [],
+      "expectations": [
+        "SE Status pushed normally",
+        "Account file checked for ## CEP Stage Analysis section",
+        "No CEP Stage Analysis section found",
+        "Tech Validation push skipped silently (no error, no warning)",
+        "No PATCH with Evaluation_Type__c or POV_Status__c fields",
+        "Report does NOT mention Tech Validation (silent skip)"
+      ]
+    },
+    {
+      "id": 27,
+      "prompt": "/ld-salesforce Acme Corp (CEP has Tech Validation: Guided POV - In-Progress)",
+      "expected_output": "Correctly maps Guided POV type and In-Progress status to Salesforce field values",
+      "files": [],
+      "expectations": [
+        "Type extracted as 'Guided POV'",
+        "Status extracted as 'In-Progress'",
+        "Evaluation_Type__c set to 'Guided POV' (exact Salesforce picklist value)",
+        "POV_Status__c set to 'In-Progress' (exact Salesforce picklist value)",
+        "Both fields pushed in single PATCH request per opportunity"
+      ]
+    },
+    {
+      "id": 28,
+      "prompt": "/ld-salesforce Acme Corp (CEP has Tech Validation: Skipped)",
+      "expected_output": "Maps Skipped type correctly, no POV Status needed",
+      "files": [],
+      "expectations": [
+        "Type extracted as 'Skipped'",
+        "Evaluation_Type__c set to 'Skipped'",
+        "POV_Status__c either omitted or left empty (no validation status when skipped)",
+        "Correct handling of edge case where deal moved to Stage 4+ without POV"
+      ]
+    },
+    {
+      "id": 29,
+      "prompt": "/ld-salesforce Acme Corp (Deal Health assessed as part of weekly review, pushed via salesforce_deal_health_field)",
+      "expected_output": "Deal Health color pushed to correct Salesforce field based on deal state signals",
+      "files": [],
+      "expectations": [
+        "Config value {config.salesforce_deal_health_field} (SE_Opportunity_Health__c) read from ld-config.md",
+        "Deal health assessed using holistic signals: days since last meeting, champion engagement, MEDDPICC completeness, stage velocity, close date movement, stakeholder breadth, technical validation status, competitive pressure, next steps clarity",
+        "Green assigned when: most signals positive, champion engaged, timeline on track",
+        "Yellow assigned when: 1-2 risk signals (slowing momentum, MEDDPICC gap, pushed close date) but deal still viable",
+        "Red assigned when: multiple risk signals (champion dark, 30+ day stall, single-threaded, competitor winning)",
+        "One-line justification (max ~15 words) generated for the score",
+        "REST API PATCH to {config.salesforce_deal_health_field} with value Green, Yellow, or Red",
+        "Ledger status entry includes health color emoji and justification"
+      ]
+    },
+    {
+      "id": 30,
+      "prompt": "/ld-salesforce Acme Corp (Deal Health: champion gone dark 30+ days, single-threaded)",
+      "expected_output": "Red deal health assigned with appropriate justification",
+      "files": [],
+      "expectations": [
+        "Multiple red signals detected: no contact 30+ days, single-threaded, champion unresponsive",
+        "Deal health scored as Red",
+        "Justification example: 'No contact in 30+ days. Champion dark. Single-threaded.'",
+        "Red health pushed to SE_Opportunity_Health__c field",
+        "Ledger entry uses red emoji indicator"
+      ]
+    },
+    {
+      "id": 31,
+      "prompt": "/ld-salesforce Acme Corp (Deal Health: active POV, close date pushed once, one MEDDPICC gap)",
+      "expected_output": "Yellow deal health assigned — viable but needs attention",
+      "files": [],
+      "expectations": [
+        "Mixed signals detected: POV active (positive), close date pushed once (negative), MEDDPICC gap (negative)",
+        "Deal health scored as Yellow (not Red because deal is still progressing)",
+        "Justification reflects specific risk: e.g., 'Close date pushed to 4/30. Waiting on budget approval.'",
+        "Yellow health pushed to SE_Opportunity_Health__c field"
+      ]
+    },
+    {
+      "id": 32,
+      "prompt": "/ld-salesforce Acme Corp (Deal Health: POV complete, multi-threaded, close date on track)",
+      "expected_output": "Green deal health assigned — deal progressing well",
+      "files": [],
+      "expectations": [
+        "All major signals positive: POV complete, multiple contacts, timeline on track, champion engaged",
+        "Deal health scored as Green",
+        "Justification example: 'Champion engaged, POV complete, no blockers.'",
+        "Green health pushed to SE_Opportunity_Health__c field"
+      ]
+    },
+    {
+      "id": 33,
+      "prompt": "/ld-salesforce Acme Corp (Deal Health: salesforce_deal_health_field NOT configured)",
+      "expected_output": "Health score generated locally but not pushed to Salesforce",
+      "files": [],
+      "expectations": [
+        "Config checked for salesforce_deal_health_field",
+        "Field is empty or not set in config",
+        "Deal health still assessed and scored (Green/Yellow/Red)",
+        "Health score included in return data and ledger status entry",
+        "No REST API PATCH for deal health field (skipped, not errored)",
+        "No error or warning about missing field — silently skips push"
+      ]
+    },
+    {
+      "id": 34,
+      "prompt": "/ld-salesforce Acme Corp (sf org display returns auth error / token expired)",
+      "expected_output": "Detects token expiry and instructs user to re-authenticate",
+      "files": [],
+      "expectations": [
+        "sf org display command fails or returns error",
+        "HTTP 401 response detected from REST API if token was stale",
+        "User instructed to re-authenticate: 'sf org login web --instance-url {config.salesforce_instance_url}'",
+        "No partial updates left in inconsistent state",
+        "Temp files cleaned up even on auth failure"
+      ]
+    },
+    {
+      "id": 35,
+      "prompt": "/ld-salesforce Acme Corp (REST API returns HTTP 400 — bad field name)",
+      "expected_output": "Detects field name error and suggests verification via describe",
+      "files": [],
+      "expectations": [
+        "HTTP 400 response body checked for error details",
+        "User advised to verify field name exists: 'sf sobject describe --sobject Opportunity --target-org {config.salesforce_username} --json'",
+        "Specific field name from config ({config.salesforce_se_status_field}) mentioned in error guidance",
+        "Remaining opportunities still attempted (error on one does not abort all)",
+        "Failure reported per-opportunity in final summary"
+      ]
+    },
+    {
+      "id": 36,
+      "prompt": "/ld-salesforce Acme Corp (REST API returns HTTP 404 — wrong Opportunity ID)",
+      "expected_output": "Detects invalid Opportunity ID and advises user to check frontmatter URL",
+      "files": [],
+      "expectations": [
+        "HTTP 404 interpreted as invalid Opportunity ID",
+        "User advised to verify the Opportunity ID extracted from frontmatter URL",
+        "Specific opp ID and frontmatter field name included in error message",
+        "Remaining opportunities still attempted",
+        "Failure reported in final summary with the failing opp label and ID"
+      ]
+    },
+    {
+      "id": 37,
+      "prompt": "/ld-salesforce Acme Corp (sf CLI not installed)",
+      "expected_output": "Detects missing sf CLI and directs user to /ld-setup",
+      "files": [],
+      "expectations": [
+        "which sf returns not found",
+        "Error message: 'Salesforce CLI is not installed. Run /ld-setup salesforce to install and configure it.'",
+        "No further steps attempted",
+        "No REST API calls, no file reads beyond dependency check"
+      ]
+    },
+    {
+      "id": 38,
+      "prompt": "/ld-salesforce Acme Corp (sf CLI installed but not authenticated)",
+      "expected_output": "Detects unauthenticated CLI and directs user to /ld-setup",
+      "files": [],
+      "expectations": [
+        "which sf succeeds",
+        "sf org list shows no connected orgs or returns auth error",
+        "Error message: 'Salesforce CLI is not authenticated. Run /ld-setup salesforce to log in.'",
+        "No further steps attempted"
+      ]
+    },
+    {
+      "id": 39,
+      "prompt": "/ld-salesforce Acme Corp (config file missing salesforce_username)",
+      "expected_output": "Detects missing required config and directs user to /ld-setup",
+      "files": [],
+      "expectations": [
+        "Config file at ~/.claude/skills/ld-config.md read",
+        "Required field salesforce_username missing or empty",
+        "Error message: 'Salesforce is not configured. Run /ld-setup salesforce to set it up.'",
+        "No sf CLI commands attempted"
+      ]
+    },
+    {
+      "id": 40,
+      "prompt": "/ld-salesforce Acme Corp (Salesforce Updates section exists but code block is empty)",
+      "expected_output": "Warns user to run /ld-summarize-account first to populate content",
+      "files": [],
+      "expectations": [
+        "## Salesforce Updates section found in account file",
+        "Code block between triple backticks is empty",
+        "Warning: 'The Salesforce Updates code block is empty for Acme Corp. Run /ld-summarize-account Acme Corp first to populate it.'",
+        "No push attempted",
+        "No temp files created"
+      ]
+    },
+    {
+      "id": 41,
+      "prompt": "/ld-salesforce Acme Corp (no ## Salesforce Updates section in account file)",
+      "expected_output": "Warns user that section is missing and suggests /ld-summarize-account",
+      "files": [],
+      "expectations": [
+        "Account file read successfully",
+        "## Salesforce Updates section not found",
+        "Warning: 'No ## Salesforce Updates section found in Acme Corp.md. Run /ld-summarize-account Acme Corp first to generate it.'",
+        "No push attempted"
+      ]
+    },
+    {
+      "id": 42,
+      "prompt": "/ld-salesforce Acme Corp (salesforce_opportunity contains /Account/ URL, salesforce_account is empty)",
+      "expected_output": "Auto-corrects swapped URLs: moves Account URL to salesforce_account, clears salesforce_opportunity",
+      "files": [],
+      "expectations": [
+        "Step 2.5 auto-correct check detects /Account/ URL in salesforce_opportunity field",
+        "URL moved from salesforce_opportunity to salesforce_account",
+        "salesforce_opportunity field cleared",
+        "Swap logged and user informed",
+        "Proceeds with corrected frontmatter (now salesforce_opportunity is empty, triggers warning)"
+      ]
+    },
+    {
+      "id": 43,
+      "prompt": "/ld-salesforce Acme Corp (salesforce_account contains /Opportunity/ URL)",
+      "expected_output": "Auto-corrects swapped URLs: moves Opportunity URL to salesforce_opportunity",
+      "files": [],
+      "expectations": [
+        "Step 2.5 auto-correct check detects /Opportunity/ URL in salesforce_account field",
+        "URL moved from salesforce_account to salesforce_opportunity (if salesforce_opportunity is empty)",
+        "salesforce_account field cleared",
+        "Swap logged and user informed",
+        "Proceeds with corrected frontmatter and extracts opp ID from corrected field"
+      ]
+    },
+    {
+      "id": 44,
+      "prompt": "/ld-salesforce Acme Corp (push succeeds, Ledger.md has (status) entry from /ld-weekly)",
+      "expected_output": "Removes the (status) ledger entry after successful push",
+      "files": [],
+      "expectations": [
+        "Push to Salesforce completes successfully",
+        "Ledger.md read at {config.vault_path}/{config.company_folder}/Accounts/Acme Corp/Ledger.md",
+        "Line containing '(status)' found (e.g., '- 3/7 GY (status): No activity since 2/4')",
+        "Entire (status) line removed from ledger (not just cleared)",
+        "Updated ledger written back to file",
+        "If no (status) entry exists, skip silently"
+      ]
+    },
+    {
+      "id": 45,
+      "prompt": "/ld-salesforce Acme Corp (daily note has unchecked checkbox with SF links in parentheses)",
+      "expected_output": "Marks daily note checkbox complete, preserving existing Salesforce links",
+      "files": [],
+      "expectations": [
+        "Today's daily note found at {config.vault_path}/Daily/YYYY-MM-DD.md",
+        "Unchecked checkbox line found containing '/ld-salesforce Acme Corp' (case-insensitive)",
+        "Line may contain Salesforce opportunity links in parentheses after account name",
+        "Checkbox changed from '- [ ]' to '- [x]'",
+        "Completion timestamp appended: [completion:: YYYY-MM-DD]",
+        "Existing Salesforce links on the line preserved",
+        "If no matching unchecked checkbox found, skip silently"
+      ]
+    },
+    {
+      "id": 46,
+      "prompt": "/ld-salesforce Acme Corp (push succeeds, sf CLI update available)",
+      "expected_output": "Offers CLI update after successful push",
+      "files": [],
+      "expectations": [
+        "Push completes successfully first",
+        "brew outdated sf checked for available update",
+        "If sf appears in output: user asked 'Salesforce CLI update available. Would you like to update?'",
+        "If user says yes: brew upgrade sf executed",
+        "If sf does NOT appear in output (up to date): step skipped silently"
+      ]
+    },
+    {
+      "id": 47,
+      "prompt": "/ld-salesforce (no arguments)",
+      "expected_output": "Reports error when no account name or mode is provided",
+      "files": [],
+      "expectations": [
+        "Arguments parsed as empty",
+        "No mode matched (not 'mapping', 'my accounts', 'scan open', 'scan')",
+        "Falls through to push mode but account name is empty",
+        "Error reported: account name required",
+        "No API calls or file operations attempted"
+      ]
+    },
+    {
+      "id": 48,
+      "prompt": "/ld-salesforce my accounts (SE lookup fields fail, falls back to name-based query)",
+      "expected_output": "Falls back to broader query when configured SE lookup fields don't work",
+      "files": [],
+      "expectations": [
+        "Primary query using {config.salesforce_se_lookup_fields} returns error or no results",
+        "Falls back to broader query using SE's name in text fields",
+        "User asked to confirm the matched opportunities",
+        "Does not silently proceed with potentially wrong results"
+      ]
+    },
+    {
+      "id": 49,
+      "prompt": "/ld-salesforce scan open Acme Corp (one opp returns HTTP error, another succeeds)",
+      "expected_output": "Reports per-opportunity query results, continues despite partial failure",
+      "files": [],
+      "expectations": [
+        "Multiple opportunity IDs extracted from frontmatter",
+        "Query attempted for each opportunity independently",
+        "Failed query reported with error details (HTTP code, response body)",
+        "Successful queries processed normally by subagent",
+        "Subagent receives only the successfully retrieved deal context",
+        "Final report distinguishes between queried and failed opportunities"
+      ]
+    },
+    {
+      "id": 50,
+      "prompt": "/ld-salesforce scan Initech (existing opportunity files in opportunities/ folder)",
+      "expected_output": "Updates existing opportunity files with latest SF data, preserves manual content",
+      "files": [],
+      "expectations": [
+        "Existing opportunity .md files detected in opportunities/ folder",
+        "Frontmatter updated with latest Salesforce data (stage, amount, close_date, status)",
+        "Manually added content below the template section preserved (not overwritten)",
+        "New opportunities get new files created",
+        "Closed opportunities have their status updated in existing files"
+      ]
+    },
+    {
+      "id": 51,
+      "prompt": "/ld-salesforce Acme Corp (HTML conversion of Salesforce Updates content)",
+      "expected_output": "Content correctly converted to HTML with proper formatting for Salesforce rich text field",
+      "files": [],
+      "expectations": [
+        "Newlines converted to <br> tags",
+        "MEDDPICC header bolded: <b>MEDDPICC</b>",
+        "TECHMAPS header bolded: <b>TECHMAPS</b>",
+        "TECH STACK header bolded: <b>TECH STACK</b>",
+        "DEAL HISTORY header bolded: <b>DEAL HISTORY</b>",
+        "Python script handles special characters without breaking JSON payload",
+        "Content written to /tmp/sf_update.json as valid JSON",
+        "curl sends @/tmp/sf_update.json as request body"
+      ]
+    },
+    {
+      "id": 52,
+      "prompt": "/ld-salesforce scan Initech (Opportunity History section already exists in account file)",
+      "expected_output": "Leaves existing Opportunity History section, updates Salesforce Deal History subsection",
+      "files": [],
+      "expectations": [
+        "Existing ## Opportunity History section detected",
+        "Section NOT duplicated (not added again)",
+        "![[opportunities.base]] embed left in place",
+        "### Salesforce Deal History subsection updated with new data",
+        "Existing manually-added content in Opportunity History section preserved"
+      ]
+    },
+    {
+      "id": 53,
+      "prompt": "/ld-salesforce my accounts (newly created account gets daily note todos)",
+      "expected_output": "Daily note todos added for newly created accounts with Gong import and summarize steps",
+      "files": [],
+      "expectations": [
+        "Today's daily note found at {config.vault_path}/Daily/YYYY-MM-DD.md",
+        "Todos added under ### Today in ## Meetings section",
+        "First todo marked complete: [x] Run /ld-salesforce my accounts [completion:: YYYY-MM-DD]",
+        "Second todo unchecked: [ ] Run /ld-gong {Account} {gong_url} (historical import)",
+        "Third todo unchecked: [ ] Run /ld-summarize-account {Account}",
+        "Gong URL included from account file if gong_url frontmatter exists",
+        "If no gong_url: todo says 'find account in Gong first'",
+        "Todos only added for NEWLY created accounts, not existing ones"
+      ]
+    },
+    {
+      "id": 54,
+      "prompt": "/ld-salesforce scan open Acme Corp (SOQL uses Python urllib to avoid shell escaping)",
+      "expected_output": "SOQL queries executed via Python urllib, not raw curl with shell-escaped tokens",
+      "files": [],
+      "expectations": [
+        "Access token obtained from sf org display",
+        "SOQL queries constructed as URL-encoded strings",
+        "Python urllib.request used to make HTTP requests (not raw curl with access token in shell)",
+        "Access token passed as Authorization header in Python, not in shell variable expansion",
+        "No shell escaping issues with special characters in access token"
       ]
     }
   ]

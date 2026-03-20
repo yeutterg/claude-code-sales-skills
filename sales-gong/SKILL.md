@@ -165,8 +165,8 @@ If not available, tell the user to install it: `npm install -g @playwright/cli@l
 
 ### Step 2S: Find Meetings Missing Gong Data
 
-1. Read the account file at `{Account}.md` to get the `gong_url` from frontmatter (this is the Gong activity page URL)
-2. If no `gong_url` exists, ask the user for the Gong account activity URL
+1. Read the account file at `{Account}.md` to get the `gong_url` from frontmatter (this is the Gong activity page URL). Also check for `gong_url_alt` which points to an alternate Gong workspace (some customers span multiple Gong entities). If both exist, scan both URLs for recordings.
+2. If no `gong_url` (and no `gong_url_alt`) exists, ask the user for the Gong account activity URL
 3. List all meeting files in `meetings/` and read the frontmatter and content of each
 4. Identify meetings that are candidates for Gong import. A meeting needs Gong import if ANY of these are true:
    - The `gong_url` field is empty (never checked)

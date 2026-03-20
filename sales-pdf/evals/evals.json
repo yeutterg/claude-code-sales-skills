@@ -71,6 +71,68 @@
           "check": "python evals/verify_linebreaks.py --check-html {html_output}"
         }
       ]
+    },
+    {
+      "id": 5,
+      "name": "today-mode-daily-note-scan",
+      "prompt": "/ld-pdf today",
+      "expected_output": "Reads today's daily note, finds accounts with checked /ld-summarize-account tasks, exports only those accounts",
+      "files": [],
+      "expectations": [
+        "Today's daily note read at {vault_path}/Daily/{YYYY-MM-DD}.md",
+        "Lines with '[x] Run /ld-summarize-account' parsed to extract account names",
+        "Only accounts with checked summarize task are exported",
+        "If no accounts were summarized today, reports 'No accounts were summarized today' and stops",
+        "Each matched account verified to have substantive content before export"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "all-mode-content-filter",
+      "prompt": "/ld-pdf all",
+      "expected_output": "Exports all accounts with real content, skips template-only accounts",
+      "files": [],
+      "expectations": [
+        "All account folders listed in {company_folder}/Accounts/",
+        "Each account's main file checked for substantive content beyond template",
+        "Accounts with MEDDPICC content filled in are included",
+        "Accounts with Ledger.md entries are included",
+        "Accounts with only empty template sections are skipped",
+        "Skipped accounts listed in report under 'Skipped (no content)'"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "transclusion-and-wikilink-resolution",
+      "prompt": "Preprocess an account file and verify all Obsidian-specific syntax is resolved or removed",
+      "expected_output": "All transclusions resolved, wiki-links converted, dataview blocks removed, inline expressions substituted",
+      "files": [],
+      "expectations": [
+        "![[Ledger]] replaced with actual Ledger.md content inlined",
+        "![[contacts.base]] replaced with generated contacts table from contact files",
+        "![[meetings.base]] replaced with generated meetings table from meeting files",
+        "Dataview code blocks fully removed",
+        "Inline dataview expressions like '= this.ae' replaced with frontmatter values",
+        "Wiki-links [[path/to/file|Display Text]] converted to just 'Display Text'",
+        "Simple wiki-links [[name]] converted to just 'name'",
+        "Obsidian callouts '> [!type] Title' converted to '> **Title**'",
+        "YAML frontmatter stripped from output",
+        "H1 title prepended and generation date added"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "empty-field-removal-before-linebreaks",
+      "prompt": "Preprocess an account file where CSM field is empty and verify it is removed before trailing spaces are added",
+      "expected_output": "Empty bold-label lines removed in step 7 BEFORE step 8 adds trailing spaces, preventing blank lines with forced breaks",
+      "files": [],
+      "expectations": [
+        "Lines like '**CSM:** ' with no value after the colon are removed entirely",
+        "Removal happens BEFORE trailing spaces are added to consecutive bold-label lines",
+        "Remaining consecutive bold-label lines (AE, SE, Deal Type, etc.) get trailing two-space breaks",
+        "No orphan line breaks where empty fields used to be",
+        "Links line also gets trailing spaces for proper rendering"
+      ]
     }
   ]
 }

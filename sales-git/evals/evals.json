@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "/sales-git",
+      "prompt": "/ld-git",
       "expected_output": "Pulls latest, scans for proprietary info, validates dependency diagram, regenerates README, commits and pushes",
       "files": [],
       "expectations": [
@@ -15,7 +15,7 @@
         "Contact names from Accounts/*/contacts/ checked against skill files",
         "Proprietary findings auto-fixed: customer names replaced with Acme Corp/Globex/Initech",
         "Config variable references ({config.*}) NOT flagged as proprietary",
-        "Skill dependency graph validated: SKILL.md files scanned for /sales-* invocations",
+        "Skill dependency graph validated: SKILL.md files scanned for /ld-* invocations",
         "Mermaid diagram edges compared against actual cross-skill references",
         "Missing or extra edges updated in the diagram",
         "README.md regenerated from skill frontmatter (descriptions, argument-hints)",

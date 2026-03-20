@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "/sales-create-account Globex",
+      "prompt": "/ld-create-account Globex",
       "expected_output": "Creates full account folder structure with template files, business context from web research",
       "files": [],
       "expectations": [
@@ -21,7 +21,7 @@
     },
     {
       "id": 2,
-      "prompt": "/sales-create-account Meta",
+      "prompt": "/ld-create-account Meta",
       "expected_output": "Creates Meta account with well-known company context",
       "files": [],
       "expectations": [
@@ -32,7 +32,7 @@
     },
     {
       "id": 3,
-      "prompt": "/sales-create-account Initech https://app.gong.io/account/activity?id=123 https://example.my.salesforce.com/lightning/r/Account/001ABC/view",
+      "prompt": "/ld-create-account Initech https://app.gong.io/account/activity?id=123 https://example.my.salesforce.com/lightning/r/Account/001ABC/view",
       "expected_output": "Creates account with Gong and Salesforce URLs, triggers automatic imports and summarization",
       "files": [],
       "expectations": [
@@ -40,25 +40,67 @@
         "Salesforce Account URL detected (contains /Account/) and saved to salesforce_account frontmatter field",
         "Account folder structure created with all template files",
         "Business context populated from web research",
-        "/sales-salesforce scan Initech invoked to discover all opportunities",
-        "/sales-gong Initech {gong_url} invoked for bulk historical import (if Playwright configured)",
-        "/sales-summarize-account Initech invoked after imports complete",
+        "/ld-salesforce scan Initech invoked to discover all opportunities",
+        "/ld-gong Initech {gong_url} invoked for bulk historical import (if Playwright configured)",
+        "/ld-summarize-account Initech invoked after imports complete",
         "Summarization skipped if no meeting files exist or no Gong import was performed",
         "Report includes Salesforce import status, Gong import status, and summarization status"
       ]
     },
     {
       "id": 4,
-      "prompt": "/sales-create-account Contoso https://example.my.salesforce.com/lightning/r/Opportunity/006ABC/view",
+      "prompt": "/ld-create-account Contoso https://example.my.salesforce.com/lightning/r/Opportunity/006ABC/view",
       "expected_output": "Creates account with Salesforce Opportunity URL, looks up parent account, discovers all opportunities",
       "files": [],
       "expectations": [
         "Salesforce Opportunity URL detected (contains /Opportunity/) and saved to salesforce_opportunity frontmatter field",
         "Opportunity ID extracted and parent Account ID looked up via REST API",
         "salesforce_account field populated with constructed Account URL",
-        "/sales-salesforce scan Contoso invoked to discover all opportunities",
+        "/ld-salesforce scan Contoso invoked to discover all opportunities",
         "No Gong import triggered (no gong_url provided)",
         "Summarization skipped (no Gong import means no transcripts)"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "/ld-create-account Acme Corp https://app.gong.io/account/activity?id=456 (early browser auth)",
+      "expected_output": "Opens Gong browser immediately for early auth while continuing account setup in background",
+      "files": [],
+      "expectations": [
+        "Playwright CLI availability checked before opening browser",
+        "Gong browser opened IMMEDIATELY in Step 0 before folder creation",
+        "User told to log in if prompted, with reassurance that setup continues in background",
+        "Account folder structure creation (Step 1) proceeds without waiting for auth",
+        "Business context web research runs in parallel with browser auth",
+        "Gong bulk import (Step 8) uses the already-open browser session",
+        "If Playwright not configured, Step 0 skipped with tip to install"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "/ld-create-account NewCo (no URLs, no Salesforce configured)",
+      "expected_output": "Creates basic account structure with only web research, skips all imports",
+      "files": [],
+      "expectations": [
+        "Account folder structure created with all template files",
+        "Business context populated from web research",
+        "No Salesforce import attempted (no URL provided)",
+        "No Gong import triggered (no gong_url provided)",
+        "No summarization attempted (no meeting data)",
+        "If Salesforce not configured: note in output about running /ld-setup salesforce",
+        "If Playwright not configured: tip about installing Playwright CLI for future Gong imports"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "/ld-create-account (config file missing)",
+      "expected_output": "Stops immediately with clear error message about missing config",
+      "files": [],
+      "expectations": [
+        "ld-config.md read attempted and file not found",
+        "Error message: 'Config not found. Run /ld-setup to create your configuration.'",
+        "No directories or files created",
+        "No web searches or imports attempted"
       ]
     }
   ]

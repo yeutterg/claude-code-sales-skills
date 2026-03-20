@@ -3,74 +3,444 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "/sales-today morning",
-      "expected_output": "Morning workflow: scan today's calendar, handle new accounts, process outstanding items from previous days",
-      "files": [],
+      "prompt": "/ld-today (run at 9:00 AM on a Tuesday)",
+      "expected_output": "Detects morning mode automatically based on time before noon",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
       "expectations": [
-        "Config read and calendar_configured checked",
-        "Mode forced to morning",
-        "Current date and day of week determined",
-        "/sales-calendar invoked with no arguments (defaults to today in morning)",
-        "Unrecognized external meetings trigger /sales-create-account for each new company",
-        "New accounts get URL-paste checklist items in daily note (NOT auto-processed)",
-        "Past daily note entries with unchecked items processed: Gong scan, summarize, Salesforce push",
-        "Accounts missing salesforce_opportunity or gong_url URLs skipped (not auto-processed)",
-        "Multiple accounts processed in parallel via subagents",
-        "Report shows calendar setup count, catch-up actions, and pending items needing user URLs"
+        "Runs `date \"+%Y-%m-%d %H:%M %u %A\"` to get current time and day of week",
+        "Detects time is before 12:00 PM and selects morning mode",
+        "Reports 'Running morning workflow for Tuesday, {Mon Date}...'",
+        "Uses the date command output as single source of truth for day name",
+        "Does NOT prompt the user to choose morning or evening"
       ]
     },
     {
       "id": 2,
-      "prompt": "/sales-today evening",
-      "expected_output": "Evening workflow: process today's meetings, scan tomorrow's calendar, handle new accounts",
-      "files": [],
+      "prompt": "/ld-today (run at 3:30 PM on a Wednesday)",
+      "expected_output": "Detects evening mode automatically based on time at or after noon",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
       "expectations": [
-        "Mode forced to evening",
-        "Today's daily note read for unchecked deal meeting items",
-        "/sales-gong scan run for accounts with unchecked Gong transcript items",
-        "/sales-summarize-account run for accounts with unchecked summarize items",
-        "/sales-salesforce run for accounts with unchecked Salesforce items",
-        "/sales-calendar tomorrow invoked to set up tomorrow's meetings",
-        "Unrecognized external meetings handled with /sales-create-account",
-        "Report shows today's processing results and tomorrow's calendar setup"
+        "Runs `date` command to get current time and day of week",
+        "Detects time is 12:00 PM or later and selects evening mode",
+        "Reports 'Running evening workflow for Wednesday, {Mon Date}...'",
+        "Scans tomorrow's calendar (not today's) in evening mode",
+        "Processes today's unchecked meeting items before scanning tomorrow"
       ]
     },
     {
       "id": 3,
-      "prompt": "/sales-today (Friday evening)",
-      "expected_output": "Evening workflow plus weekly review triggered by Friday detection",
-      "files": [],
+      "prompt": "/ld-today evening no gong",
+      "expected_output": "Runs evening mode with Gong imports skipped",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
       "expectations": [
-        "Day of week detected as Friday (5) with evening mode",
-        "run_weekly flag set to true",
-        "Normal evening workflow runs first",
-        "/sales-weekly runs AFTER all daily processing completes",
-        "Weekly review summary included in final report"
+        "Parses 'no gong' flag (case-insensitive) and sets skip_gong = true",
+        "Forces evening mode regardless of current time",
+        "Skips all /ld-gong import steps for every account",
+        "Leaves Gong transcript checkboxes unchecked in the daily note",
+        "Still runs /ld-summarize-account and /ld-salesforce for accounts that already have transcripts",
+        "Does NOT report Gong skips as warnings -- this is intentional behavior from the flag"
       ]
     },
     {
       "id": 4,
-      "prompt": "/sales-today (no calendar configured)",
-      "expected_output": "Warns about missing calendar config but continues with non-calendar steps",
-      "files": [],
+      "prompt": "/ld-today no gong (run at 10:00 AM on a Monday)",
+      "expected_output": "Morning mode auto-detected with no-gong flag stripped before mode parsing, weekly triggered",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
       "expectations": [
-        "calendar_configured is not true in config",
-        "Warning issued: 'Google Calendar is not configured'",
-        "Calendar scan skipped",
-        "Outstanding items from previous days still processed",
-        "Does NOT stop execution"
+        "Strips 'no gong' from arguments before parsing mode",
+        "With 'no gong' removed, no mode argument remains, so auto-detects morning from time (10 AM < noon)",
+        "Sets skip_gong = true",
+        "Sets run_weekly = true because Monday morning triggers weekly review",
+        "Runs /ld-weekly AFTER all daily processing is complete"
       ]
     },
     {
       "id": 5,
-      "prompt": "/sales-today (no Playwright configured)",
-      "expected_output": "Skips Gong imports when Playwright CLI is not configured",
-      "files": [],
+      "prompt": "/ld-today (run at 5:00 PM on a Friday)",
+      "expected_output": "Evening mode with weekly review triggered by Friday evening",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
       "expectations": [
-        "playwright_configured is not true in config",
-        "Gong import steps skipped for all accounts",
-        "Report notes: 'Gong imports skipped: Playwright CLI not configured'",
-        "Other steps (summarize, Salesforce) still run normally"
+        "Detects evening mode (5:00 PM >= noon)",
+        "Detects day is Friday (day of week = 5) and mode is evening",
+        "Sets run_weekly = true",
+        "Completes all evening steps (process meetings, scan tomorrow, new accounts, deal prep/recap, PDFs) before running weekly",
+        "Runs /ld-weekly as the final step after all daily processing"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "/ld-today (run at 2:00 PM on a Saturday)",
+      "expected_output": "Evening mode with weekly review triggered by Saturday regardless of mode",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Detects evening mode (2:00 PM >= noon)",
+        "Detects day is Saturday (day of week = 6)",
+        "Sets run_weekly = true regardless of morning or evening mode on weekends",
+        "Runs /ld-weekly after daily processing"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "/ld-today (run at 10:00 AM on a Sunday)",
+      "expected_output": "Morning mode with weekly review triggered by Sunday",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Detects morning mode (10:00 AM < noon)",
+        "Detects day is Sunday (day of week = 7)",
+        "Sets run_weekly = true regardless of morning or evening mode on weekends",
+        "Runs morning workflow steps then /ld-weekly"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "/ld-today morning (run on a Monday at 8:00 AM)",
+      "expected_output": "Forced morning mode on Monday triggers all morning steps plus weekly review",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Forces morning mode from explicit argument",
+        "Detects Monday (day of week = 1) with morning mode -> run_weekly = true",
+        "Morning Step 1: Scans today's calendar via /ld-calendar (no arguments)",
+        "Morning Step 2: Handles new accounts from unrecognized meetings",
+        "Morning Step 3: Generates Deal Prep for today and Deal Recap for yesterday",
+        "Morning Step 4: Processes outstanding items from previous days",
+        "Morning Step 5: Exports PDFs if pdf_export is true in config",
+        "Morning Step 6: Runs /ld-weekly AFTER all daily processing",
+        "Morning Step 7: Outputs concise report with counts and warnings"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "/ld-today (run at 3:00 PM on a Tuesday)",
+      "expected_output": "Evening mode on Tuesday does NOT trigger weekly review",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Detects evening mode (3:00 PM >= noon)",
+        "Detects Tuesday (day of week = 2) which is not in {Friday evening, Saturday, Sunday, Monday morning}",
+        "Sets run_weekly = false",
+        "Does NOT run /ld-weekly",
+        "All other evening steps proceed normally"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "/ld-today morning (with 2 deal meetings on today's calendar: Acme Corp Demo at 10 AM PT and Widget Inc Discovery at 2 PM PT)",
+      "expected_output": "Generates Deal Prep section with correct Slack-compatible markdown format for each meeting",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Creates ## Deal Prep section in daily note after ## Meetings",
+        "Each meeting gets its own ### {Account} | {topic}, {time} heading",
+        "Each meeting has a send checkbox: - [ ] Send to [[AE Name]], [[Other Internal]]",
+        "Content wrapped in <details> with <summary>Prep details</summary>",
+        "Blank line between </summary> and the code fence for Obsidian rendering",
+        "Code block uses ```markdown fence inside the <details> block",
+        "Uses *bold* (single asterisk) for Slack emphasis inside code blocks",
+        "Uses - for bullet lists, NOT * or numbered lists",
+        "No em dashes (--) anywhere in the output",
+        "First bullet is always *OBJECTIVE:* with a specific, actionable call objective",
+        "Times shown in Pacific time with PT suffix (e.g., '10:00 AM PT')",
+        "Acme Corp Demo listed before Widget Inc Discovery (chronological order by time)",
+        "Max 3-4 bullets per meeting, short and punchy, no sub-bullets",
+        "Pipe | used as separator in heading and account header line, not em dash"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "/ld-today morning (Deal Prep for meeting with VP of Engineering (EB) and a Staff Engineer on the call)",
+      "expected_output": "Deal Prep bullets are tailored to attendee roles and seniority",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "VP of Engineering annotated with MEDDPICC role: (VP Engineering, EB)",
+        "Staff Engineer listed with title but no MEDDPICC annotation (no special role)",
+        "Objective and supporting bullets tailored to the audience mix",
+        "Does NOT suggest asking the Staff Engineer about budget or decision process",
+        "Does NOT suggest asking the VP about SDK configuration or integration details",
+        "References past interactions with these specific people when available in meeting notes",
+        "MEDDPICC gaps flagged are only those the people on the call can address"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "/ld-today morning (Deal Prep attendee formatting with LinkedIn URLs and internal team members)",
+      "expected_output": "Attendees formatted correctly: LinkedIn hyperlinks when available, bold otherwise, internal names only",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "External attendee with linkedin field in contact file: [Name](https://linkedin.com/in/person) (Role, MEDDPICC role if applicable)",
+        "External attendee without linkedin field: *Name* (Role)",
+        "Internal team members listed by name only: *Internal Name*",
+        "Internal team members do NOT get role or company annotations",
+        "ALL attendees from the calendar event are listed, both internal and external",
+        "AE is always included in the send-to list",
+        "The user (SE) is excluded from the send-to list"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "/ld-today morning (Deal Prep also writes to meeting file ## Prep section)",
+      "expected_output": "Prep content written to meeting files in Obsidian-native markdown, not Slack markdown",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Finds meeting file at {vault_path}/{company_folder}/Accounts/{Account}/meetings/YYYY-MM-DD {Topic}.md",
+        "Locates the ## Prep section in the meeting file",
+        "Uses **bold** (double asterisk) instead of *bold* (single) in the meeting file",
+        "Uses [[wiki-links]] for people and accounts in the meeting file",
+        "Includes attendee list, objective, and supporting bullets",
+        "If ## Prep already has content (e.g., ### Questions to Ask), inserts exec summary above existing subsections",
+        "This step runs silently -- not reported separately in the final summary"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "/ld-today morning (yesterday had 2 deal meetings: Acme Corp Demo and Widget Inc Discovery)",
+      "expected_output": "Generates Deal Recap section summarizing yesterday's meetings with correct format",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Creates ## Deal Recap section in daily note after ## Deal Prep",
+        "Reads yesterday's daily note to find deal meetings under ## Meetings",
+        "For each meeting, reads the meeting note (summary, notes, transcript) and account ledger",
+        "Each recap has ### {Account} | {topic} heading with send checkbox",
+        "Content wrapped in <details> with <summary>Recap details</summary>",
+        "Recap header line: Recap: {Day of Week}, {Mon} {Date} (using correct yesterday day name)",
+        "1-5 bullets per account focused on what changed, key learnings, new risks, next steps committed",
+        "Concise: 1 bullet if nothing notable, up to 5 if deal moved significantly",
+        "Focuses on what changed and what we learned, not rehash of the agenda",
+        "Notes 'No notes captured yet' if a meeting had no notes or transcript",
+        "Stakeholders are AE plus internal team members who were on the calendar invite for the meeting"
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "/ld-today evening (calendar scan finds meeting with 'NovaCorp' which has no existing account folder)",
+      "expected_output": "Creates new account for unrecognized meeting and adds URL-paste checklist",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Runs /ld-calendar tomorrow to scan tomorrow's calendar",
+        "Detects NovaCorp as unrecognized external meeting from /ld-calendar output",
+        "Runs /ld-create-account NovaCorp to create the account folder",
+        "Adds checklist items to daily note under the new meeting entry",
+        "Checklist includes: Paste Salesforce Opportunity URL, Paste Gong Activity URL, Copy Gong transcript, Run /ld-summarize-account, Run /ld-salesforce",
+        "Checklist items are indented under the meeting link line",
+        "Does NOT run /ld-gong, /ld-summarize-account, or /ld-salesforce for the new account",
+        "Reports new account creation in the final summary"
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "/ld-today morning (calendar scan finds meeting with 'Zenith Labs' -- no existing account, internal-only meetings also present)",
+      "expected_output": "Only creates account for external unrecognized meeting, not internal meetings",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Runs /ld-calendar (no arguments) for today's calendar",
+        "Identifies 'Zenith Labs' as unrecognized from /ld-calendar output (has external attendees)",
+        "Runs /ld-create-account Zenith Labs",
+        "Adds all 5 checklist items under the meeting entry in the daily note",
+        "Does NOT attempt /ld-gong for the new account (no gong_url yet)",
+        "Does NOT attempt /ld-summarize-account (no salesforce_opportunity yet)",
+        "Does NOT attempt /ld-salesforce (no salesforce_opportunity yet)",
+        "Internal-only meetings do not trigger account creation"
+      ]
+    },
+    {
+      "id": 17,
+      "prompt": "/ld-today evening (3 accounts with unchecked Gong items: Acme Corp, Widget Inc, and NovaCorp. NovaCorp missing salesforce_opportunity and gong_url)",
+      "expected_output": "Processes Gong sequentially for eligible accounts, skips NovaCorp silently",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Reads today's daily note and finds unchecked items under ## Meetings",
+        "Runs /ld-gong for Acme Corp -- waits for completion",
+        "Then runs /ld-gong for Widget Inc -- sequential, never parallel with other Gong imports",
+        "Skips NovaCorp entirely because gong_url is missing in frontmatter",
+        "Does NOT prompt the user about NovaCorp's missing URLs",
+        "Runs /ld-summarize-account for Acme Corp and Widget Inc after Gong imports",
+        "Runs /ld-salesforce for Acme Corp and Widget Inc",
+        "NovaCorp listed in warnings: 'NovaCorp: No Salesforce/Gong URLs -- paste into account file to enable processing'",
+        "Checks off completed items in the daily note (- [ ] to - [x])"
+      ]
+    },
+    {
+      "id": 18,
+      "prompt": "/ld-today morning (Past section has Acme Corp with unchecked 'Paste Salesforce Opportunity URL' and unchecked Gong/summarize items)",
+      "expected_output": "Skips Acme Corp entirely because user hasn't pasted required URLs yet",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Reads daily note and finds Acme Corp under ### Past with unchecked items",
+        "Detects that 'Paste Salesforce Opportunity URL' checkbox is unchecked",
+        "Skips Acme Corp entirely -- does not run /ld-gong, /ld-summarize-account, or /ld-salesforce",
+        "Does NOT ask the user whether to proceed or paste URLs",
+        "Does NOT report as 'pending action' mid-workflow",
+        "Silently skips and includes in final warnings: 'Acme Corp: No Salesforce/Gong URLs'"
+      ]
+    },
+    {
+      "id": 19,
+      "prompt": "/ld-today morning (recent transcripts exist for Samsara and JFrog accounts on today's schedule)",
+      "expected_output": "Generates one coaching tip grounded in a real transcript moment, not generic advice",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Reads 3-5 recent transcripts from accounts on today's schedule",
+        "Reads the Coaching Log at {vault_path}/{company_folder}/Resources/Coaching Log.md",
+        "Creates Resources/ folder and Coaching Log.md with template if they don't exist",
+        "Checks Active Focus Areas and Tip History before generating a new tip",
+        "Checks Playbook section for deviations if playbook entries exist",
+        "Generates exactly ONE coaching tip, not multiple",
+        "Tip references a specific account name and specific moment from a transcript",
+        "Tip quotes or paraphrases what the SE actually said",
+        "Suggests what would have been more effective and why",
+        "Does NOT give generic advice like 'ask more open-ended questions' without a concrete example",
+        "Tip placed in daily note inside ## Meetings as > [!tip] Coaching callout",
+        "Coaching callout appears after ## Meetings heading and before ### Today",
+        "Updates Coaching Log Tip History with date, summary, account, focus area, status",
+        "If no transcripts exist at all, skips coaching tip entirely rather than giving generic advice"
+      ]
+    },
+    {
+      "id": 20,
+      "prompt": "/ld-today morning (Coaching Log has Active Focus Area 'solutioning too early' with 3 observations, today's transcript shows SE paused and asked follow-ups before pitching)",
+      "expected_output": "Recognizes improvement on active focus area and gives positive reinforcement",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Reads Coaching Log and identifies 'solutioning too early' as active focus area",
+        "Analyzes today's transcript for the same pattern",
+        "Detects improvement: SE paused and asked follow-up questions before presenting solutions",
+        "Generates a positive reinforcement tip: 'In the {Account} call, you did X. That landed well because Y. Keep it up.'",
+        "Updates Active Focus Area with 'Improvement seen: {date}, {account}'",
+        "If improved consistently across 3+ calls, moves pattern to Retired section",
+        "Does NOT give a new critique when improvement is happening -- celebrates the win",
+        "Updates Tip History with status: improved or retired"
+      ]
+    },
+    {
+      "id": 21,
+      "prompt": "/ld-today morning (Coaching Log has Playbook entry for '15-word AI intro', today's transcript shows SE used a 3-sentence version instead)",
+      "expected_output": "Flags playbook deviation as the coaching tip",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Reads Coaching Log Playbook section and finds the personalized script entry",
+        "Compares SE's actual behavior in transcript against the playbook",
+        "Detects deviation: SE used 3-sentence version instead of the tight 15-word intro",
+        "Tip specifically references the playbook script and the actual words used",
+        "Suggests using the playbook version with a concrete reason why",
+        "Prioritizes playbook deviation over introducing a new pattern"
+      ]
+    },
+    {
+      "id": 22,
+      "prompt": "/ld-today evening (pdf_export is true in config, Deal Prep has Acme Corp and Widget Inc, Deal Recap has Acme Corp and NovaCorp)",
+      "expected_output": "Exports PDFs for all unique accounts across both prep and recap sections",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Reads pdf_export config value and confirms it is true",
+        "Collects unique account names from Deal Prep: Acme Corp, Widget Inc",
+        "Collects unique account names from Deal Recap: Acme Corp, NovaCorp",
+        "Deduplicates: Acme Corp appears in both, so total is 3 unique accounts",
+        "Runs /ld-pdf Acme Corp, /ld-pdf Widget Inc, /ld-pdf NovaCorp",
+        "Reports '3 PDFs exported' in the final summary",
+        "PDF export happens AFTER Deal Prep and Deal Recap are generated"
+      ]
+    },
+    {
+      "id": 23,
+      "prompt": "/ld-today morning (pdf_export is false or absent in config, Deal Prep has 2 accounts)",
+      "expected_output": "Skips PDF export entirely when disabled in config",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Reads pdf_export config value and confirms it is false or absent",
+        "Does NOT run /ld-pdf for any account",
+        "Does NOT include PDF export line in the final report",
+        "All other morning steps proceed normally"
+      ]
+    },
+    {
+      "id": 24,
+      "prompt": "/ld-today morning (calendar_configured is not set in config)",
+      "expected_output": "Warns about missing calendar config but continues with non-calendar steps",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Reads ld-config.md and checks for calendar_configured",
+        "Detects calendar_configured is not true",
+        "Warns: 'Google Calendar is not configured. Run /ld-setup calendar first. Skipping calendar scan.'",
+        "Continues with non-calendar steps (processing outstanding items, etc.)",
+        "Does NOT abort the entire workflow"
+      ]
+    },
+    {
+      "id": 25,
+      "prompt": "/ld-today evening (playwright_configured is not true in config, 2 accounts have unchecked Gong items)",
+      "expected_output": "Skips all Gong imports and notes in warnings when Playwright not configured",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Reads ld-config.md and checks playwright_configured",
+        "Detects playwright_configured is not true",
+        "Skips all /ld-gong import steps for every account",
+        "Includes warning: 'Gong imports skipped: Playwright CLI not configured.'",
+        "Still runs /ld-summarize-account and /ld-salesforce for accounts that already have transcripts"
+      ]
+    },
+    {
+      "id": 26,
+      "prompt": "/ld-today evening (full workflow: 2 existing accounts with Gong recordings, 1 new unrecognized account, tomorrow has 3 meetings, pdf_export true, Tuesday)",
+      "expected_output": "Complete evening workflow executing all steps in correct order with full autonomy",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Evening Step 1: Processes today's unchecked meetings -- Gong imports sequential, then summarize and Salesforce",
+        "Evening Step 2: Scans tomorrow's calendar via /ld-calendar tomorrow",
+        "Evening Step 3: Creates account for unrecognized meeting, adds URL-paste checklist",
+        "Evening Step 4: Generates Deal Prep for tomorrow's meetings and Deal Recap for today's meetings",
+        "Evening Step 4: Deal Prep and Recap go into TODAY's daily note (not tomorrow's)",
+        "Evening Step 4: Writes prep to meeting files in Obsidian markdown format (**bold**, [[wiki-links]])",
+        "Evening Step 4: Coaching tip generated and placed in ## Meetings before ### Today",
+        "Evening Step 5: Exports PDFs for all unique accounts in prep and recap",
+        "Evening Step 6: run_weekly is false (Tuesday) -- does NOT run /ld-weekly",
+        "Evening Step 7: Outputs concise summary with counts and warnings",
+        "Never asks for user input at any point during the entire workflow",
+        "Never pauses between steps to ask if the user wants to continue",
+        "Never reports items as 'pending' and waits -- runs everything possible and reports at end"
+      ]
+    },
+    {
+      "id": 27,
+      "prompt": "/ld-today morning (full workflow: 3 meetings today, 1 new account, yesterday had 2 deal meetings, Past section has 1 account with unchecked items, pdf_export true, Monday)",
+      "expected_output": "Complete morning workflow executing all steps in correct order with weekly review",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Morning Step 1: Scans today's calendar via /ld-calendar (no arguments)",
+        "Morning Step 2: Creates account for unrecognized meeting, adds URL-paste checklist",
+        "Morning Step 3: Generates Deal Prep for today's 3 meetings and Deal Recap for yesterday's 2 meetings",
+        "Morning Step 3: Writes prep to meeting files in Obsidian markdown (**bold**, [[wiki-links]])",
+        "Morning Step 3: Coaching tip generated from recent transcripts",
+        "Morning Step 4: Processes outstanding items from Past section -- checks for unchecked Gong/summarize/Salesforce",
+        "Morning Step 5: Exports PDFs for all unique accounts across prep and recap sections",
+        "Morning Step 6: run_weekly = true (Monday morning) -- runs /ld-weekly after all daily processing",
+        "Morning Step 7: Outputs summary with meeting count, Gong imports, summaries, Salesforce pushes, new accounts, PDFs, weekly review",
+        "All warnings listed at end in ## Warnings section, not inline during workflow",
+        "Entire workflow runs without any user prompts or confirmations"
+      ]
+    },
+    {
+      "id": 28,
+      "prompt": "/ld-today evening (Gong import fails for one account because recording not yet available, other account succeeds)",
+      "expected_output": "Leaves failed Gong checkbox unchecked for retry on next run, continues with other steps",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Runs /ld-gong for the first account -- succeeds, checks off the Gong checkbox",
+        "Runs /ld-gong for the second account -- fails (recording not yet available)",
+        "Leaves the second account's Gong checkbox unchecked (will be picked up on next run)",
+        "Still runs /ld-summarize-account and /ld-salesforce for the first account that succeeded",
+        "Does NOT retry the failed Gong import in a loop",
+        "Includes the failed account in warnings: '{Account}: Gong recording not found'",
+        "Does NOT stop the entire workflow because of one failure"
+      ]
+    },
+    {
+      "id": 29,
+      "prompt": "/ld-today morning (date command returns Tuesday but context/memory might suggest it's Monday)",
+      "expected_output": "Uses date command output as authoritative truth, ignoring any contextual hints about the day",
+      "files": ["~/.claude/skills/ld-today/SKILL.md", "~/.claude/skills/ld-config.md"],
+      "expectations": [
+        "Runs `date \"+%Y-%m-%d %H:%M %u %A\"` and gets Tuesday as the day name",
+        "Uses 'Tuesday' in all output: 'Running morning workflow for Tuesday, {Mon Date}...'",
+        "Deal Prep header says 'Prep: Tuesday, {Mon} {Date}' -- NOT Monday or any other day",
+        "Does NOT infer the day name from context, memory, or prior conversation",
+        "The date command output is the single source of truth"
       ]
     }
   ]

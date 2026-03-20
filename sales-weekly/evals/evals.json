@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "/sales-weekly",
+      "prompt": "/ld-weekly",
       "expected_output": "Full weekly review: discovers accounts with open opps, processes each via subagents, reports results, runs retro",
       "files": [],
       "expectations": [
@@ -15,7 +15,7 @@
         "Subagents launched in parallel for all active accounts",
         "Each subagent pulls deal context via Salesforce REST API",
         "Closed opportunities detected and salesforce_opportunity fields cleared",
-        "Unsummarized meetings with transcripts/briefs auto-summarized via /sales-summarize-account",
+        "Unsummarized meetings with transcripts/briefs auto-summarized via /ld-summarize-account",
         "Weekly (status) ledger entry added or updated (only one per account)",
         "Salesforce Updates section updated with status line at top of code block",
         "SE status pushed to Salesforce via PATCH REST API for each open opportunity",
@@ -28,7 +28,7 @@
     },
     {
       "id": 2,
-      "prompt": "/sales-weekly (account with all closed opps)",
+      "prompt": "/ld-weekly (account with all closed opps)",
       "expected_output": "Detects closed opportunities, clears frontmatter fields, skips remaining steps for that account",
       "files": [],
       "expectations": [
@@ -41,20 +41,20 @@
     },
     {
       "id": 3,
-      "prompt": "/sales-weekly (account with unsummarized meetings)",
+      "prompt": "/ld-weekly (account with unsummarized meetings)",
       "expected_output": "Auto-summarizes meetings that have transcripts but no summary before continuing",
       "files": [],
       "expectations": [
         "Meeting files scanned for empty ## Summary sections",
         "Meetings with External Summary or Transcript content identified as summarizable",
-        "/sales-summarize-account run for the account before adding ledger entry",
+        "/ld-summarize-account run for the account before adding ledger entry",
         "Account file and Ledger.md re-read after summarization",
         "Report shows which accounts were auto-summarized and how many meetings"
       ]
     },
     {
       "id": 4,
-      "prompt": "/sales-weekly (status entry lifecycle)",
+      "prompt": "/ld-weekly (status entry lifecycle)",
       "expected_output": "Only one (status) entry exists per account in the ledger",
       "files": [],
       "expectations": [
@@ -63,6 +63,64 @@
         "Status entry format: '- M/D INITIALS (status): concise update'",
         "Status entry is max ~20 words, includes stage and what's next",
         "No deal amounts, close dates, or forecast in status entry"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "/ld-weekly (bad opp URL auto-fix: salesforce_opportunity contains Account URL)",
+      "expected_output": "Detects Account URL in opportunity field, queries Salesforce for open opps, fixes frontmatter",
+      "files": [],
+      "expectations": [
+        "salesforce_opportunity field containing /Account/ URL detected as bad opp URL",
+        "Account ID extracted from the URL",
+        "Salesforce queried: SELECT Id, Name FROM Opportunity WHERE AccountId AND IsClosed = false",
+        "If one open opp found: salesforce_opportunity updated with correct Opportunity URL",
+        "If multiple open opps found: primary set to first, extras added as salesforce_opportunity_2, etc.",
+        "If no open opps found: salesforce_opportunity cleared",
+        "Bad Account URL moved to salesforce_account if that field was empty",
+        "Account re-categorized after fix"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "/ld-weekly (deal health scoring)",
+      "expected_output": "Each open opportunity scored as Green/Yellow/Red with justification, pushed to Salesforce if configured",
+      "files": [],
+      "expectations": [
+        "Each open opportunity evaluated across multiple signals: last meeting date, champion engagement, MEDDPICC completeness, stage velocity, close date movement, stakeholder breadth, technical validation, competitive pressure, next steps clarity",
+        "Score is Green (progressing well), Yellow (1-2 risk signals), or Red (multiple risk signals)",
+        "One-line justification written (max ~15 words)",
+        "Health color appended to ledger status entry as emoji (green/yellow/red circle)",
+        "If salesforce_deal_health_field configured: PATCH sent to Salesforce for each open opp",
+        "Deal Risk Radar section in report shows Red first, then Yellow, then Green"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "/ld-weekly (Phase 4 retro and portfolio insights)",
+      "expected_output": "Self-review of run quality, cross-account pattern discovery, and daily note surfacing",
+      "files": [],
+      "expectations": [
+        "ld-config.md Model Performance table updated with subagent success/failure rates",
+        "Recurring Issues section updated with date-stamped observations",
+        "Cross-account patterns analyzed: common competitors, objections, tech stacks, deal velocity",
+        "Portfolio insights logged under Discovered Patterns > Pending Review with [portfolio] tag",
+        "Tomorrow's daily note checked; if exists, task added to review skill learnings",
+        "If daily note doesn't exist, pending_daily_surface flag set in learnings file",
+        "Retro summary included in final report with stale accounts listed"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "/ld-weekly (account with meetings needing input vs summarizable)",
+      "expected_output": "Distinguishes between meetings that can be auto-summarized and those truly needing user input",
+      "files": [],
+      "expectations": [
+        "Meetings with External Summary or Transcript but no Summary categorized as 'summarizable'",
+        "Meetings with NO External Summary AND no Transcript categorized as 'needs input'",
+        "Summarizable meetings auto-processed via /ld-summarize-account",
+        "Needs-input meetings listed in report with filenames but processing continues",
+        "Account not blocked by needs-input meetings; ledger and SF push still happen"
       ]
     }
   ]

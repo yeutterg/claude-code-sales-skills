@@ -7,7 +7,7 @@ on it, and checks that key sections have proper <br> tags instead of being
 collapsed into single paragraphs.
 
 Usage:
-    python verify_linebreaks.py /tmp/sales-pdf-AccountName.md
+    python verify_linebreaks.py /tmp/ld-pdf-AccountName.md
 
 Exit code 0 = all checks pass, 1 = failures found.
 """

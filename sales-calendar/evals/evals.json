@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "/sales-calendar",
+      "prompt": "/ld-calendar",
       "expected_output": "Scans today or tomorrow's calendar (based on time of day), creates meeting notes for deal meetings, updates daily notes",
       "files": [],
       "expectations": [
@@ -17,13 +17,13 @@
         "Attendees populated from calendar event display names, user's own email excluded",
         "Daily note updated with full wiki-link paths and 4-item checklist",
         "Existing meeting files not overwritten",
-        "Unrecognized external meetings listed with suggested /sales-create-account commands",
+        "Unrecognized external meetings listed with suggested /ld-create-account commands",
         "Report table shows deal meetings, prep, internal, skipped, and unrecognized"
       ]
     },
     {
       "id": 2,
-      "prompt": "/sales-calendar week",
+      "prompt": "/ld-calendar week",
       "expected_output": "Scans Monday through Friday of the current week, creates meeting notes for all days",
       "files": [],
       "expectations": [
@@ -35,7 +35,7 @@
     },
     {
       "id": 3,
-      "prompt": "/sales-calendar next week",
+      "prompt": "/ld-calendar next week",
       "expected_output": "Scans Monday through Friday of the following week",
       "files": [],
       "expectations": [
@@ -46,7 +46,7 @@
     },
     {
       "id": 4,
-      "prompt": "/sales-calendar 2026-04-15",
+      "prompt": "/ld-calendar 2026-04-15",
       "expected_output": "Scans a specific date",
       "files": [],
       "expectations": [
@@ -56,12 +56,78 @@
     },
     {
       "id": 5,
-      "prompt": "/sales-calendar tomorrow",
+      "prompt": "/ld-calendar tomorrow",
       "expected_output": "Scans tomorrow regardless of time of day",
       "files": [],
       "expectations": [
         "Target date is tomorrow regardless of current time",
         "Events fetched for tomorrow only"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "/ld-calendar (event with agenda in description)",
+      "expected_output": "Extracts agenda from calendar event description, strips video conferencing boilerplate, populates meeting note Agenda section",
+      "files": [],
+      "expectations": [
+        "Event description field checked for substantive content",
+        "Zoom/Teams/Google Meet join links, dial-in numbers, and passcodes stripped",
+        "HTML tags stripped and content converted to plain text",
+        "Meaningful agenda items, discussion topics, and document links preserved",
+        "Extracted agenda inserted under ## Agenda section in the created meeting file"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "/ld-calendar (deal meeting with MEDDPICC gaps and competitor mentions)",
+      "expected_output": "Generates targeted questions based on framework gaps and competitive intelligence, populates Questions to Ask section",
+      "files": [],
+      "expectations": [
+        "Account file MEDDPICC, TECHMAPS, and Command of the Message sections read",
+        "Empty or thin MEDDPICC fields generate discovery questions",
+        "Missing TECHMAPS technical details generate architecture questions",
+        "Questions tailored to meeting type (discovery vs demo vs POV review)",
+        "Competitor mentions in account Ledger and Competition section cross-referenced",
+        "Competitive question added if competitor previously mentioned in account",
+        "ld-config.md learnings checked for [competitor] patterns from other accounts",
+        "Questions formatted as bullet points under ### Questions to Ask section"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "/ld-calendar (deals-only mode with calendar_mode='deals')",
+      "expected_output": "Only creates meeting notes for deal meetings and deal prep, skips internal and external non-deal events",
+      "files": [],
+      "expectations": [
+        "calendar_mode read from config as 'deals'",
+        "Deal meetings processed and meeting files created",
+        "Deal prep meetings processed if calendar_include_prep is true",
+        "Internal meetings skipped entirely (no files created, no daily note entries)",
+        "External non-deal meetings skipped entirely",
+        "Report shows Internal section as 'Skipped -- deals-only mode'"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "/ld-calendar (two events same account same day same topic)",
+      "expected_output": "Creates separate meeting files with numbered disambiguation when account, topic, and date collide",
+      "files": [],
+      "expectations": [
+        "First event creates YYYY-MM-DD Discovery.md",
+        "Second event with identical account+topic+date creates YYYY-MM-DD Discovery 2.md",
+        "Both files get separate daily note entries",
+        "Events with 'Busy' summary are filtered out and not counted"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "/ld-calendar (legacy config with calendar_accounts list instead of calendar_id)",
+      "expected_output": "Uses first account from legacy list and warns user to re-run /ld-setup calendar",
+      "files": [],
+      "expectations": [
+        "Detects calendar_accounts (list) instead of calendar_id (string) in config",
+        "Uses the first account in the list as the calendar ID",
+        "Note shown to user recommending /ld-setup calendar to update config format"
       ]
     }
   ]
