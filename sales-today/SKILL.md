@@ -472,7 +472,8 @@ The ONLY time the workflow should stop and address the user is if Gong authentic
 
 ### Processing Rules
 
-- Never run `/sales-summarize-account` or `/sales-salesforce` on an account that has no `salesforce_opportunity` in its frontmatter — skip silently and list in warnings
+- Always run `/sales-summarize-account` for every account with a meeting, even if it has no `salesforce_opportunity`. Summarization updates the meeting summary, ledger, MEDDPICC, and other account files regardless of Salesforce status.
+- Never run `/sales-salesforce` on an account that has no `salesforce_opportunity` in its frontmatter — skip silently and list in warnings
 - Never run `/sales-gong` on an account that has no `gong_url` in its frontmatter — skip silently
 - When processing multiple accounts, use subagents to parallelize the work. Launch ALL account processing (Gong imports, summarize, salesforce) as background agents and collect results at the end
 - Check off daily note items as they are completed (change `- [ ]` to `- [x]`)

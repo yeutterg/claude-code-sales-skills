@@ -172,12 +172,27 @@ The status entry goes at the TOP of the code block, right before the most recent
 
 This ensures the SE Notes in Salesforce always reflect the latest weekly review status, even for accounts that haven't been fully summarized yet.
 
-**4b. Push to Salesforce:**
+**4b. CEP Stage Analysis:**
+
+Read the `## CEP Stage Analysis` section from the account file. If it exists, build a compact CEP STAGE block for the SF Updates code block:
+
+```
+CEP STAGE:
+CEP Recommendation: Stage {N} - {Name}
+Tech Validation: {Type} / {Status}
+Key Risks: {risk1}; {risk2}; {risk3}
+```
+
+Add this CEP STAGE block to the SF Updates code block, positioned between the `(status)` line and the MEDDPICC section. If a CEP STAGE block already exists in the code block, replace it.
+
+If no `## CEP Stage Analysis` section exists in the account file, run `/sales-cep {Account}` first to generate it, then extract the summary.
+
+**4c. Push to Salesforce:**
 
 Extract the full content of the (now-updated) code block from `## Salesforce Updates`.
 
 1. Convert newlines to `<br>` tags
-2. Bold section headers (MEDDPICC, TECHMAPS, TECH STACK, DEAL HISTORY)
+2. Bold section headers (MEDDPICC, TECHMAPS, TECH STACK, DEAL HISTORY, CEP STAGE)
 3. For each open opportunity ID, PATCH via REST API:
    ```
    PATCH {instance_url}/services/data/v62.0/sobjects/Opportunity/{id}
@@ -185,6 +200,15 @@ Extract the full content of the (now-updated) code block from `## Salesforce Upd
    Content-Type: application/json
    {"{config.salesforce_se_status_field}": "{html_content}"}
    ```
+
+Also push CEP tech validation fields to Salesforce:
+   ```
+   PATCH {instance_url}/services/data/v62.0/sobjects/Opportunity/{id}
+   {"Evaluation_Type__c": "{type}", "POV_Status__c": "{status}"}
+   ```
+
+Valid Evaluation_Type__c values: Deep Dive Demo, Guided POV, Self-Guided Trial, Skipped, Workshop, Stalled
+Valid POV_Status__c values: Planning, In-Progress, Extended, Completed
 
 ### Step 5: Deal Health Assessment
 
