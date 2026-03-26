@@ -511,6 +511,8 @@ And a full contact roster:
 
 After Phase 3 account updates are complete (MEDDPICC, ledger, SF Updates all current), run a CEP stage analysis.
 
+**IMPORTANT: Always run CEP stage analysis, even if the account has no `salesforce_opportunity`.** Accounts without an open opportunity should still get a stage recommendation — use "No Active Opp" as the current stage and recommend the stage the deal would be at if an opportunity were created. This helps the SE and AE decide when to create an opportunity.
+
 Read the CEP stage definitions from `~/.claude/skills/sales-cep/SKILL.md` and evaluate the account against them. Add or update a `## CEP Stage Analysis` section in the account file, positioned **above** `## MEDDPICC`.
 
 Use the format defined in `~/.claude/skills/sales-cep/SKILL.md`. Keep bullet points short (5-10 words max). Key Risks section first, then Completed, then Not yet completed. The recommended stage is the **highest stage where all exit criteria are met**.

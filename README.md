@@ -6,6 +6,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 
 - [Skills](#skills)
   - [`/sales-calendar`](#ld-calendar)
+  - [`/sales-cep`](#ld-cep)
   - [`/sales-create-account`](#ld-create-account)
   - [`/sales-git`](#ld-git)
   - [`/sales-gong`](#ld-gong)
@@ -13,7 +14,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
   - [`/sales-pdf`](#ld-pdf)
   - [`/sales-review-learnings`](#ld-review-learnings)
   - [`/sales-salesforce`](#ld-salesforce)
-  - [`/sales-setup`](#sales-setup)
+  - [`/sales-setup`](#ld-setup)
   - [`/sales-summarize-account`](#ld-summarize-account)
   - [`/sales-today`](#ld-today)
   - [`/sales-weekly`](#ld-weekly)
@@ -22,7 +23,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 - [Obsidian Vault Setup](#obsidian-vault-setup)
 - [Getting Started](#getting-started)
   - [1. Install the skills](#1-install-the-skills)
-  - [2. Run `/sales-setup`](#2-run-sales-setup)
+  - [2. Run `/sales-setup`](#2-run-ld-setup)
   - [3. Set up the daily scheduled task](#3-set-up-the-daily-scheduled-task)
 - [Workflow](#workflow)
   - [New account onboarding](#new-account-onboarding)
@@ -40,6 +41,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 | Skill | Description |
 |-------|-------------|
 | `/sales-calendar` | Scan Google Calendar for upcoming meetings, match them to accounts, and auto-create meeting notes via /sales-meeting |
+| `/sales-cep` | Analyze deal stage based on LaunchDarkly's Customer Engagement Process (CEP). Compares completed and missing activities against stage criteria to recommend the correct opportunity stage. |
 | `/sales-create-account` | Create a new account folder structure with template files and business context |
 | `/sales-git` | Commit and push skill changes and auto-regenerate the README |
 | `/sales-gong` | Import Gong calls or Granola meetings into Obsidian meeting notes, or bulk import all calls for an account |
@@ -57,6 +59,12 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 **Usage:** `/sales-calendar [week | next week | YYYY-MM-DD]`
 
 Scans Google Calendar for upcoming meetings, identifies which ones map to existing accounts, and automatically creates meeting notes and daily note entries. Extracts agendas from calendar event descriptions (strips video conferencing boilerplate, preserves meaningful content) and generates 3-5 targeted questions per meeting based on MEDDPICC/TECHMAPS gaps, meeting type, and deal stage. Adds competitive intelligence questions based on competitor mentions in the account and cross-account learnings. Classifies events as deal meetings, deal prep, internal, or unrecognized external. Suggests `/sales-create-account` for unrecognized companies. No arguments defaults to today (morning) or tomorrow (afternoon). Uses the Claude.ai built-in Google Calendar integration, configured via `/sales-setup calendar`.
+
+### `/sales-cep`
+
+**Usage:** `/sales-cep <account name>`
+
+Analyzes a deal's actual stage based on what has and hasn't happened, using the Customer Engagement Process (CEP). Contains the full CEP manual covering the complete customer lifecycle: 4 pre-pipeline stages (Targeting, Engagement, Qualification, Discovery), 7 pipeline stages (S1 Validate Fit through S7 Closed/Won), and 6 post-sale stages (Kickoff, Activation, Wrap Up, Initial Value, Scale, Evangelize). Each stage includes customer objectives, MEDDPICC priorities, handoff/handshake definitions, exit criteria, internal references, and external assets. Reads the account file (MEDDPICC, ledger, meeting notes, SF stage) and evaluates against these definitions. Outputs a concise stage recommendation with Key Risks, Completed items, and Not Yet Completed items. Enforces the POV gate: deals cannot be Stage 3+ unless a POV has started or was explicitly skipped. Also recommends Tech Validation Type and Status for Salesforce. Includes the 3 Whys framework (Why Change, Why Now, Why You), BVA thresholds ($150K+), services engagement triggers ($30K+), and reseller/marketplace handling guidance. Called automatically by `/sales-summarize-account` as Phase 4c.
 
 ### `/sales-create-account`
 
@@ -129,27 +137,107 @@ Portfolio-wide sweep of all accounts with open Salesforce opportunities. Designe
 Shows which skills call other skills. `/sales-today` is the top-level orchestrator: run it daily and it handles everything else.
 
 ```mermaid
-graph LR
-    today["/sales-today"] --> calendar["/sales-calendar"]
-    today --> gong1["/sales-gong"]
-    today --> summarize1["/sales-summarize-account"]
-    today --> salesforce1["/sales-salesforce"]
-    today --> create1["/sales-create-account"]
-    today --> weekly["/sales-weekly"]
-    today --> pdf["/sales-pdf"]
+graph TD
+    subgraph "Daily Orchestrator"
+        today["/sales-today"]
+    end
 
-    calendar --> meeting1["/sales-meeting"]
-    calendar --> create2["/sales-create-account"]
-    create1 --> salesforce3["/sales-salesforce"]
-    create1 --> gong2["/sales-gong"]
-    create1 --> summarize3["/sales-summarize-account"]
-    gong1 --> meeting2["/sales-meeting"]
-    summarize1 --> salesforce4["/sales-salesforce"]
-    salesforce1 --> create4["/sales-create-account"]
-    weekly --> summarize2["/sales-summarize-account"]
-    weekly --> salesforce2["/sales-salesforce"]
-    weekly --> create3["/sales-create-account"]
-    weekly --> review["/sales-review-learnings"]
+    subgraph "Calendar & Meeting Creation"
+        calendar["/sales-calendar"]
+        meeting["/sales-meeting"]
+        create["/sales-create-account"]
+    end
+
+    subgraph "Data Import"
+        gong["/sales-gong"]
+    end
+
+    subgraph "Account Analysis"
+        summarize["/sales-summarize-account"]
+        cep["/sales-cep"]
+    end
+
+    subgraph "CRM & Export"
+        salesforce["/sales-salesforce"]
+        pdf["/sales-pdf"]
+    end
+
+    subgraph "Periodic Reviews"
+        weekly["/sales-weekly"]
+        review["/sales-review-learnings"]
+    end
+
+    subgraph "Setup"
+        setup["/sales-setup"]
+        git["/sales-git"]
+    end
+
+    today --> calendar
+    today --> gong
+    today --> summarize
+    today --> salesforce
+    today --> create
+    today --> weekly
+    today --> pdf
+
+    calendar --> meeting
+    calendar --> create
+    create --> salesforce
+    create --> gong
+    create --> summarize
+    gong --> meeting
+    summarize --> cep
+    summarize --> salesforce
+    salesforce -.-> create
+    weekly --> summarize
+    weekly --> salesforce
+    weekly --> create
+    weekly --> review
+```
+
+### `/sales-summarize-account` Internal Phases
+
+```mermaid
+graph TD
+    P1["Phase 1: Discovery<br/>Read account, ledger, meetings"] --> P15["Phase 1.5: SF Deal Context<br/>(parallel)"]
+    P1 --> P2["Phase 2: Meeting Subagents<br/>(parallel per meeting)"]
+    P1 --> P1b["Phase 1.5b: Business Context<br/>Web search (parallel)"]
+    P15 --> P3["Phase 3: Merge & Update<br/>MEDDPICC, ledger, SF Updates"]
+    P2 --> P3
+    P1b --> P3
+    P1 --> P4a["Phase 4a: Contact Reconciliation"]
+    P4a --> P4b["Phase 4b: Contact Enrichment<br/>(parallel per contact)"]
+    P3 --> P4c["Phase 4c: CEP Stage Analysis"]
+    P4b --> P5["Phase 5: Update Daily Note"]
+    P4c --> P5
+    P5 --> P6["Phase 6: Self-Improvement<br/>Learnings, patterns"]
+```
+
+### `/sales-today` Flow
+
+```mermaid
+graph TD
+    start["Determine mode<br/>(morning/evening)"] --> morning{Morning?}
+    morning -->|Yes| mcal["Scan today's calendar"]
+    morning -->|No| egong["Process today's meetings<br/>(Gong → Summarize → SF)"]
+
+    mcal --> mnew["Handle new accounts"]
+    mnew --> mprep["Generate Deal Prep & Recap"]
+    mprep --> mpast["Process past outstanding items"]
+    mpast --> mpdf["Export PDFs (if enabled)"]
+    mpdf --> mweekly{Weekend?}
+
+    egong --> ecal["Scan tomorrow's calendar"]
+    ecal --> enew["Handle new accounts"]
+    enew --> eprep["Generate Deal Prep & Recap"]
+    eprep --> epdf["Export PDFs (if enabled)"]
+    epdf --> eweekly{Weekend?}
+
+    mweekly -->|Yes| weekly["/sales-weekly"]
+    mweekly -->|No| done["Report"]
+    eweekly -->|Yes| weekly
+    eweekly -->|No| done
+    weekly --> done
 ```
 
 ## Prerequisites
