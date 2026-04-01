@@ -344,21 +344,9 @@ Example correct format for MEDDPICC:
 
 #### Step 3f: Create/Update Architecture Diagram
 
-Using aggregated ARCHITECTURE_NOTES and ENVIRONMENT data, create or update an ASCII architecture diagram showing:
-- Client applications and platforms
-- Infrastructure (cloud providers, services)
-- Data flows and integrations
-- Current pain points (mark with "PAIN:")
-- Target areas for {config.company} (mark with "TARGET:")
-- Key stakeholders
+Run `/sales-architecture-diagram {Account}` to generate or update a Mermaid architecture diagram. This skill reads the Tech Stack, TECHMAPS, and meeting data to create a visual diagram showing tools, services, integration points, pain points, and {config.company} targets.
 
-Use the format:
-```
-+---------------------------------------------------------------------------+
-|                      {ACCOUNT} ARCHITECTURE                                |
-+---------------------------------------------------------------------------+
-...
-```
+If the account has no Tech Stack or ENVIRONMENT data yet, skip this step.
 
 #### Step 3g: Create/Update Salesforce Updates Section
 

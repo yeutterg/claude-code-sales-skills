@@ -158,7 +158,7 @@ DEAL HISTORY:
 ```
 
 **Rules for structuring:**
-1. **Only the most recent dated entry goes above MEDDPICC.** If the code block has multiple dated entries (e.g., "3/17 GY:", "3/16 GY:", "3/13 GY:"), keep only the newest one at the top. Move ALL older entries to the DEAL HISTORY section at the bottom.
+1. **Only the most recent dated entry goes above MEDDPICC.** If the code block has multiple dated entries (e.g., "3/17 {config.initials}:", "3/16 {config.initials}:", "3/13 {config.initials}:"), keep only the newest one at the top. Move ALL older entries to the DEAL HISTORY section at the bottom.
 2. **Add a STAGE RECOMMENDATION line** between the latest entry and MEDDPICC. Read the `## CEP Stage Analysis` section from the account file. Extract the recommended stage and key risks. Format as shorthand: "S4 - EB Approval" not the full text. Key risks should be 5-8 words each, no more than 3-4 risks.
 3. **If a (status) entry exists** from `/sales-weekly`, it can appear alongside the most recent entry at the top (both above MEDDPICC), since it provides weekly context.
 4. **DEAL HISTORY should contain all dated entries** in reverse chronological order, including the most recent one (which also appears at the top for quick scanning).

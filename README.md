@@ -5,25 +5,26 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 ## Table of Contents
 
 - [Skills](#skills)
-  - [`/sales-calendar`](#ld-calendar)
-  - [`/sales-cep`](#ld-cep)
-  - [`/sales-create-account`](#ld-create-account)
-  - [`/sales-git`](#ld-git)
-  - [`/sales-gong`](#ld-gong)
-  - [`/sales-meeting`](#ld-meeting)
-  - [`/sales-pdf`](#ld-pdf)
-  - [`/sales-review-learnings`](#ld-review-learnings)
-  - [`/sales-salesforce`](#ld-salesforce)
-  - [`/sales-setup`](#ld-setup)
-  - [`/sales-summarize-account`](#ld-summarize-account)
-  - [`/sales-today`](#ld-today)
-  - [`/sales-weekly`](#ld-weekly)
+  - [`/sales-architecture-diagram`](#sales-architecture-diagram)
+  - [`/sales-calendar`](#sales-calendar)
+  - [`/sales-cep`](#sales-cep)
+  - [`/sales-create-account`](#sales-create-account)
+  - [`/sales-git`](#sales-git)
+  - [`/sales-gong`](#sales-gong)
+  - [`/sales-meeting`](#sales-meeting)
+  - [`/sales-pdf`](#sales-pdf)
+  - [`/sales-review-learnings`](#sales-review-learnings)
+  - [`/sales-salesforce`](#sales-salesforce)
+  - [`/sales-setup`](#sales-setup)
+  - [`/sales-summarize-account`](#sales-summarize-account)
+  - [`/sales-today`](#sales-today)
+  - [`/sales-weekly`](#sales-weekly)
 - [Skill Dependency Graph](#skill-dependency-graph)
 - [Prerequisites](#prerequisites)
 - [Obsidian Vault Setup](#obsidian-vault-setup)
 - [Getting Started](#getting-started)
   - [1. Install the skills](#1-install-the-skills)
-  - [2. Run `/sales-setup`](#2-run-ld-setup)
+  - [2. Run `/sales-setup`](#2-run-sales-setup)
   - [3. Set up the daily scheduled task](#3-set-up-the-daily-scheduled-task)
 - [Workflow](#workflow)
   - [New account onboarding](#new-account-onboarding)
@@ -40,6 +41,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 
 | Skill | Description |
 |-------|-------------|
+| `/sales-architecture-diagram` | Generate a Mermaid architecture diagram for an account showing tools, services, and integration points |
 | `/sales-calendar` | Scan Google Calendar for upcoming meetings, match them to accounts, and auto-create meeting notes via /sales-meeting |
 | `/sales-cep` | Analyze deal stage based on LaunchDarkly's Customer Engagement Process (CEP). Compares completed and missing activities against stage criteria to recommend the correct opportunity stage. |
 | `/sales-create-account` | Create a new account folder structure with template files and business context |
@@ -53,6 +55,12 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 | `/sales-summarize-account` | Summarize all meeting notes, update MEDDPICC/TECHMAPS/CoM, enrich contacts, refresh business context |
 | `/sales-today` | Daily sales workflow -- morning prep or evening wrap-up with calendar scan, Gong imports, account summaries, and Salesforce updates |
 | `/sales-weekly` | Weekly review of all accounts with open Salesforce opportunities -- pulls deal context, summarizes activity, updates ledgers and Salesforce |
+
+### `/sales-architecture-diagram`
+
+**Usage:** `/sales-architecture-diagram <account>`
+
+Generates or updates a Mermaid architecture diagram in the account file showing the customer's actual tools, services, and integration points. Reads the tech stack, TECHMAPS, and meeting notes (transcripts and summaries) to identify concrete components. Organizes nodes into subgraphs by layer (clients, backend services, infrastructure, data/storage, observability, developer tooling, and your company's products). Uses color-coded styling: red borders for pain points, green borders for target integration points, and green fill for components already using your product. Edges show data flow with labeled integration types (SDK, REST API, etc.). Keeps diagrams focused at 15-20 nodes max. Called automatically by `/sales-summarize-account` during account processing.
 
 ### `/sales-calendar`
 
@@ -155,6 +163,7 @@ graph TD
     subgraph "Account Analysis"
         summarize["/sales-summarize-account"]
         cep["/sales-cep"]
+        archdiag["/sales-architecture-diagram"]
     end
 
     subgraph "CRM & Export"
@@ -173,6 +182,7 @@ graph TD
     end
 
     today --> calendar
+    today --> meeting
     today --> gong
     today --> summarize
     today --> salesforce
@@ -187,10 +197,12 @@ graph TD
     create --> summarize
     gong --> meeting
     summarize --> cep
+    summarize --> archdiag
     summarize --> salesforce
     salesforce -.-> create
     weekly --> summarize
     weekly --> salesforce
+    weekly --> cep
     weekly --> create
     weekly --> review
 ```
@@ -202,12 +214,14 @@ graph TD
     P1["Phase 1: Discovery<br/>Read account, ledger, meetings"] --> P15["Phase 1.5: SF Deal Context<br/>(parallel)"]
     P1 --> P2["Phase 2: Meeting Subagents<br/>(parallel per meeting)"]
     P1 --> P1b["Phase 1.5b: Business Context<br/>Web search (parallel)"]
-    P15 --> P3["Phase 3: Merge & Update<br/>MEDDPICC, ledger, SF Updates"]
+    P15 --> P3["Phase 3: Merge & Update<br/>MEDDPICC, ledger, tech stack"]
     P2 --> P3
     P1b --> P3
+    P3 --> P3f["Phase 3f: Architecture Diagram<br/>/sales-architecture-diagram"]
+    P3f --> P3g["Phase 3g: SF Updates"]
     P1 --> P4a["Phase 4a: Contact Reconciliation"]
     P4a --> P4b["Phase 4b: Contact Enrichment<br/>(parallel per contact)"]
-    P3 --> P4c["Phase 4c: CEP Stage Analysis"]
+    P3g --> P4c["Phase 4c: CEP Stage Analysis"]
     P4b --> P5["Phase 5: Update Daily Note"]
     P4c --> P5
     P5 --> P6["Phase 6: Self-Improvement<br/>Learnings, patterns"]
