@@ -159,6 +159,49 @@ pandoc "/tmp/sales-pdf-{Account}.md" \
   -o "/tmp/sales-pdf-{Account}.html"
 ```
 
+### Step 3b: Inject Mermaid JS for Diagram Rendering
+
+After pandoc generates the HTML, inject the Mermaid JS library so diagrams render in the browser (and therefore in the PDF). Pandoc converts ` ```mermaid ` code fences into `<pre><code class="mermaid">` blocks. The Mermaid library auto-initializes and renders these into SVG.
+
+```bash
+python3 -c "
+import re, sys
+
+html_file = '/tmp/sales-pdf-{Account}.html'
+with open(html_file, 'r') as f:
+    html = f.read()
+
+# Skip if no mermaid blocks
+if 'class=\"mermaid\"' not in html:
+    sys.exit(0)
+
+# Convert <pre><code class=\"mermaid\">...</code></pre> to <pre class=\"mermaid\">...</pre>
+# Mermaid JS needs the class on <pre> or a <div>, not nested in <code>
+html = re.sub(
+    r'<pre><code class=\"mermaid\">(.*?)</code></pre>',
+    r'<pre class=\"mermaid\">\1</pre>',
+    html,
+    flags=re.DOTALL
+)
+
+# Inject Mermaid JS before </head>
+mermaid_script = '''
+<script src=\"https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js\"></script>
+<script>mermaid.initialize({startOnLoad: true, theme: 'neutral', securityLevel: 'loose'});</script>
+<style>
+  pre.mermaid { background: none; border: none; padding: 0; text-align: center; }
+  .mermaid svg { max-width: 100%; height: auto; }
+</style>
+'''
+html = html.replace('</head>', mermaid_script + '</head>')
+
+with open(html_file, 'w') as f:
+    f.write(html)
+"
+```
+
+This step runs after pandoc and before the HTTP server serves the file. Playwright will execute the Mermaid JS when it loads the page, rendering the diagrams as SVG before printing to PDF.
+
 **Process all accounts through Steps 2-3 before moving to Step 4.** The preprocessing and pandoc conversion can run in parallel across accounts.
 
 ### Step 4: Start Temp HTTP Server

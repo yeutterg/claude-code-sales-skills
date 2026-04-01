@@ -29,9 +29,7 @@ Read the account file at `{config.vault_path}/{config.company_folder}/Accounts/{
 
 ### Step 2: Build the Mermaid Diagram
 
-Create a `graph TD` (top-down) or `graph LR` (left-right) Mermaid diagram. Choose orientation based on complexity:
-- **LR (left-right)** for simple architectures (< 10 nodes)
-- **TD (top-down)** for complex architectures (10+ nodes)
+Always use `graph TD` (top-down) for a vertical layout. This provides the most readable flow from client applications at the top through services, infrastructure, and data layers to observability and tooling at the bottom. Never use `graph LR`.
 
 #### Node Categories
 
