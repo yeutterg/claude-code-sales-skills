@@ -234,7 +234,7 @@ Only rename files where the current topic is generic (e.g., "Call", "Check-in", 
 From the subagent results, find the **most recent** meeting (by date) that mentions a next call.
 
 **ALWAYS update the frontmatter in the main account file:**
-- `next_call:` with format `YYYY-MM-DD - {type of call}` OR `TBD - {reason/pending action}` if not yet scheduled
+- `next_call:` with format `"YYYY-MM-DD - {type of call}"` OR `"TBD - {reason/pending action}"` if not yet scheduled. **CRITICAL: Always wrap the value in double quotes** — `next_call` values frequently contain colons (times like "3:30 PM"), equals signs, dollar signs, and apostrophes which break YAML parsing if unquoted.
 - `next_call_agenda:` as a YAML list of bullet points (leave empty if TBD)
 
 #### Step 3c: Update Ledger

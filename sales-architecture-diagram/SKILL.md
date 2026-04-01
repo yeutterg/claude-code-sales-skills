@@ -31,6 +31,29 @@ Read the account file at `{config.vault_path}/{config.company_folder}/Accounts/{
 
 Always use `graph TD` (top-down) for a vertical layout. This provides the most readable flow from client applications at the top through services, infrastructure, and data layers to observability and tooling at the bottom. Never use `graph LR`.
 
+#### Width Control — CRITICAL
+
+Diagrams MUST be narrow enough to view without horizontal scrolling in Obsidian. Follow these rules:
+
+1. **Max 2 nodes per subgraph.** Group related items into a single node (e.g., "React Native, Roku" in one node labeled "**Mobile**"). This keeps subgraphs narrow.
+
+2. **Single vertical chain of subgraphs.** Connect subgraphs in a single chain: `clients --> backend --> infra --> obs --> ld --> targets`. NEVER create branching edges from one subgraph to two others (e.g., `backend --> infra` AND `backend --> obs`) — this causes Mermaid to place them side-by-side, making the diagram wide.
+
+3. **Node labels with bold title + subtext.** Use `**Title**` on the first line and descriptive subtext on the second line (using a newline inside the label). This gives context without making nodes wider:
+   ```
+   ff["**Feature Flags**
+   ~600, v9 SDK"]
+   ```
+
+4. **Short subgraph labels.** Use 1-2 word titles (e.g., "Infra" not "Infrastructure", "Obs" not "Observability & Monitoring").
+
+5. **Compact init config.** Always include:
+   ```
+   %%{init: {"flowchart": {"nodeSpacing": 8, "rankSpacing": 18, "padding": 10}} }%%
+   ```
+
+6. **Do NOT wrap in HTML divs.** Obsidian cannot render mermaid code fences inside HTML blocks. The diagram must be a bare ` ```mermaid ` code fence with no wrapper.
+
 #### Node Categories
 
 Organize nodes into subgraphs by layer. Use only the layers that have known components:
@@ -127,70 +150,75 @@ Replace the `## Architecture Diagram` section in the account file with the Merma
 ## Architecture Diagram
 
 ```mermaid
-%% RED border = pain point | GREEN border = LD target | GREEN fill = using LD
+%%{init: {"flowchart": {"nodeSpacing": 8, "rankSpacing": 18, "padding": 10}} }%%
+%% RED = pain | GREEN = LD target | GREEN FILL = using LD
 graph TD
-    subgraph clients["Client Applications"]
-        web["React Web App"]
-        mobile["React Native Mobile"]
+    subgraph clients["Clients"]
+        mobile["**Mobile**
+        React Native, Roku"]
+        web["**Web / TV**
+        ReactJS, 10-foot JS"]
     end
-    
-    subgraph services["Backend Services"]
-        api["Node.js API"]
-        worker["Python Workers"]
+
+    subgraph backend["Backend"]
+        bff["**BFF Layer**
+        Python / Scala"]
+        homegrown["**Homegrown Toggles**
+        90% of eng"]
     end
-    
-    subgraph infra["Infrastructure"]
-        eks["AWS EKS"]
-        lambda["AWS Lambda"]
+
+    subgraph infra["Infra"]
+        aws["**AWS / K8s**"]
+        kafka["**Kafka**
+        Redshift"]
     end
-    
-    subgraph data["Data & Storage"]
-        pg["PostgreSQL"]
-        redis["Redis Cache"]
-        kafka["Kafka"]
+
+    subgraph obs["Observability"]
+        dynatrace["**Dynatrace**"]
+        bugsnag["**Bugsnag**"]
     end
-    
-    subgraph observability["Observability"]
-        dd["Datadog"]
-        sentry["Sentry"]
-    end
-    
+
     subgraph ld["LaunchDarkly"]
-        ff["Feature Flags"]
-        exp["Experimentation"]
+        ff["**Feature Flags**
+        ~600, v9 SDK"]
+        relay["**Relay Proxy**
+        no persistent store"]
     end
-    
-    web -->|"JS SDK"| ld
-    api -->|"Node SDK"| ld
-    worker -->|"Python SDK"| ld
-    
-    web --> api
-    api --> pg
-    api --> redis
-    api --> kafka
-    worker --> kafka
-    
-    api --> dd
-    web --> sentry
-    
-    style worker stroke:#e74c3c,stroke-width:3px
+
+    subgraph targets["LD Targets"]
+        guardian["**Guardian**"]
+        exp["**Experimentation**"]
+    end
+
+    clients --> backend
+    backend --> infra
+    infra --> obs
+    obs --> ld
+    ld -.-> targets
+
+    style ff fill:#d5f5e3,stroke:#27ae60
+    style homegrown stroke:#e74c3c,stroke-width:3px
+    style relay stroke:#e74c3c,stroke-width:3px
+    style guardian stroke:#27ae60,stroke-width:3px
     style exp stroke:#27ae60,stroke-width:3px
 ```
 ````
 
 ### Rules
 
-1. **Only include components you have evidence for.** Do not guess or add generic components. If the tech stack section says "AWS" but doesn't specify which services, just show "AWS" as a single node.
+1. **Only include components you have evidence for.** Do not guess or add generic components.
 
-2. **Keep it focused.** Max 15-20 nodes. Combine related tools into single nodes if the diagram gets too complex (e.g., "CI/CD: GitHub Actions + ArgoCD").
+2. **Max 12 nodes total, 6 subgraphs.** Combine related tools into single nodes (e.g., "Datadog, Bugsnag" in one Observability node if needed). Fewer nodes = narrower diagram.
 
-3. **Show integration points clearly.** The most valuable part of the diagram is showing WHERE {config.company} connects to the architecture via SDKs and how data flows.
+3. **Single vertical chain.** All subgraph edges must form one chain (A→B→C→D→E→F). No branching.
 
-4. **Preserve existing insights.** If the current ASCII diagram has pain points or target annotations, carry them forward into the Mermaid version.
+4. **2 nodes per subgraph max.** Group related items into one node label if needed.
 
-5. **Use readable node IDs.** Node IDs should be short lowercase slugs, display labels should be the actual tool/service name.
+5. **Bold title + subtext pattern.** Every node with context should use `**Title**` on line 1, description on line 2.
 
-6. **Subgraph labels in quotes.** Always use `subgraph id["Label"]` format for readable labels.
+6. **Preserve pain points and targets.** Red borders for problems, green borders for {config.company} targets, green fill for existing {config.company} usage.
+
+7. **Short lowercase node IDs.** Display labels are the readable names. Subgraph labels use `subgraph id["Label"]` format.
 
 ### Output
 
