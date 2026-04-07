@@ -5,20 +5,21 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 ## Table of Contents
 
 - [Skills](#skills)
-  - [`/sales-architecture-diagram`](#sales-architecture-diagram)
-  - [`/sales-calendar`](#sales-calendar)
-  - [`/sales-cep`](#sales-cep)
-  - [`/sales-create-account`](#sales-create-account)
-  - [`/sales-git`](#sales-git)
-  - [`/sales-gong`](#sales-gong)
-  - [`/sales-meeting`](#sales-meeting)
-  - [`/sales-pdf`](#sales-pdf)
-  - [`/sales-review-learnings`](#sales-review-learnings)
-  - [`/sales-salesforce`](#sales-salesforce)
+  - [`/sales-architecture-diagram`](#ld-architecture-diagram)
+  - [`/sales-calendar`](#ld-calendar)
+  - [`/sales-cep`](#ld-cep)
+  - [`/sales-create-account`](#ld-create-account)
+  - [`/sales-git`](#ld-git)
+  - [`/sales-gong`](#ld-gong)
+  - [`/sales-meeting`](#ld-meeting)
+  - [`/sales-pdf`](#ld-pdf)
+  - [`/sales-ps-prep`](#ld-ps-prep)
+  - [`/sales-review-learnings`](#ld-review-learnings)
+  - [`/sales-salesforce`](#ld-salesforce)
   - [`/sales-setup`](#sales-setup)
-  - [`/sales-summarize-account`](#sales-summarize-account)
-  - [`/sales-today`](#sales-today)
-  - [`/sales-weekly`](#sales-weekly)
+  - [`/sales-summarize-account`](#ld-summarize-account)
+  - [`/sales-today`](#ld-today)
+  - [`/sales-weekly`](#ld-weekly)
 - [Skill Dependency Graph](#skill-dependency-graph)
 - [Prerequisites](#prerequisites)
 - [Obsidian Vault Setup](#obsidian-vault-setup)
@@ -49,6 +50,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 | `/sales-gong` | Import Gong calls or Granola meetings into Obsidian meeting notes, or bulk import all calls for an account |
 | `/sales-meeting` | Create meeting notes for a sales account and link them in the daily note |
 | `/sales-pdf` | Export account files to PDF with clean formatting via pandoc and Playwright |
+| `/sales-ps-prep` | Generate a Solutions Architect / Professional Services prep document for an account. Creates a standalone note and exports to PDF. |
 | `/sales-review-learnings` | Review patterns and insights discovered by skills -- competitors, objections, feature requests, model performance, and template drift. Use when the daily note flags new skill learnings for review. |
 | `/sales-salesforce` | Push SE Status to Salesforce, scan accounts for opportunities and deal context, discover all your open opportunities, or generate an SE mapping report across all AEs. Use this skill whenever the user mentions Salesforce, opportunities, deal updates, SE status, SE mapping, or wants to see all their accounts. |
 | `/sales-setup` | Post-clone setup: configure vault path, name, role, company, symlinks, and optional Salesforce CLI / Playwright CLI / Google Calendar. Re-run anytime to pull upstream updates and re-apply your config. |
@@ -103,6 +105,12 @@ Creates a meeting note for a sales account and links it in today's daily note. C
 **Usage:** `/sales-pdf [account | all | today]`
 
 Exports account markdown files to professionally formatted PDFs. Preprocesses Obsidian-specific syntax (dataview queries, wiki-links, callouts, transclusion embeds), resolves inline field references from frontmatter, generates contacts and meetings tables, converts to HTML via pandoc, and prints to PDF via Playwright MCP. No arguments or `today` exports accounts summarized during the current `/sales-today` run. Specific account name exports just that account. `all` exports every account with substantive content. PDFs are organized into date subfolders. Requires `pandoc` (`brew install pandoc`) and Playwright MCP. Called automatically by `/sales-today` after deal prep and recap are generated.
+
+### `/sales-ps-prep`
+
+**Usage:** `/sales-ps-prep <account>`
+
+Generates a Solutions Architect / Professional Services prep document that an SA can read in 10 minutes before engaging with an account. Synthesizes business context, MEDDPICC, TECHMAPS, deal history, tech stack, people map, and the architecture diagram from the main account file into a dense, opinionated briefing. Includes a "What {Product} Solves for Them" table mapping pain to solution, key technical considerations for the SA, upcoming milestones, and questions the SA should be ready for. Also generates copy-paste text for Salesforce PS request fields: a Request Summary (2-3 sentences) and Success Criteria (single comma-separated line). Exports the prep doc to PDF via `/sales-pdf`.
 
 ### `/sales-review-learnings`
 
@@ -169,6 +177,7 @@ graph TD
     subgraph "CRM & Export"
         salesforce["/sales-salesforce"]
         pdf["/sales-pdf"]
+        psprep["/sales-ps-prep"]
     end
 
     subgraph "Periodic Reviews"
@@ -205,6 +214,7 @@ graph TD
     weekly --> cep
     weekly --> create
     weekly --> review
+    psprep --> pdf
 ```
 
 ### `/sales-summarize-account` Internal Phases

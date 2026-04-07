@@ -161,11 +161,11 @@ pandoc "/tmp/sales-pdf-{Account}.md" \
 
 ### Step 3b: Inject Mermaid JS for Diagram Rendering
 
-After pandoc generates the HTML, inject the Mermaid JS library so diagrams render in the browser (and therefore in the PDF). Pandoc converts ` ```mermaid ` code fences into `<pre><code class="mermaid">` blocks. The Mermaid library auto-initializes and renders these into SVG.
+After pandoc generates the HTML, inject the Mermaid JS library so diagrams render in the browser (and therefore in the PDF). Pandoc converts ` ```mermaid ` code fences into `<pre class="mermaid"><code>...</code></pre>` blocks (note: the class is on `<pre>`, not `<code>`). The content inside `<code>` is HTML-escaped (e.g., `-->` becomes `--&gt;`), so we must unescape it for Mermaid to parse correctly.
 
 ```bash
 python3 -c "
-import re, sys
+import re, sys, html as html_mod
 
 html_file = '/tmp/sales-pdf-{Account}.html'
 with open(html_file, 'r') as f:
@@ -175,11 +175,20 @@ with open(html_file, 'r') as f:
 if 'class=\"mermaid\"' not in html:
     sys.exit(0)
 
-# Convert <pre><code class=\"mermaid\">...</code></pre> to <pre class=\"mermaid\">...</pre>
-# Mermaid JS needs the class on <pre> or a <div>, not nested in <code>
+# Pandoc outputs: <pre class=\"mermaid\"><code>ESCAPED_CONTENT</code></pre>
+# Mermaid needs: <div class=\"mermaid\">UNESCAPED_CONTENT</div>
+# We must: (1) strip <code> wrapper, (2) unescape HTML entities, (3) use <div> not <pre>
+def fix_mermaid(match):
+    content = match.group(1)
+    # Unescape HTML entities (e.g., &gt; back to >, &amp; back to &)
+    content = html_mod.unescape(content)
+    # Strip markdown bold (**text**) — Mermaid doesn't render markdown, shows literal asterisks
+    content = re.sub(r'\*\*([^*]+)\*\*', r'\1', content)
+    return '<div class=\"mermaid\">' + content + '</div>'
+
 html = re.sub(
-    r'<pre><code class=\"mermaid\">(.*?)</code></pre>',
-    r'<pre class=\"mermaid\">\1</pre>',
+    r'<pre class=\"mermaid\"><code>(.*?)</code></pre>',
+    fix_mermaid,
     html,
     flags=re.DOTALL
 )
@@ -189,8 +198,8 @@ mermaid_script = '''
 <script src=\"https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js\"></script>
 <script>mermaid.initialize({startOnLoad: true, theme: 'neutral', securityLevel: 'loose'});</script>
 <style>
-  pre.mermaid { background: none; border: none; padding: 0; text-align: center; }
-  .mermaid svg { max-width: 100%; height: auto; }
+  div.mermaid { background: none; border: none; padding: 1em 0; text-align: center; page-break-inside: avoid; }
+  div.mermaid svg { max-width: 100%; max-height: 800px; height: auto; }
 </style>
 '''
 html = html.replace('</head>', mermaid_script + '</head>')
@@ -201,6 +210,11 @@ with open(html_file, 'w') as f:
 ```
 
 This step runs after pandoc and before the HTTP server serves the file. Playwright will execute the Mermaid JS when it loads the page, rendering the diagrams as SVG before printing to PDF.
+
+**Three bugs were fixed in this step:**
+1. Pandoc puts the class on `<pre>`, not `<code>` — regex updated to match actual output
+2. Pandoc HTML-escapes content (e.g., `-->` → `--&gt;`) — added `html.unescape()` to restore raw Mermaid syntax
+3. Changed from `<pre>` to `<div>` wrapper — Mermaid 11 prefers `<div class="mermaid">` for reliable rendering
 
 **Process all accounts through Steps 2-3 before moving to Step 4.** The preprocessing and pandoc conversion can run in parallel across accounts.
 
@@ -221,8 +235,24 @@ Save the PID for cleanup.
 For each account HTML file, use Playwright MCP to print to PDF:
 
 1. Navigate to `http://localhost:18765/sales-pdf-{Account}.html`
-2. Use `browser_run_code` to execute:
+2. Use `browser_run_code` to wait for Mermaid diagrams to render (if any), then print:
    ```javascript
+   // Wait for Mermaid diagrams to render (CDN-loaded JS needs time to execute)
+   const mermaidBlocks = document.querySelectorAll('pre.mermaid');
+   if (mermaidBlocks.length > 0) {
+     // Wait until all mermaid blocks have been replaced with SVGs
+     await page.waitForFunction(() => {
+       const blocks = document.querySelectorAll('pre.mermaid');
+       if (blocks.length === 0) return true;
+       // Mermaid replaces pre.mermaid with div.mermaid containing SVG
+       return document.querySelectorAll('[data-processed="true"] svg, .mermaid svg').length > 0;
+     }, { timeout: 15000 }).catch(() => {
+       // If timeout, proceed anyway — diagrams will show as code
+       console.log('Mermaid rendering timed out, proceeding with PDF');
+     });
+     // Extra buffer for SVG layout finalization
+     await new Promise(r => setTimeout(r, 1000));
+   }
    await page.pdf({
      path: '{pdf_output_path}',
      format: 'Letter',
