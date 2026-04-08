@@ -29,15 +29,15 @@ npm install -g @playwright/cli@latest
 playwright-cli install
 ```
 
-**Note:** You will need to authenticate in the browser the first time you run this skill. After that, the `--persistent` flag reuses the persistent browser profile (with 1Password and saved SSO cookies), so you should not need to re-authenticate unless your SSO token expires (typically days/weeks). If a login prompt appears, complete the authentication manually and the skill will continue automatically.
+**Note:** You will need to authenticate in the browser the first time you run this skill. After that, `--profile {config.gong_browser_profile}` reuses the user's configured browser profile (with 1Password and saved SSO cookies), so you should not need to re-authenticate unless your SSO token expires (typically days/weeks). If a login prompt appears, complete the authentication manually and the skill will continue automatically.
 
 ## Playwright CLI Reference
 
 Key commands used by this skill:
 
 ```bash
-# Open browser (always use --headed --persistent for Gong)
-playwright-cli -s={session} open {url} --headed --persistent
+# Open browser (always use --headed --profile for Gong)
+playwright-cli -s={session} open {url} --headed --profile {config.gong_browser_profile} --browser {config.gong_browser_channel}
 
 # Take page snapshot (returns element refs for clicking)
 playwright-cli -s={session} snapshot
@@ -114,7 +114,7 @@ Within a single account, use subagents to process file writes in parallel (subag
 
 ### Pre-check: Read Config
 
-Read `~/.claude/skills/sales-config.md` and extract: `vault_path`, `company_folder`, `name`, `initials`, `company`, `gong_workspace_id`. Use these values throughout the rest of this skill wherever `{config.*}` placeholders appear.
+Read `~/.claude/skills/sales-config.md` and extract: `vault_path`, `company_folder`, `name`, `initials`, `company`, `gong_workspace_id`, `gong_browser_profile`, `gong_browser_channel`. Use these values throughout the rest of this skill wherever `{config.*}` placeholders appear.
 
 ### Pre-check: Verify Vault Path
 
@@ -134,12 +134,12 @@ playwright-cli -s=gong tab-list 2>&1
 ```
 If it's running, reuse it — navigate with `goto` instead of `open`. **Never call `open` when the session is already running.** If the session is not running, start it once:
 ```bash
-playwright-cli -s=gong open {url} --headed --persistent
+playwright-cli -s=gong open {url} --headed --profile {config.gong_browser_profile} --browser {config.gong_browser_channel}
 ```
 
 All subsequent navigation in every path (Scan, Bulk, Gong, Granola) MUST use `goto` — never `open` again within the same invocation.
 
-**CRITICAL: Always use `--persistent` for all Gong browser sessions.** This flag uses Playwright's default persistent browser profile, which retains cookies, extensions (1Password), and SSO state across sessions.
+**CRITICAL: Always use `--profile {config.gong_browser_profile} --browser {config.gong_browser_channel}` for all Gong browser sessions.** The `--profile` flag points to the user's configured browser profile (set by `/sales-setup`), which contains 1Password extensions and saved SSO cookies. The `--browser` flag specifies the correct browser channel from config. Do NOT use `--persistent` — it uses Playwright's default profile directory, which is a different location and does not have the user's extensions or SSO cookies.
 
 ### Pre-check: Verify Playwright CLI
 
@@ -548,11 +548,11 @@ After all imports for this invocation are complete, close the browser session:
 playwright-cli -s=gong close
 ```
 
-The `--persistent` flag means SSO cookies are saved to disk in the persistent browser profile, so closing the session does NOT lose authentication. The user will not need to re-authenticate on the next run.
+The `--profile` flag means SSO cookies are saved to disk in the user's configured browser profile, so closing the session does NOT lose authentication. The user will not need to re-authenticate on the next run.
 
 ### Error Handling
 
-- **Login required:** Pause and tell the user to log in. Do NOT skip the import. Poll every 5 seconds (check page URL for `sign-in`) and resume automatically once auth succeeds. If no auth after 2 minutes, remind the user again. The `--headed --persistent` flags make re-auth easier.
+- **Login required:** Pause and tell the user to log in. Do NOT skip the import. Poll every 5 seconds (check page URL for `sign-in`) and resume automatically once auth succeeds. If no auth after 2 minutes, remind the user again. The `--headed --profile` flags make re-auth easier.
 - **No recording:** Still update the meeting file with attendees and `gong_url`. Log as "no recording" and continue. This is the ONLY valid reason to skip extracting a brief/transcript.
 - **Existing content:** Always preserve existing content. Append new data using subheadings. Never skip a call because the meeting file already has notes from another source (Granola, manual notes, etc.).
 - **No Gong URL in account file:** Ask the user for the Gong account activity URL.
@@ -568,6 +568,6 @@ The `--persistent` flag means SSO cookies are saved to disk in the persistent br
 - For Granola: Shared links only contain summary notes (no transcript available).
 - Parallel processing uses browser tabs (up to 3 at a time) within a single session.
 - All accounts share a single `gong` session so SSO cookies persist across runs and accounts. This means only one `/sales-gong` can run at a time (no parallel imports for different accounts).
-- The `--persistent` flag uses Playwright's default persistent browser profile, which retains cookies, extensions, and SSO state across sessions.
+- The `--profile {config.gong_browser_profile}` flag points to the user's configured browser profile (set by `/sales-setup`), which retains cookies, extensions (1Password), and SSO state across sessions. Never use `--persistent` as it uses a different default directory.
 - All meeting files are created by the main agent before launching subagents to prevent race conditions.
 - Never ask for confirmation. The skill runs fully autonomously — skip voicemail/missed calls and import everything else.

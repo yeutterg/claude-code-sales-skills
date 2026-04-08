@@ -5,21 +5,21 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 ## Table of Contents
 
 - [Skills](#skills)
-  - [`/sales-architecture-diagram`](#ld-architecture-diagram)
-  - [`/sales-calendar`](#ld-calendar)
-  - [`/sales-cep`](#ld-cep)
-  - [`/sales-create-account`](#ld-create-account)
-  - [`/sales-git`](#ld-git)
-  - [`/sales-gong`](#ld-gong)
-  - [`/sales-meeting`](#ld-meeting)
-  - [`/sales-pdf`](#ld-pdf)
-  - [`/sales-ps-prep`](#ld-ps-prep)
-  - [`/sales-review-learnings`](#ld-review-learnings)
-  - [`/sales-salesforce`](#ld-salesforce)
+  - [`/sales-architecture-diagram`](#sales-architecture-diagram)
+  - [`/sales-calendar`](#sales-calendar)
+  - [`/sales-cep`](#sales-cep)
+  - [`/sales-create-account`](#sales-create-account)
+  - [`/sales-git`](#sales-git)
+  - [`/sales-gong`](#sales-gong)
+  - [`/sales-meeting`](#sales-meeting)
+  - [`/sales-pdf`](#sales-pdf)
+  - [`/sales-ps-prep`](#sales-ps-prep)
+  - [`/sales-review-learnings`](#sales-review-learnings)
+  - [`/sales-salesforce`](#sales-salesforce)
   - [`/sales-setup`](#sales-setup)
-  - [`/sales-summarize-account`](#ld-summarize-account)
-  - [`/sales-today`](#ld-today)
-  - [`/sales-weekly`](#ld-weekly)
+  - [`/sales-summarize-account`](#sales-summarize-account)
+  - [`/sales-today`](#sales-today)
+  - [`/sales-weekly`](#sales-weekly)
 - [Skill Dependency Graph](#skill-dependency-graph)
 - [Prerequisites](#prerequisites)
 - [Obsidian Vault Setup](#obsidian-vault-setup)
@@ -92,7 +92,7 @@ Commits and pushes any changes to the skills GitHub repo. Pulls latest upstream 
 
 **Usage:** `/sales-gong <account name> [gong_or_granola_url]`
 
-Imports Gong calls or Granola meetings into Obsidian meeting notes using Playwright CLI for browser automation. Four modes: single Gong call, Granola summary, scan (match existing meetings to unimported recordings), and bulk import. Gong imports are mandatory: never skips a call that has a recording, even if the meeting file already has notes. Uses a shared persistent browser session with the user's own browser profile (for password manager extensions and saved SSO cookies). Extracts attendees, briefs, and transcripts in parallel using browser tabs (up to 3 calls at once). Background subagents write to meeting files while the browser continues extracting the next batch.
+Imports Gong calls or Granola meetings into Obsidian meeting notes using Playwright CLI for browser automation. Four modes: single Gong call, Granola summary, scan (match existing meetings to unimported recordings), and bulk import. Gong imports are mandatory: never skips a call that has a recording, even if the meeting file already has notes. Uses a shared browser session with `--profile` and `--browser` flags from config to reuse the user's own persistent browser profile (with 1Password extension and saved SSO cookies). Extracts attendees, briefs, and transcripts in parallel using browser tabs (up to 3 calls at once). Background subagents write to meeting files while the browser continues extracting the next batch.
 
 ### `/sales-meeting`
 
