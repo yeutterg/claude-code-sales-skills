@@ -207,6 +207,8 @@ calendar_mode: {all or deals}
 calendar_include_prep: {true/false}
 calendar_configured: {true/false}
 gong_workspace_id: {workspace ID or empty}
+uses_gong: {true/false}
+uses_enterpret: {true/false}
 pdf_export: {true/false}
 pdf_path: {PDF output path or empty}
 products:
@@ -231,7 +233,7 @@ It is read by skills at runtime and survives repo updates.
 To reconfigure or pull updates, run `/sales-setup` again.
 ```
 
-If the config already existed, preserve the `salesforce_username`, `salesforce_instance_url`, `salesforce_se_status_field`, `salesforce_deal_health_field`, `salesforce_se_lookup_fields`, `salesforce_custom_fields`, `salesforce_configured`, `playwright_configured`, `calendar_id`, `calendar_user_emails`, `calendar_mode`, `calendar_include_prep`, `calendar_configured`, `gong_workspace_id`, `pdf_export`, `pdf_path`, `public_repo_path`, and `setup_date` values from the old config. Update `last_updated` to today.
+If the config already existed, preserve the `salesforce_username`, `salesforce_instance_url`, `salesforce_se_status_field`, `salesforce_deal_health_field`, `salesforce_se_lookup_fields`, `salesforce_custom_fields`, `salesforce_configured`, `playwright_configured`, `calendar_id`, `calendar_user_emails`, `calendar_mode`, `calendar_include_prep`, `calendar_configured`, `gong_workspace_id`, `uses_gong`, `uses_enterpret`, `pdf_export`, `pdf_path`, `public_repo_path`, and `setup_date` values from the old config. Update `last_updated` to today.
 
 ### Step 6: Create Symlinks
 
@@ -316,7 +318,33 @@ Options:
 - **Yes** — Run the **Playwright CLI Setup** flow below
 - **No** — Skip
 
-### Step 13: PDF Export (Optional)
+### Step 13: Call Recording Tools (Optional)
+
+Ask the user: "Which call recording / conversation intelligence tools do you use? These power `/sales-gong` and `/sales-enterpret` for importing call transcripts into meeting notes."
+
+Present these options (multi-select — the user can pick one, both, or neither):
+- **Gong** — `/sales-gong` imports call recordings via browser automation (requires Playwright CLI)
+- **Enterpret** — `/sales-enterpret` imports Gong transcripts from the Enterpret knowledge graph (faster, no browser needed)
+- **Neither / skip** — You can always configure these later
+
+Based on the user's response:
+
+- If **Gong**:
+  - Set `uses_gong: true`
+  - Ask: "What is your Gong workspace ID? (Found in Gong URLs like `https://us-XXXXX.app.gong.io/...`)"
+  - If provided, store as `gong_workspace_id`. If skipped, leave empty.
+  - If Playwright CLI is not yet configured, suggest: "Gong imports require Playwright CLI. Would you like to set it up now?" If yes, run **Playwright CLI Setup**.
+
+- If **Enterpret**:
+  - Set `uses_enterpret: true`
+  - Note to user: "Enterpret imports use the `wisdom` MCP server. Make sure it's configured in your Claude Code MCP settings."
+
+- If **both**: Set both flags and follow both flows above.
+- If **neither**: Set `uses_gong: false` and `uses_enterpret: false`.
+
+If a config already exists, show current values: "Call recording tools: Gong={uses_gong}, Enterpret={uses_enterpret}. Would you like to change?"
+
+### Step 14: PDF Export (Optional)
 
 Ask the user: "Would you like to export account PDFs daily when running `/sales-today`? This generates clean, shareable PDFs of your account files. (y/n)"
 
@@ -329,7 +357,7 @@ Options:
 - **No:**
   - Set `pdf_export: false` in config, leave `pdf_path` empty
 
-### Step 14: Report
+### Step 15: Report
 
 Output a summary of everything that was done:
 
@@ -351,6 +379,8 @@ Setup complete!
   Salesforce: {configured/not configured}
   Calendar:   {configured/not configured}
   Playwright: {configured/not configured}
+  Gong:       {enabled / not configured}
+  Enterpret:  {enabled / not configured}
   PDF Export: {enabled (path) / not configured}
 
 To pull updates and re-apply your config, just run /sales-setup again.
@@ -451,13 +481,7 @@ Deal context fields: Pain__c, Decision_Criteria__c, Champion_formula__c, ...
 Does this look right? You can adjust if needed.
 ```
 
-### Step 7: Discover Gong Workspace ID
-
-Ask the user: "Do you use Gong? If so, what is your Gong workspace ID? (Found in Gong URLs like `https://us-XXXXX.app.gong.io/...`)"
-
-If provided, store it. If not, skip.
-
-### Step 8: Update Config
+### Step 7: Update Config
 
 Update `~/.claude/skills/sales-config.md` frontmatter:
 - `salesforce_username: {extracted username}`
@@ -467,10 +491,9 @@ Update `~/.claude/skills/sales-config.md` frontmatter:
 - `salesforce_se_lookup_fields: {discovered fields}`
 - `salesforce_custom_fields: {discovered fields}`
 - `salesforce_configured: true`
-- `gong_workspace_id: {if provided}`
 - `last_updated: {today}`
 
-### Step 9: Report
+### Step 8: Report
 
 - If successful: "Salesforce CLI is authenticated and ready. You can now use `/sales-salesforce` to push SE notes."
 - If failed: Show the error and suggest re-running `/sales-setup salesforce`.

@@ -136,7 +136,7 @@ Five modes for Salesforce integration. **Push** (default): pushes the Salesforce
 
 **Usage:** `/sales-setup [salesforce | playwright | calendar]`
 
-Guided onboarding for the Obsidian sales skills. Re-run anytime to pull upstream updates and re-apply your config. Walks through role, company, name, vault path, and company folder configuration. Searches the web for your company's products and competitors, lets you review and edit the list. Creates persistent config at `~/.claude/skills/sales-config.md` with all integration settings. Creates symlinks in `~/.claude/skills/` so Claude Code can find the skills. Optionally configures Salesforce CLI (with custom field auto-discovery for MEDDPICC, deal health, and SE lookup fields), Playwright CLI, and Google Calendar. Sub-arguments (`salesforce`, `playwright`, `calendar`) run only that specific setup.
+Guided onboarding for the Obsidian sales skills. Re-run anytime to pull upstream updates and re-apply your config. Walks through role, company, name, vault path, and company folder configuration. Searches the web for your company's products and competitors, lets you review and edit the list. Creates persistent config at `~/.claude/skills/sales-config.md` with all integration settings. Creates symlinks in `~/.claude/skills/` so Claude Code can find the skills. Optionally configures Salesforce CLI (with custom field auto-discovery for MEDDPICC, deal health, and SE lookup fields), Playwright CLI, Google Calendar, and call recording tools (Gong and/or Enterpret). Sub-arguments (`salesforce`, `playwright`, `calendar`) run only that specific setup.
 
 ### `/sales-summarize-account`
 
