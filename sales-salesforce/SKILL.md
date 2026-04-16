@@ -892,13 +892,13 @@ For each account that was newly created (not existing), add todo items under `##
 ```markdown
 - [[{config.company_folder}/Accounts/{Account}/{Account}|{Account}]]: Onboarding
 	- [x] Run `/sales-salesforce my accounts`  [completion:: YYYY-MM-DD]
-	- [ ] Run `/sales-gong {Account} {gong_url}` (historical import)
+	- [ ] Run `/sales-enterpret {Account}` or `/sales-gong {Account} {gong_url}` (historical import)
 	- [ ] Run `/sales-summarize-account {Account}`
 ```
 
 For the Gong historical import todo:
 - If the account file has a `gong_url` in frontmatter (set during `/sales-create-account`), include the URL in the todo
-- If no `gong_url`, use: `Run '/sales-gong {Account}' (find account in Gong first)`
+- If no `gong_url`, use: `Run '/sales-enterpret {Account}' or '/sales-gong {Account}' (find account in Gong first)`
 
 Only add todos for **newly created** accounts. Existing accounts presumably already have their Gong history imported and are being maintained via the regular workflow.
 
@@ -931,7 +931,7 @@ Skipped (renewal-only — no SE account needed):
 ...
 
 Next steps for new accounts:
-1. Import Gong history: /sales-gong {Account}
+1. Import Gong history: /sales-enterpret {Account} (or /sales-gong {Account} as fallback)
 2. Summarize account: /sales-summarize-account {Account}
 ```
 

@@ -76,6 +76,7 @@ next_call_agenda:
 salesforce_account:
 salesforce_opportunity:
 gong_url:
+slack_channel:
 revenue_assets_folder:
 ---
 
@@ -389,14 +390,16 @@ After creating the account, check which Salesforce URL was provided and run the 
 
 After creating the account (and after Salesforce import if applicable), check if the `gong_url` frontmatter field was populated.
 
-If `gong_url` is set AND Playwright CLI is configured (`playwright_configured` is true in config):
+First, try `/sales-enterpret {Account} last 90 days` to bulk-import recent Gong transcripts from Enterpret (faster, no browser needed).
+
+If Enterpret returns no results or the wisdom MCP is not connected, and `gong_url` is set AND Playwright CLI is configured (`playwright_configured` is true in config):
 - The browser session from Step 0 should already be open and authenticated.
-- Automatically invoke `/sales-gong {Account} {gong_url}` to run the bulk historical import. No need to ask, just do it.
+- Fall back to `/sales-gong {Account} {gong_url}` to run the bulk historical import. No need to ask, just do it.
 - **CRITICAL: Never skip Gong imports.** Even if meeting files already have user-pasted notes or Granola summaries, Gong recordings contain the full transcript and AI brief which are always valuable. The only reason to skip a specific call is if Gong has no recording for it (voicemail, missed call).
 - If the browser session has an auth issue (SSO expired, login page shown), tell the user to log in and wait — do NOT skip the import.
 
-If Playwright CLI is not configured, mention it in the output:
-- "Tip: To import historical Gong calls, install Playwright CLI and run `/sales-gong {Account}`."
+If neither Enterpret nor Playwright CLI is available, mention it in the output:
+- "Tip: To import historical Gong calls, run `/mcp` to connect Enterpret, or install Playwright CLI and run `/sales-gong {Account}`."
 
 ### Step 9: Automatic Account Summarization
 

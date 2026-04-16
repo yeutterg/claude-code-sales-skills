@@ -373,7 +373,7 @@ Contributions are welcome! If you've built a new skill, improved an existing one
 
 **Guidelines:**
 - Keep skill instructions clear and self-contained -- another user should be able to use your skill without extra context
-- If your skill adds a new `sales-*` directory, `/sales-git` will automatically pick it up for the README
+- If your skill adds a new `ld-*` directory, `/sales-git` will automatically pick it up for the README
 - Test your skill on at least one real account before submitting
 - Don't include vault-specific paths, company names, or personal info -- use `{config.*}` references and `/sales-setup` handles personalization
 - `/sales-git` will check for proprietary information before committing and auto-fix any leaks
@@ -398,7 +398,7 @@ After successfully committing and pushing the private repo, sync changes to the 
    If the directory doesn't exist, warn: "Public repo not found at {config.public_repo_path}. Skipping sync." and stop.
 
 2. **Copy and rename each SKILL.md:**
-   For each `sales-*/SKILL.md` in the private repo, copy it to the corresponding `sales-*/SKILL.md` in the public repo:
+   For each `ld-*/SKILL.md` in the private repo, copy it to the corresponding `sales-*/SKILL.md` in the public repo:
    ```bash
    for d in {config.repo_path}/sales-*/; do
      skill_name=$(basename "$d")
@@ -408,7 +408,7 @@ After successfully committing and pushing the private repo, sync changes to the 
    done
    ```
 
-3. **Replace `sales-` references with `sales-` in all copied files:**
+3. **Replace `ld-` references with `sales-` in all copied files:**
    ```bash
    cd {config.public_repo_path}
    # Replace /sales- skill references with /sales-
@@ -423,7 +423,7 @@ After successfully committing and pushing the private repo, sync changes to the 
 4. **Regenerate the public README.md** using the same logic as Step 4, but:
    - Use `sales-*` skill names throughout
    - Use `sales-config.md` instead of `sales-config.md`
-   - Use `sales-setup` instead of `sales-setup`
+   - Use `sales-setup` instead of `ld-setup`
    - Reference the public repo's GitHub URL as the upstream (derive from `git remote get-url origin` in the public repo)
    - Keep the same structure (table of contents, skills table, detailed subsections, prerequisites, vault setup, workflow, customization, contributing)
 

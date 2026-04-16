@@ -75,7 +75,7 @@ For each unrecognized meeting:
    	- [ ] Run `/sales-salesforce {Account}`
    ```
 
-Do NOT run `/sales-gong`, `/sales-summarize-account`, or `/sales-salesforce` for new accounts — the user needs to paste the Salesforce and Gong URLs first.
+Do NOT run `/sales-enterpret`, `/sales-gong`, `/sales-summarize-account`, or `/sales-salesforce` for new accounts — the user needs to paste the Salesforce and Gong URLs first.
 
 ### Morning Step 3: Generate Deal Prep & Recap
 
@@ -349,7 +349,7 @@ Read the current daily note. Look for any **deal meeting entries from previous d
 
 For each account with unchecked items under `### Past`:
 
-1. **If "Copy Gong Transcript" is unchecked:** Run `/sales-gong {account}` in scan mode to find and import any unimported Gong recordings for recent meetings.
+1. **If "Copy Gong Transcript" is unchecked:** Run `/sales-enterpret {account}` first to import transcripts from Enterpret (faster, no browser needed). If Enterpret returns no results or the wisdom MCP is not connected, fall back to `/sales-gong {account}` in scan mode.
 2. **If "Run `/sales-summarize-account`" is unchecked:** Run `/sales-summarize-account {account}`.
 3. **If "Run `/sales-salesforce`" is unchecked:** Run `/sales-salesforce {account}`.
 
@@ -359,9 +359,14 @@ Skip any account where the "Paste Salesforce Opportunity URL" or "Paste Gong Act
 
 ### Morning Step 5: Export PDFs (if enabled)
 
-If `pdf_export` is `true` in config, run `/sales-pdf` for all deal accounts that appear in the AE Exec Summaries (Step 3) — both prep accounts (today's meetings) and recap accounts (yesterday's meetings). This ensures every deal the user is briefing their AE on has a fresh PDF ready to share.
+If `pdf_export` is `true` in config, export PDFs for ALL deal accounts with meetings on today's calendar. This ensures the user has fresh, shareable account summaries for every deal they're working today.
 
-Collect the list of unique account names from both the prep and recap sections, then run `/sales-pdf {account}` for each one.
+1. Collect all unique account names from today's `### Today` meetings section in the daily note
+2. Also include any accounts from the Deal Prep and Deal Recap sections (these may include accounts from yesterday or tomorrow)
+3. Run `/sales-pdf {account}` for each unique account
+4. PDFs go to `{config.pdf_path}/{YYYY-MM-DD}/`
+
+This step runs AFTER summarize/salesforce processing so the PDFs contain the latest data.
 
 ### Morning Step 6: Weekly Review (if applicable)
 
@@ -397,7 +402,7 @@ Read today's daily note. Look for deal meeting entries under `## Meetings` (any 
 
 For each account with unchecked items:
 
-1. **If "Copy Gong Transcript" is unchecked:** Run `/sales-gong {account}` in scan mode. Gong typically processes calls within 1-2 hours, so evening is the ideal time to import.
+1. **If "Copy Gong Transcript" is unchecked:** Run `/sales-enterpret {account}` first to import transcripts from Enterpret (faster, no browser needed). If Enterpret returns no results or the wisdom MCP is not connected, fall back to `/sales-gong {account}` in scan mode. Gong typically processes calls within 1-2 hours, so evening is the ideal time to import.
 2. **If "Run `/sales-summarize-account`" is unchecked:** Run `/sales-summarize-account {account}`.
 3. **If "Run `/sales-salesforce`" is unchecked:** Run `/sales-salesforce {account}`.
 
@@ -425,9 +430,14 @@ Add the `## Deal Prep` and `## Deal Recap` sections to **today's** daily note (t
 
 ### Evening Step 5: Export PDFs (if enabled)
 
-If `pdf_export` is `true` in config, run `/sales-pdf` for all deal accounts that appear in the AE Exec Summaries (Step 4) — both prep accounts (tomorrow's meetings) and recap accounts (today's meetings). This ensures every deal the user is briefing their AE on has a fresh PDF ready to share.
+If `pdf_export` is `true` in config, export PDFs for ALL deal accounts with meetings on the upcoming day (tomorrow, or Monday if it's Friday). This ensures the user has fresh account summaries ready before tomorrow's calls start.
 
-Collect the list of unique account names from both the prep and recap sections, then run `/sales-pdf {account}` for each one.
+1. Collect all unique account names from tomorrow's calendar scan (Step 2) — every account that has an external deal meeting tomorrow
+2. Also include accounts from today's `### Today` meetings that were just processed (recap accounts) and any Deal Prep/Recap accounts
+3. Run `/sales-pdf {account}` for each unique account
+4. PDFs go to `{config.pdf_path}/{YYYY-MM-DD}/` (using tomorrow's date)
+
+This step runs AFTER summarize/salesforce processing and calendar scan so the PDFs contain the latest data and cover tomorrow's meetings.
 
 ### Evening Step 6: Weekly Review (if applicable)
 
@@ -474,13 +484,13 @@ The ONLY time the workflow should stop and address the user is if Gong authentic
 
 - Always run `/sales-summarize-account` for every account with a meeting, even if it has no `salesforce_opportunity`. Summarization updates the meeting summary, ledger, MEDDPICC, and other account files regardless of Salesforce status.
 - Never run `/sales-salesforce` on an account that has no `salesforce_opportunity` in its frontmatter — skip silently and list in warnings
-- Never run `/sales-gong` on an account that has no `gong_url` in its frontmatter — skip silently
-- When processing multiple accounts, use subagents to parallelize the work. Launch ALL account processing (Gong imports, summarize, salesforce) as background agents and collect results at the end
+- Never run `/sales-gong` on an account that has no `gong_url` in its frontmatter — skip silently. `/sales-enterpret` can still be attempted since it searches by account name, not URL.
+- When processing multiple accounts, use subagents to parallelize the work. Launch ALL account processing (Enterpret/Gong imports, summarize, salesforce) as background agents and collect results at the end
 - Check off daily note items as they are completed (change `- [ ]` to `- [x]`)
 - If a Gong import fails (e.g., recording not yet available), leave the checkbox unchecked — it will be picked up on the next run
 - If `/sales-weekly` is triggered, run it AFTER all daily processing is complete
-- If Playwright CLI is not configured (`playwright_configured` is not true in config), skip all Gong import steps and note in warnings: "Gong imports skipped: Playwright CLI not configured."
-- If `skip_gong` is true (from `no gong` argument), skip all Gong import steps. Leave Gong transcript checkboxes unchecked. Still proceed with `/sales-summarize-account` and `/sales-salesforce` for accounts that already have transcripts.
+- If Playwright CLI is not configured (`playwright_configured` is not true in config), skip `/sales-gong` fallback steps but still attempt `/sales-enterpret` (which doesn't need Playwright). Only note in warnings if both fail: "Gong imports skipped: Enterpret had no results and Playwright CLI not configured for /sales-gong fallback."
+- If `skip_gong` is true (from `no gong` argument), skip all transcript import steps (both `/sales-enterpret` and `/sales-gong`). Leave Gong transcript checkboxes unchecked. Still proceed with `/sales-summarize-account` and `/sales-salesforce` for accounts that already have transcripts.
 - If `pdf_export` is `true` in config, run `/sales-pdf` after Deal Prep and Deal Recap are generated in both morning and evening modes. Export all deal accounts that appear in the prep or recap sections.
 
 ### Report Format

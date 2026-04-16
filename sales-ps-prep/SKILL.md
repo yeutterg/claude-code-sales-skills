@@ -38,7 +38,7 @@ Read these files from `{config.vault_path}/{config.company_folder}/Accounts/{Acc
 Create `{config.vault_path}/{config.company_folder}/Accounts/{Account}/SA Prep.md` with the following structure. Write this as a **dense, opinionated briefing** — not a template dump. The SA should be able to read this in 10 minutes and walk into a call prepared.
 
 ```markdown
-# {Account} — SA Prep
+# {Account} - SA Prep
 
 **Last Updated:** {YYYY-MM-DD}
 **AE:** {from frontmatter} | **SE:** {from frontmatter} | **CSM:** {from frontmatter}
@@ -187,11 +187,16 @@ Keep each outcome to 3-6 words. No bullet points — one flat line the user can 
 
 ### Step 3: Generate PDF
 
-After creating the SA Prep note, invoke `/sales-pdf {Account}` to export it to PDF. The `/sales-pdf` skill will handle the preprocessing and PDF generation.
+After creating the SA Prep note, export it to PDF. The H1 heading (`# {Account} - SA Prep`) should be **kept in the PDF** as the document title.
 
-**Important:** The `/sales-pdf` skill exports the main account file by default. To export the SA Prep specifically, tell the user they can run `/sales-pdf` and specify the SA Prep file, or manually adjust. For now, report the SA Prep file path so the user knows where it is.
+**PDF export steps:**
+1. Read the SA Prep markdown file
+2. Strip the first line if it's an H1 heading (starts with `# `)
+3. Convert to HTML via pandoc with the standard `/sales-pdf` CSS (sans-serif: `-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif`)
+4. Inject Mermaid JS if the file contains architecture diagrams
+5. Print to PDF via Playwright at `{config.vault_path}/{config.company_folder}/PDFs/{YYYY-MM-DD}/{YYYY-MM-DD} {Account} SA Prep.pdf`
 
-Actually — invoke `/sales-pdf` with explicit instructions to export the SA Prep file rather than the main account file. Pass this context to the skill: "Export the SA Prep note at `{path to SA Prep.md}`, not the main account file."
+**Do not use em dashes (—) anywhere in the SA Prep.** Use hyphens (-) or colons instead.
 
 ### Step 4: Report
 

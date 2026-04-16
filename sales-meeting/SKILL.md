@@ -136,7 +136,7 @@ Add a backlink to the appropriate subsection with nested todo items.
 
 **CRITICAL: You MUST include ALL FOUR standard checklist items for every meeting:**
 
-1. Copy [Gong Transcript]({gong_url}) into meeting note
+1. Import transcript: `/sales-enterpret {Account}` (or [Gong]({gong_url}) via `/sales-gong`)
 2. Run `/sales-summarize-account {Account}`
 3. Run `/sales-salesforce {Account}` with linked Salesforce opportunities (see format below)
 4. Send update to stakeholders: {stakeholder names from account frontmatter}
@@ -150,7 +150,7 @@ Example for Acme Corp Discovery on 2026-02-06 (single opportunity):
 ```
 ### Today
 - [[{config.company_folder}/Accounts/Acme Corp/Acme Corp|Acme Corp]]: [[{config.company_folder}/Accounts/Acme Corp/meetings/2026-02-06 Discovery|2026-02-06 Discovery]]
-	- [ ] Copy [Gong Transcript](https://app.gong.io/...) into meeting note
+	- [ ] Import transcript: `/sales-enterpret Acme Corp` (or [Gong](https://app.gong.io/...) via `/sales-gong`)
 	- [ ] Run `/sales-summarize-account Acme Corp`
 	- [ ] Run `/sales-salesforce Acme Corp` ([Salesforce](https://yourcompany.my.salesforce.com/lightning/r/Opportunity/0061Q00000AbCdEFGH/view))
 	- [ ] Send update to stakeholders: {AE name} {CSM name}

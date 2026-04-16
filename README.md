@@ -9,6 +9,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
   - [`/sales-calendar`](#sales-calendar)
   - [`/sales-cep`](#sales-cep)
   - [`/sales-create-account`](#sales-create-account)
+  - [`/sales-enterpret`](#sales-enterpret)
   - [`/sales-git`](#sales-git)
   - [`/sales-gong`](#sales-gong)
   - [`/sales-meeting`](#sales-meeting)
@@ -44,8 +45,9 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 |-------|-------------|
 | `/sales-architecture-diagram` | Generate a Mermaid architecture diagram for an account showing tools, services, and integration points |
 | `/sales-calendar` | Scan Google Calendar for upcoming meetings, match them to accounts, and auto-create meeting notes via /sales-meeting |
-| `/sales-cep` | Analyze deal stage based on LaunchDarkly's Customer Engagement Process (CEP). Compares completed and missing activities against stage criteria to recommend the correct opportunity stage. |
+| `/sales-cep` | Analyze deal stage based on your company's Customer Engagement Process (CEP). Compares completed and missing activities against stage criteria to recommend the correct opportunity stage. |
 | `/sales-create-account` | Create a new account folder structure with template files and business context |
+| `/sales-enterpret` | Import Gong call transcripts from Enterpret (via wisdom MCP) into Obsidian meeting notes. Faster than /sales-gong -- no browser needed. |
 | `/sales-git` | Commit and push skill changes and auto-regenerate the README |
 | `/sales-gong` | Import Gong calls or Granola meetings into Obsidian meeting notes, or bulk import all calls for an account |
 | `/sales-meeting` | Create meeting notes for a sales account and link them in the daily note |
@@ -80,13 +82,19 @@ Analyzes a deal's actual stage based on what has and hasn't happened, using the 
 
 **Usage:** `/sales-create-account <account name> [gong_url] [salesforce_url]`
 
-Creates a new account folder structure with template files and populates business context from the web. Optionally accepts a Gong activity URL, Salesforce Account URL, or Salesforce Opportunity URL (any combination, any order). Auto-detects URL type by checking path segments. Opens the Gong browser early so you can authenticate while setup runs in the background. If a Salesforce URL is provided, runs `/sales-salesforce scan` to discover all open and closed opportunities. Triggers automatic Gong historical import if Playwright CLI is configured. After imports complete, runs `/sales-summarize-account` to populate MEDDPICC, deal ledger, and all account sections.
+Creates a new account folder structure with template files and populates business context from the web. Optionally accepts a Gong activity URL, Salesforce Account URL, or Salesforce Opportunity URL (any combination, any order). Auto-detects URL type by checking path segments. Opens the Gong browser early so you can authenticate while setup runs in the background. If a Salesforce URL is provided, runs `/sales-salesforce scan` to discover all open and closed opportunities. Triggers automatic Gong historical import: first tries `/sales-enterpret` to bulk-import recent transcripts from Enterpret (faster, no browser needed), then falls back to `/sales-gong` if Enterpret has no results or is not connected. After imports complete, runs `/sales-summarize-account` to populate MEDDPICC, deal ledger, and all account sections.
+
+### `/sales-enterpret`
+
+**Usage:** `/sales-enterpret <account name> [date range]`
+
+Imports Gong call transcripts from Enterpret's knowledge graph (via the wisdom MCP server) into Obsidian meeting notes. This is the preferred method for transcript import -- it's faster and doesn't require a browser. Queries Enterpret for Gong-sourced `NaturalLanguageInteraction` records matching the account name and date range, scores each by relevance (account name match, known contact names, distinctive deal terms), then matches transcripts to existing meeting files or creates new ones via `/sales-meeting`. Parses the raw `agent:`/`user:` transcript format into readable speaker-attributed paragraphs, generates a brief summary with recap, key points, and next steps, and writes both to the meeting file following the same append rules as `/sales-gong`. Supports flexible date arguments: single dates, explicit ranges, and relative expressions like `today`, `yesterday`, `this week`, or `last 7 days`. Runs fully autonomously -- never asks for confirmation. If the wisdom MCP is not connected or returns no results, warns and returns immediately so the caller (e.g., `/sales-today` or `/sales-create-account`) can fall back to `/sales-gong`.
 
 ### `/sales-git`
 
 **Usage:** `/sales-git`
 
-Commits and pushes any changes to the skills GitHub repo. Pulls latest upstream updates, scans SKILL.md files for proprietary information, and auto-fixes leaks. Regenerates README.md from skill frontmatter and actual cross-skill dependency graph. Commits, pushes, and syncs to public repo with `ld-` to `sales-` renaming.
+Commits and pushes any changes to the skills GitHub repo. Pulls latest upstream updates, scans SKILL.md files for proprietary information, and auto-fixes leaks. Regenerates README.md from skill frontmatter and actual cross-skill dependency graph. Commits, pushes, and syncs to public repo with `sales-` renaming.
 
 ### `/sales-gong`
 
@@ -140,7 +148,7 @@ Summarizes all meeting notes for an account and updates the account page. Proces
 
 **Usage:** `/sales-today [morning | evening] [no gong]`
 
-Orchestrates the daily sales workflow based on time of day. Designed to run as a scheduled task in Claude Desktop. **Morning** (before noon): scans today's calendar, creates meeting notes, generates per-call deal prep with stakeholder send lists, adds a daily coaching tip, processes outstanding items from previous days. **Evening** (noon or later): processes today's meetings (Gong, summaries, Salesforce), scans tomorrow's calendar, generates deal prep for tomorrow. The `no gong` flag skips all Gong import steps (useful for automated/scheduled runs where Gong auth may not be available). Deal Prep includes attendees, MEDDPICC annotations, and 3-4 actionable bullets. Coaching Tip analyzes the SE's actual speaking turns in recent call transcripts and surfaces one specific, actionable improvement grounded in a real moment from a real call, with a persistent coaching log. Friday evening through Monday morning also runs `/sales-weekly`. Auto-creates accounts for unrecognized external meetings.
+Orchestrates the daily sales workflow based on time of day. Designed to run as a scheduled task in Claude Desktop. **Morning** (before noon): scans today's calendar, creates meeting notes, generates per-call deal prep with stakeholder send lists, adds a daily coaching tip, processes outstanding items from previous days. **Evening** (noon or later): processes today's meetings (Enterpret/Gong, summaries, Salesforce), scans tomorrow's calendar, generates deal prep for tomorrow. Transcript import tries `/sales-enterpret` first (faster, no browser needed), falling back to `/sales-gong` when Enterpret has no results. The `no gong` flag skips all transcript import steps (both Enterpret and Gong). Deal Prep includes attendees, MEDDPICC annotations, and 3-4 actionable bullets. Coaching Tip analyzes the SE's actual speaking turns in recent call transcripts and surfaces one specific, actionable improvement grounded in a real moment from a real call, with a persistent coaching log. Friday evening through Monday morning also runs `/sales-weekly`. Auto-creates accounts for unrecognized external meetings.
 
 ### `/sales-weekly`
 
@@ -165,6 +173,7 @@ graph TD
     end
 
     subgraph "Data Import"
+        enterpret["/sales-enterpret"]
         gong["/sales-gong"]
     end
 
@@ -192,6 +201,7 @@ graph TD
 
     today --> calendar
     today --> meeting
+    today --> enterpret
     today --> gong
     today --> summarize
     today --> salesforce
@@ -202,8 +212,10 @@ graph TD
     calendar --> meeting
     calendar --> create
     create --> salesforce
+    create --> enterpret
     create --> gong
     create --> summarize
+    enterpret --> meeting
     gong --> meeting
     summarize --> cep
     summarize --> archdiag
@@ -243,7 +255,7 @@ graph TD
 graph TD
     start["Determine mode<br/>(morning/evening)"] --> morning{Morning?}
     morning -->|Yes| mcal["Scan today's calendar"]
-    morning -->|No| egong["Process today's meetings<br/>(Gong → Summarize → SF)"]
+    morning -->|No| egong["Process today's meetings<br/>(Enterpret/Gong → Summarize → SF)"]
 
     mcal --> mnew["Handle new accounts"]
     mnew --> mprep["Generate Deal Prep & Recap"]
@@ -324,7 +336,7 @@ You can add additional folders under `{Company}/` as you see fit (for example, c
 3. Add upstream so you can pull future updates from the original repo:
    ```bash
    cd ~/repos/claude-code-sales-skills
-   git remote add upstream https://github.com/<original-author>/claude-code-sales-skills.git
+   git remote add upstream https://github.com/yeutterg/claude-code-sales-skills.git
    ```
 
 To pull upstream updates later, just run `/sales-setup` -- it checks for updates automatically.
@@ -369,7 +381,7 @@ The recommended way to use these skills is to run `/sales-today` as a daily sche
 **Why evening?** Gong typically needs 1-2 hours to process recordings. Running in the evening ensures today's calls are available for import. The evening run also scans tomorrow's calendar so your meeting notes are ready before the next day starts. On Fridays, it automatically triggers the weekly portfolio review.
 
 **What it does each run:**
-- Imports Gong transcripts for today's meetings
+- Imports Gong transcripts for today's meetings (via Enterpret first, falling back to Gong browser automation)
 - Summarizes accounts with new meeting data
 - Pushes updates to Salesforce
 - Scans tomorrow's calendar and creates meeting notes (with agendas, targeted questions, and competitive intel)
@@ -392,7 +404,7 @@ You can also run `/sales-today` manually at any time. It detects morning vs. eve
    This creates the full folder structure, populates business context from the web, and sets up template files.
 
    If you provide the Gong activity URL and/or Salesforce URL, it will automatically:
-   - Import all historical Gong calls (briefs + transcripts) via Playwright CLI
+   - Import all historical Gong calls (via Enterpret first, then browser automation as fallback)
    - Scan Salesforce for all opportunities and deal history
    - Summarize the account (MEDDPICC, CoM, TECHMAPS, deal ledger, tech stack)
 
