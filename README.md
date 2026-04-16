@@ -14,6 +14,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
   - [`/sales-gong`](#sales-gong)
   - [`/sales-meeting`](#sales-meeting)
   - [`/sales-pdf`](#sales-pdf)
+  - [`/sales-pov`](#sales-pov)
   - [`/sales-ps-prep`](#sales-ps-prep)
   - [`/sales-review-learnings`](#sales-review-learnings)
   - [`/sales-salesforce`](#sales-salesforce)
@@ -52,6 +53,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 | `/sales-gong` | Import Gong calls or Granola meetings into Obsidian meeting notes, or bulk import all calls for an account |
 | `/sales-meeting` | Create meeting notes for a sales account and link them in the daily note |
 | `/sales-pdf` | Export account files to PDF with clean formatting via pandoc and Playwright |
+| `/sales-pov` | Generate or update a POV & Technical Validation Summary for an account. Synthesizes all meetings, transcripts, and deal context into a structured review of every POV attempt. |
 | `/sales-ps-prep` | Generate a Solutions Architect / Professional Services prep document for an account. Creates a standalone note and exports to PDF. |
 | `/sales-review-learnings` | Review patterns and insights discovered by skills -- competitors, objections, feature requests, model performance, and template drift. Use when the daily note flags new skill learnings for review. |
 | `/sales-salesforce` | Push SE Status to Salesforce, scan accounts for opportunities and deal context, discover all your open opportunities, or generate an SE mapping report across all AEs. Use this skill whenever the user mentions Salesforce, opportunities, deal updates, SE status, SE mapping, or wants to see all their accounts. |
@@ -113,6 +115,12 @@ Creates a meeting note for a sales account and links it in today's daily note. C
 **Usage:** `/sales-pdf [account | all | today]`
 
 Exports account markdown files to professionally formatted PDFs. Preprocesses Obsidian-specific syntax (dataview queries, wiki-links, callouts, transclusion embeds), resolves inline field references from frontmatter, generates contacts and meetings tables, converts to HTML via pandoc, and prints to PDF via Playwright MCP. No arguments or `today` exports accounts summarized during the current `/sales-today` run. Specific account name exports just that account. `all` exports every account with substantive content. PDFs are organized into date subfolders. Requires `pandoc` (`brew install pandoc`) and Playwright MCP. Called automatically by `/sales-today` after deal prep and recap are generated.
+
+### `/sales-pov`
+
+**Usage:** `/sales-pov <account name>`
+
+Generates or updates a comprehensive POV & Technical Validation Summary for an account. Reads the account file (MEDDPICC, CoM, TECHMAPS, CEP stage), ledger, all meeting notes and transcripts, and contacts to build a complete picture. Identifies every distinct POV, trial, evaluation, or technical validation initiative and groups meetings by initiative. Analyzes common success factors, failure modes, what's different now, and risk patterns across all attempts. Produces a structured document with an executive summary, per-initiative sections (timeline, stakeholder dynamics, key findings, risks) ordered reverse-chronologically, competitive landscape, and success criteria. Uses status labels: ACTIVE, PLANNED, EARLY, SUCCESS, STALLED, DEEMPHASIZED. Supports update mode -- when a POV Summary already exists, incrementally adds new data without rewriting unchanged sections. Exports to PDF via pandoc and Playwright. Called standalone or after `/sales-summarize-account` when a deal has POV history worth reviewing.
 
 ### `/sales-ps-prep`
 
@@ -181,6 +189,7 @@ graph TD
         summarize["/sales-summarize-account"]
         cep["/sales-cep"]
         archdiag["/sales-architecture-diagram"]
+        pov["/sales-pov"]
     end
 
     subgraph "CRM & Export"
@@ -226,6 +235,8 @@ graph TD
     weekly --> cep
     weekly --> create
     weekly --> review
+    summarize --> pov
+    pov --> pdf
     psprep --> pdf
 ```
 
