@@ -32,6 +32,43 @@ Use subagents for all independent work — account scanning, Salesforce queries,
 
 ---
 
+### Pre-flight: Validate Account File Integrity
+
+Before processing, scan all top-level account files (`{Account}.md`) for structural corruption. This catches issues early before subagents attempt to read broken files.
+
+For each `{Account}.md` in `$VAULT_PATH/{config.company_folder}/Accounts/*/`:
+
+1. **YAML frontmatter:** Verify the file starts with `---` and has a closing `---`. Check that the YAML parses without errors (no duplicate keys, no broken arrays, no unescaped special characters). Common corruption: attendee arrays from meeting files bleeding into frontmatter, or duplicate `meeting_type:` keys.
+
+2. **Dataview blocks:** Find all ` ```dataview ` and ` ```dataviewjs ` fenced code blocks. Verify each has a matching closing ` ``` `. Check that dataview queries have valid syntax (start with `TABLE`, `LIST`, `TASK`, or `CALENDAR` for dataview; valid JS for dataviewjs). Common corruption: missing closing fence causing the rest of the file to render as code.
+
+3. **Transclusion embeds:** Find all `![[...]]` embeds. Verify the target file exists on disk. Common issue: `![[Ledger]]`, `![[contacts.base]]`, `![[meetings.base]]` — if any are missing, the account file will have blank sections.
+
+4. **Inline dataview expressions:** Find all `` `= this.X` `` inline expressions. Verify the referenced field (`X`) exists in the file's frontmatter. Common corruption: field was renamed or removed but inline expression still references the old name.
+
+5. **Section structure:** Verify the file contains the expected top-level sections: `## Deal Ledger`, `## MEDDPICC`, `## Salesforce Updates`. If any are missing, flag it — the file may have been truncated.
+
+**For each issue found, auto-fix if possible:**
+- Missing closing ` ``` ` on dataview blocks: add the closing fence
+- Duplicate YAML keys: remove the duplicate (keep the first occurrence)
+- Missing transclusion targets: create the missing file from the standard template (e.g., empty `Ledger.md`, standard `contacts.base` or `meetings.base`)
+- Truncated inline expressions (e.g., stray backtick): remove the broken expression
+
+**Report format:**
+```
+Account file integrity check: {N} files scanned, {M} issues found
+
+Fixed:
+- {Account}: {description of fix}
+
+Warnings (manual review needed):
+- {Account}: {description of issue that couldn't be auto-fixed}
+```
+
+If no issues are found, proceed silently. Only report if fixes were made or warnings exist.
+
+---
+
 ### Phase 1: Discover Accounts with Open Opportunities
 
 Scan all account directories under `$VAULT_PATH/{config.company_folder}/Accounts/`. For each account:
