@@ -427,6 +427,46 @@ Next steps:
 
 ---
 
+### Phase 3.5: Check for Missing Accounts
+
+After processing all known accounts, check whether the user has been assigned to any Salesforce opportunities that don't yet have an Obsidian account folder. This catches newly assigned accounts that the user hasn't onboarded yet.
+
+1. **Get the user's Salesforce User ID** (reuse from earlier if already retrieved):
+   ```sql
+   SELECT Id FROM User WHERE Email = '{config.salesforce_username}' LIMIT 1
+   ```
+
+2. **Query all open opportunities assigned to the user:**
+   ```sql
+   SELECT Id, Name, StageName, Amount, CloseDate, Type, Account.Name, Account.Id, AccountId
+   FROM Opportunity
+   WHERE ({config.salesforce_se_lookup_fields joined with OR, each = '{user_id}'}) AND IsClosed = false
+   ORDER BY Account.Name
+   ```
+
+3. **Cross-reference with Obsidian account folders.** For each unique Account.Name in the results, check if a matching folder exists in `{config.vault_path}/{config.company_folder}/Accounts/` (case-insensitive, strip common suffixes like Inc., LLC, Corp, Ltd).
+
+4. **Classify missing accounts:**
+   - **Actionable:** Has at least one non-renewal opportunity (New Business, Expansion, Contraction, etc.)
+   - **Renewal-only:** All opportunities are Renewal/Auto-Renewal types -- skip these
+
+5. **Report missing accounts** in the weekly report under a `## Missing Accounts` section:
+   ```
+   ## Missing Accounts
+   {N} Salesforce accounts assigned to you are not in Obsidian:
+
+   | Account | Opps | Type | Amount | Close Date | AE |
+   |---------|------|------|--------|------------|-----|
+   | {Name} | {count} | {types} | {total} | {nearest} | {AE} |
+
+   Run `/sales-salesforce my accounts` to onboard them, or create individually:
+   - `/sales-create-account {Account}`
+   ```
+
+6. **Do NOT auto-create accounts** during the weekly review -- just report them. Account creation involves web searches, Gong imports, and summarization that should be run interactively or via `/sales-salesforce my accounts`.
+
+---
+
 ### Phase 4: Weekly Retro (Self-Improvement)
 
 After all subagents complete and the report is assembled, perform a self-review.

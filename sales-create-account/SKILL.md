@@ -23,7 +23,7 @@ You are helping a Solutions Engineer set up a new account for tracking sales not
 
 ### Pre-check: Read Config
 
-Read `~/.claude/skills/sales-config.md` and extract: `vault_path`, `company_folder`, `name`, `initials`, `company`
+Read `~/.claude/skills/sales-config.md` and extract: `vault_path`, `company_folder`, `name`, `initials`, `company`, `uses_enterpret`, `salesforce_username`, `salesforce_instance_url`, `salesforce_se_lookup_fields`
 
 If the config file does not exist, stop and tell the user: "Config not found. Run `/sales-setup` to create your configuration."
 
@@ -37,6 +37,77 @@ If the directory does not exist, stop and tell the user: "Obsidian vault not fou
 
 ### Execution Strategy
 Use subagents for independent research tasks — web searches for company info, Salesforce queries, and Gong imports can run in parallel. Fan out for reads/extraction, fan in for writes.
+
+### Step 0a: Auto-Discover Salesforce Account and Gong URLs (if not provided)
+
+If **both** a Salesforce Account URL and Gong URL were already provided as arguments, skip this step entirely — manual URLs always take priority.
+
+If either URL is missing AND `config.uses_enterpret` is `true`, attempt to discover them from the Enterpret knowledge graph and Salesforce:
+
+**Salesforce Account URL (if not provided):**
+
+1. Query Salesforce for accounts matching the account name:
+   ```sql
+   SELECT Id, Name FROM Account WHERE Name LIKE '%{Account}%' ORDER BY Name LIMIT 5
+   ```
+   Use the Salesforce CLI REST API (same pattern as `/sales-salesforce`).
+
+2. **If exactly 1 match:** Use it. Construct the URL: `{config.salesforce_instance_url}/lightning/r/Account/{Id}/view`. Store as `salesforce_account`.
+
+3. **If multiple matches:** Present the options to the user and ask them to pick:
+   ```
+   Multiple Salesforce accounts found for "{Account}":
+   1. {Name} ({Id})
+   2. {Name} ({Id})
+   Which one? (enter number, or 'skip' to enter manually later)
+   ```
+
+4. **If 0 matches:** Notify the user: "No Salesforce account found for '{Account}'. You can add the `salesforce_account` URL to the frontmatter later."
+
+5. **If a Salesforce Account is found**, also query for open opportunities assigned to the user:
+   ```sql
+   SELECT Id, Name, StageName, Amount, CloseDate, Type
+   FROM Opportunity
+   WHERE AccountId = '{account_id}'
+     AND ({config.salesforce_se_lookup_fields joined with OR, each = '{user_id}'})
+     AND IsClosed = false
+   ORDER BY CloseDate ASC
+   ```
+   - If exactly 1 open opp: auto-set `salesforce_opportunity` to its URL
+   - If multiple open opps: set `salesforce_opportunity` to the first and add `salesforce_opportunity_{type}` for the rest
+   - If 0 open opps: leave `salesforce_opportunity` empty
+
+**Gong Activity URL (if not provided):**
+
+1. Use the wisdom MCP to search for the account in Enterpret:
+   ```
+   mcp__wisdom__search_knowledge_graph: query = "{Account}"
+   ```
+   Or use a Cypher query to find Account nodes and their linked transcripts:
+   ```cypher
+   MATCH (n:NaturalLanguageInteraction)-[:PROVIDED_BY_ACCOUNT]->(a:Account)
+   WHERE a.origin_record_id IS NOT NULL
+   AND n.uf_account_name_X7sdHQ__list CONTAINS '{Account}'
+   RETURN DISTINCT n.gong_externallink AS gong_url, a.salesforce_id AS sf_id
+   LIMIT 5
+   ```
+
+2. Extract the `gong_externallink` from the results. This is a direct Gong call URL. To get the **account activity URL** (which is what `gong_url` frontmatter expects), transform it:
+   - Extract the account ID from the Gong URL path
+   - Construct: `https://us-{config.gong_workspace_id}.app.gong.io/account/activity?id={gong_account_id}`
+   - If the workspace ID is not in config, use the workspace ID from the Gong URL itself
+
+3. **If exactly 1 Gong account match:** Use it. Store as `gong_url`.
+
+4. **If multiple distinct Gong accounts match:** Present options to the user.
+
+5. **If 0 matches or wisdom MCP not connected:** Notify the user: "No Gong activity found for '{Account}' in Enterpret. You can add the `gong_url` to the frontmatter later or run `/sales-gong {Account}` manually."
+
+**Important:**
+- This step requires `uses_enterpret: true` in config. If Enterpret is not enabled, skip the Gong discovery and just try the Salesforce lookup.
+- Manually provided URLs always override auto-discovered ones.
+- If auto-discovery fails for either URL, continue with account creation — the URLs can always be added later.
+- Run the Salesforce and Enterpret lookups in parallel for speed.
 
 ### Step 0: Early Gong Browser Auth
 
