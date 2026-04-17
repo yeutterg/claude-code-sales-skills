@@ -130,6 +130,25 @@ Create or update `{config.vault_path}/{config.company_folder}/Accounts/{Account}
 
 ---
 
+## POV Scoping
+
+Capabilities the customer needs to validate before making a purchase decision. Derived from MEDDPICC Decision Criteria, TECHMAPS Technical Requirements, and pain points surfaced in meetings.
+
+| # | Required Capability | Description | Evaluator | Status |
+|---|---------------------|-------------|-----------|--------|
+| 1 | {capability name} | {1-2 sentence description of what needs to be proven and why it matters to this customer} | {customer contact name and role who will validate} | {NOT STARTED / IN PROGRESS / VALIDATED / BLOCKED} |
+| 2 | ... | ... | ... | ... |
+
+**How to build this table:**
+- **Required Capability:** Each distinct technical or business capability the customer has identified as a decision criterion. Pull from MEDDPICC Decision Criteria, TECHMAPS Technical Requirements, and specific asks from meeting transcripts. Be specific to this customer's needs, not generic product features.
+- **Description:** What success looks like for this capability in the customer's environment. Reference their specific tech stack, scale, or workflow where relevant.
+- **Evaluator:** The specific customer contact who will judge whether this capability meets their needs. Match capabilities to the right persona: engineering leads validate technical capabilities, PMs validate workflow fit, security validates compliance, etc. Use name + title.
+- **Status:** Current validation state. NOT STARTED = hasn't been shown or tested. IN PROGRESS = demo'd or in trial. VALIDATED = customer confirmed it meets their needs. BLOCKED = external dependency preventing validation (e.g., FedRAMP gap, missing integration).
+
+Order by priority: capabilities that gate the deal decision first, nice-to-haves last.
+
+---
+
 ## Competitive Landscape
 
 | Competitor | Status | Risk Level |
