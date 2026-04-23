@@ -147,6 +147,7 @@ next_call_agenda:
 salesforce_account:
 salesforce_opportunity:
 gong_url:
+tech_validation_url:
 slack_channel:
 revenue_assets_folder:
 ---
@@ -158,7 +159,7 @@ revenue_assets_folder:
 **Next Call:** `= this.next_call`
 **Next Call Agenda:** `= this.next_call_agenda`
 
-**Links:** [Salesforce Account](`= this.salesforce_account`) | [Salesforce Opp](`= this.salesforce_opportunity`) | [Gong](`= this.gong_url`) | [Revenue Assets](`= this.revenue_assets_folder`)
+**Links:** [Salesforce Account](`= this.salesforce_account`) | [Salesforce Opp](`= this.salesforce_opportunity`) | [Gong](`= this.gong_url`) | [Tech Validation](`= this.tech_validation_url`) | [Revenue Assets](`= this.revenue_assets_folder`)
 
 ## Deal Ledger
 

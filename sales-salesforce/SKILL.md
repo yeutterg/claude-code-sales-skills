@@ -246,23 +246,35 @@ rm -f /tmp/sf_update.txt /tmp/sf_update.json
 
 ### Step 5.5P: Push Tech Validation Fields (LD-specific)
 
-After pushing SE Status and Deal Health, also update the Tech Validation Type and Status fields if a `## CEP Stage Analysis` section exists in the account file.
+After pushing SE Status and Deal Health, also update the Tech Validation Type, Status, and URL fields. Type and Status come from `## CEP Stage Analysis`; URL comes from the account file's frontmatter.
 
-1. Read the account file and look for the `## CEP Stage Analysis` section
-2. If it contains a `**Tech Validation:**` line, extract the Type and Status values
-3. Map to Salesforce fields:
+1. Read the account file. Inspect two sources in parallel:
+   - **`## CEP Stage Analysis` section** — look for a `**Tech Validation:**` line. Extract the Type and Status values.
+   - **Frontmatter** — look for a `tech_validation_url:` field. If present and non-empty, extract the URL (strip surrounding quotes).
+
+2. Map to Salesforce fields:
    - `Evaluation_Type__c` (Tech Validation Type): one of `Deep Dive Demo`, `Guided POV`, `Self-Guided Trial`, `Skipped`, `Workshop`, `Stalled`
    - `POV_Status__c` (Tech Validation Status): one of `Planning`, `In-Progress`, `Extended`, `Completed`
+   - `POV_Plan_URL__c` (Tech Validation URL): the URL from frontmatter `tech_validation_url`. Type is `url` in Salesforce.
 
-4. Build a JSON payload and push to each eligible opportunity:
+3. Build a JSON payload containing ONLY the fields that have values (don't push empty strings — leave fields unset if data is missing) and push to each eligible opportunity:
 
 ```bash
 python3 -c "
-import json
-print(json.dumps({
-    'Evaluation_Type__c': '{type_value}',
-    'POV_Status__c': '{status_value}'
-}))
+import json, sys
+payload = {}
+type_value = '{type_value or empty}'
+status_value = '{status_value or empty}'
+url_value = '{tech_validation_url or empty}'
+if type_value:
+    payload['Evaluation_Type__c'] = type_value
+if status_value:
+    payload['POV_Status__c'] = status_value
+if url_value:
+    payload['POV_Plan_URL__c'] = url_value
+if not payload:
+    sys.exit('No Tech Validation fields to push')
+print(json.dumps(payload))
 " > /tmp/sf_techval.json
 
 curl -s -w '\nHTTP_CODE:%{http_code}' -X PATCH \
@@ -272,10 +284,12 @@ curl -s -w '\nHTTP_CODE:%{http_code}' -X PATCH \
   -d @/tmp/sf_techval.json
 ```
 
-5. If no CEP Stage Analysis section exists, skip silently
-6. Report which opportunities were updated with what Tech Validation values
+4. If neither the CEP Stage Analysis section nor `tech_validation_url` is present, skip this step silently.
+5. Report which opportunities were updated with what Tech Validation values. When the URL is pushed, include it in the report (e.g., `Pushed Tech Validation URL: https://...`).
 
-**Note:** These fields (`Evaluation_Type__c`, `POV_Status__c`) are LaunchDarkly-specific. The public `/sales-cep` skill does NOT push these fields.
+**Note:** These fields (`Evaluation_Type__c`, `POV_Status__c`, `POV_Plan_URL__c`) are LaunchDarkly-specific. The public `/sales-cep` skill does NOT push these fields.
+
+**Discovered field mapping (verified 2026-04-23):** The Salesforce label "Tech Validation URL" maps to the legacy API name `POV_Plan_URL__c` (a carryover from when the field was called "POV Plan URL"). Keep the API name; it's what SF expects in the REST payload.
 
 ---
 
