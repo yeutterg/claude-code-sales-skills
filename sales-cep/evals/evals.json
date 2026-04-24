@@ -1,0 +1,32 @@
+{
+  "skill_name": "sales-cep",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/sales-cep Apple",
+      "expected_output": "Analyzes Apple deal against CEP stages and outputs a stage recommendation",
+      "files": [],
+      "expectations": [
+        "Reads the Apple account file and recent meeting notes",
+        "Compares activities against CEP stage definitions",
+        "Outputs a CEP Stage Analysis section with recommended stage",
+        "Lists completed activities with their expected stage",
+        "Lists missing activities with their expected stage",
+        "Identifies if deal is overstaged or understaged vs Salesforce",
+        "Places the section above MEDDPICC in the account file"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/sales-cep Apple",
+      "expected_output": "Analyzes Apple deal and identifies stage gaps",
+      "files": [],
+      "expectations": [
+        "Reads account data including MEDDPICC and ledger",
+        "Evaluates exit criteria for each stage",
+        "Recommends the highest stage where all exit criteria are met",
+        "Flags if Salesforce stage is ahead of evidence"
+      ]
+    }
+  ]
+}

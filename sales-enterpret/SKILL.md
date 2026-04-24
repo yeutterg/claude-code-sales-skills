@@ -16,10 +16,10 @@ Search and import Gong call transcripts from Enterpret's knowledge graph (via th
   - Relative: `today`, `yesterday`, `this week`, `last 7 days`
 
 Examples:
-- `/sales-enterpret Arlo` (today's calls)
-- `/sales-enterpret Arlo yesterday` (yesterday's calls)
-- `/sales-enterpret Arlo 2026-04-10 to 2026-04-15` (date range)
-- `/sales-enterpret Arlo this week` (current week)
+- `/sales-enterpret Apple` (today's calls)
+- `/sales-enterpret Apple yesterday` (yesterday's calls)
+- `/sales-enterpret Apple 2026-04-10 to 2026-04-15` (date range)
+- `/sales-enterpret Apple this week` (current week)
 
 ## Prerequisites
 

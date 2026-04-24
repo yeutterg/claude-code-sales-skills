@@ -37,15 +37,15 @@ If there are uncommitted local changes that would conflict with the pull, stash 
 
 ### Step 2: Check for Proprietary Information
 
-**Before committing, scan all `*/SKILL.md` files in the repo for proprietary information that should be in the config file instead.**
+**Before committing, scan ALL skill files in the repo for proprietary information that should be in the config file instead.** Walk every `ld-*/` directory and check files matching `*.md`, `*.json`, `*.yaml`, `*.yml`, `*.py`, and `*.txt` (this catches `SKILL.md`, `evals/evals.json`, fixture files, helper scripts, etc.). The previous `*/SKILL.md`-only scan missed leaks in `evals.json` and other supporting files.
 
 Build a list of proprietary patterns to check from the config:
 
 1. **User identity:** `{config.name}`, `{config.initials}` (as standalone word in examples), `{config.salesforce_username}`
 2. **Company-specific paths:** `{config.vault_path}` (the full path), `{config.company_folder}/Accounts` (only flag if `{config.company_folder}` is NOT a generic placeholder like `{config.company_folder}`)
 3. **Salesforce URLs:** `{config.salesforce_instance_url}` (if set)
-4. **Real customer names:** List all folder names in `{config.vault_path}/{config.company_folder}/Accounts/` -- any of these appearing in SKILL.md files are proprietary
-5. **Named persons from deal notes:** Scan all contact files in `{config.vault_path}/{config.company_folder}/Accounts/*/contacts/` to build a list of real person names. Any of these names appearing in SKILL.md files (in examples, prompts, or instructions) are proprietary. Skills should reference deal contacts via `{config.name}` or generic placeholder names -- never real contact names.
+4. **Real customer names:** List all folder names in `{config.vault_path}/{config.company_folder}/Accounts/` -- any of these appearing in any tracked skill file (`*.md`, `*.json`, `*.yaml`, `*.yml`, `*.py`, `*.txt`) are proprietary. Be sure to check `evals/evals.json`, fixture files, and helper scripts -- not just `SKILL.md`.
+5. **Named persons from deal notes:** Scan all contact files in `{config.vault_path}/{config.company_folder}/Accounts/*/contacts/` to build a list of real person names. Any of these names appearing in any tracked skill file (examples, prompts, eval scenarios, fixture data, instructions) are proprietary. Skills should reference deal contacts via `{config.name}` or generic placeholder names -- never real contact names.
 
 Also check for these hardcoded patterns regardless of config:
 - Email addresses matching `*@*.com` that aren't in generic examples
@@ -56,19 +56,21 @@ Also check for these hardcoded patterns regardless of config:
 **For each finding:**
 
 ```
-Proprietary information found in SKILL.md files:
+Proprietary information found in skill files:
 
 | File | Line | Type | Value | Suggested Fix |
 |------|------|------|-------|---------------|
-| ld-meeting/SKILL.md | 32 | Customer name | "Globex" | Replace with generic example |
-| ld-salesforce/SKILL.md | 106 | SF username | "user@company.com" | Use {config.salesforce_username} |
+| sales-meeting/SKILL.md | 32 | Customer name | "Globex" | Replace with generic example |
+| sales-summarize-account/evals/evals.json | 35 | Customer name | "Acme" | Replace with "Apple" |
+| sales-summarize-account/evals/evals.json | 96 | Contact name | "Jane Doe" | Replace with Apple exec (e.g., Tim Cook) |
+| sales-salesforce/SKILL.md | 106 | SF username | "user@company.com" | Use {config.salesforce_username} |
 ...
 ```
 
 **Auto-fix:** For each finding, automatically:
 1. Replace the proprietary value with the appropriate config reference or generic example
-2. If the value is a customer name in an example, replace with "Acme Corp", "Globex", or "Initech"
-3. If the value is a staff/contact name in an example, replace with well-known public figures (e.g., "Mark Zuckerberg", "Tim Cook", "Satya Nadella") or generic names ("Jane Smith", "Bob Chen"). Use public figures for named-person examples where a realistic name helps readability.
+2. If the value is a customer name in an example, replace with "Apple" (preferred for consistency) or fall back to "Acme Corp", "Globex", or "Initech"
+3. If the value is a staff/contact name in an example, replace with Apple's public leadership team (Tim Cook, Craig Federighi, John Ternus, Eddy Cue, Deirdre O'Brien; extend with Greg Joswiak, Lisa Jackson, Sabih Khan, Kevan Parekh, Phil Schiller if more than 5 are needed). Use the same alias every time for the same real person. Generic names ("Jane Smith", "Bob Chen") are also acceptable for low-stakes examples.
 4. If the value is a path, replace with `{config.vault_path}/{config.company_folder}/...`
 5. If the value is a Salesforce URL, replace with `{config.salesforce_instance_url}`
 
@@ -397,27 +399,28 @@ After successfully committing and pushing the private repo, sync changes to the 
    ```
    If the directory doesn't exist, warn: "Public repo not found at {config.public_repo_path}. Skipping sync." and stop.
 
-2. **Copy and rename each SKILL.md:**
-   For each `ld-*/SKILL.md` in the private repo, copy it to the corresponding `sales-*/SKILL.md` in the public repo:
+2. **Copy each skill directory's tracked files (SKILL.md, evals, fixtures):**
+   For each `ld-*/` skill in the private repo, copy ALL tracked files (SKILL.md, evals/evals.json, fixture markdown, helper scripts) to the corresponding `sales-*/` directory in the public repo. Do not limit the copy to SKILL.md only — that previously caused customer-name leaks in `evals.json` to bypass the sed substitution loop.
    ```bash
    for d in {config.repo_path}/sales-*/; do
      skill_name=$(basename "$d")
      sales_name="sales-${skill_name#ld-}"
      mkdir -p "{config.public_repo_path}/$sales_name"
-     cp "$d/SKILL.md" "{config.public_repo_path}/$sales_name/SKILL.md"
+     # Mirror the entire directory contents (SKILL.md + evals + fixtures + scripts)
+     rsync -a --delete "$d" "{config.public_repo_path}/$sales_name/"
    done
    ```
 
 3. **Replace `ld-` references with `sales-` in all copied files:**
    ```bash
    cd {config.public_repo_path}
-   # Replace /sales- skill references with /sales-
-   sed -i '' 's|/sales-|/sales-|g' sales-*/SKILL.md
+   # Replace /sales- skill references with /sales- across every file type that may contain them
+   find sales-*/ -type f \( -name '*.md' -o -name '*.json' -o -name '*.yaml' -o -name '*.yml' -o -name '*.py' -o -name '*.txt' \) -print0 | xargs -0 sed -i '' 's|/sales-|/sales-|g'
    # Replace sales-config.md with sales-config.md
-   sed -i '' 's|ld-config\.md|sales-config.md|g' sales-*/SKILL.md
+   find sales-*/ -type f \( -name '*.md' -o -name '*.json' -o -name '*.yaml' -o -name '*.yml' -o -name '*.py' -o -name '*.txt' \) -print0 | xargs -0 sed -i '' 's|ld-config\.md|sales-config.md|g'
    # Replace ld-* directory patterns (in symlink loops, file scans, etc.)
-   sed -i '' 's|/sales-\*/|/sales-*/|g' sales-*/SKILL.md
-   sed -i '' 's|ld-\*\.md|sales-*.md|g' sales-*/SKILL.md
+   find sales-*/ -type f \( -name '*.md' -o -name '*.json' -o -name '*.yaml' -o -name '*.yml' -o -name '*.py' -o -name '*.txt' \) -print0 | xargs -0 sed -i '' 's|/sales-\*/|/sales-*/|g'
+   find sales-*/ -type f \( -name '*.md' -o -name '*.json' -o -name '*.yaml' -o -name '*.yml' -o -name '*.py' -o -name '*.txt' \) -print0 | xargs -0 sed -i '' 's|ld-\*\.md|sales-*.md|g'
    ```
 
 4. **Regenerate the public README.md** using the same logic as Step 4, but:

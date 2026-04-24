@@ -9,10 +9,10 @@ Generate a tight, actionable POV review for a sales account. Intentionally short
 
 ## Arguments
 
-- `account`: The account name (e.g., "Acme Corp", "Smartsheet")
+- `account`: The account name (e.g., "Acme Corp", "Apple")
 
 Examples:
-- `/sales-pov Smartsheet`
+- `/sales-pov Apple`
 
 ## Instructions
 

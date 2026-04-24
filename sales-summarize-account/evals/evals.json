@@ -1,9 +1,9 @@
 {
-  "skill_name": "ld-summarize-account",
+  "skill_name": "sales-summarize-account",
   "evals": [
     {
       "id": 1,
-      "prompt": "Given a meeting subagent processes the file `2026-03-18 Pricing Strategy.md` for Aritzia with a Gong transcript, verify it returns all required extraction fields in the correct format.",
+      "prompt": "Given a meeting subagent processes the file `2026-03-18 Pricing Strategy.md` for Apple with a Gong transcript, verify it returns all required extraction fields in the correct format.",
       "expected_output": "Subagent returns structured extraction with all required fields between ---BEGIN EXTRACTION--- and ---END EXTRACTION--- markers",
       "files": [],
       "expectations": [
@@ -32,15 +32,15 @@
     },
     {
       "id": 2,
-      "prompt": "Given a meeting file for Arlo where the transcript refers to attendees as 'Nick', 'Arun', and 'Cooper', and the contacts/ folder has files 'Nick Meshes.md', 'Arun Kumar.md', and 'Cooper Marcus.md', verify name resolution logic.",
+      "prompt": "Given a meeting file for Apple where the transcript refers to attendees as 'Craig', 'John', and 'Eddy', and the contacts/ folder has files 'Craig Federighi.md', 'John Ternus.md', and 'Eddy Cue.md', verify name resolution logic.",
       "expected_output": "Subagent resolves first-name-only references to full names from existing contact files and account frontmatter",
       "files": [],
       "expectations": [
-        "First-name 'Nick' resolved to 'Nick Meshes' using existing contact file match",
-        "First-name 'Arun' resolved to 'Arun Kumar' using existing contact file match",
-        "First-name 'Cooper' resolved to 'Cooper Marcus' using existing contact file match",
+        "First-name 'Craig' resolved to 'Craig Federighi' using existing contact file match",
+        "First-name 'John' resolved to 'John Ternus' using existing contact file match",
+        "First-name 'Eddy' resolved to 'Eddy Cue' using existing contact file match",
         "LD team members (SE, AE, CSM from frontmatter) resolved to full names",
-        "Attendees array uses wiki-link format: '[[Nick Meshes]]' not 'Nick Meshes'",
+        "Attendees array uses wiki-link format: '[[Craig Federighi]]' not 'Craig Federighi'",
         "Plain text attendee names converted to wiki-link format",
         "Known contact names list passed to subagent prompt includes all contacts from contacts/ folder",
         "Transcript misspellings corrected to match existing contact file spellings (e.g., phonetically similar names prefer contact file spelling)",
@@ -50,7 +50,7 @@
     },
     {
       "id": 3,
-      "prompt": "Given three meeting subagent results for Pluralsight — a Discovery call mentioning 'VP Eng as budget holder', a Demo mentioning 'must integrate with Datadog', and a POV Kickoff mentioning 'Split.io evaluated previously' — verify MEDDPICC merge produces correct aggregated output.",
+      "prompt": "Given three meeting subagent results for Apple — a Discovery call mentioning 'VP Eng as budget holder', a Demo mentioning 'must integrate with Datadog', and a POV Kickoff mentioning 'Split.io evaluated previously' — verify MEDDPICC merge produces correct aggregated output.",
       "expected_output": "Phase 3 merges MEDDPICC data from all three meetings into a single coherent account file with non-duplicated, aggregated information",
       "files": [],
       "expectations": [
@@ -71,7 +71,7 @@
     },
     {
       "id": 4,
-      "prompt": "Given a Rula account with meetings at Stage 2 in Salesforce, MEDDPICC showing pain validated and EB identified but no POV started, verify CEP Stage Analysis identifies correct stage.",
+      "prompt": "Given an Apple account with meetings at Stage 2 in Salesforce, MEDDPICC showing pain validated and EB identified but no POV started, verify CEP Stage Analysis identifies correct stage.",
       "expected_output": "CEP Stage Analysis recommends Stage 2 (Business Value) since POV has not started, regardless of SF stage",
       "files": [],
       "expectations": [
@@ -93,20 +93,20 @@
     },
     {
       "id": 5,
-      "prompt": "Given a Samsara account where 3 meeting subagent results return attendees 'Cirpo Cinelli, Ben Harling, Shelby Belak, Sara Pion, New Person, Another Contact', and contacts/ folder already has 'Cirpo Cinelli.md' and 'Ben Harling.md' but not the others, verify contact reconciliation.",
+      "prompt": "Given an Apple account where 3 meeting subagent results return attendees 'Tim Cook, Greg Joswiak, Lisa Jackson, Sabih Khan, New Person, Another Contact', and contacts/ folder already has 'Tim Cook.md' and 'Greg Joswiak.md' but not the others, verify contact reconciliation.",
       "expected_output": "Existing contacts matched, new contacts created with correct template, enrichment subagents launched for contacts missing role or LinkedIn",
       "files": [],
       "expectations": [
         "Phase 4a runs BEFORE Phase 3 account updates",
         "All attendees collected from ALL subagent ATTENDEES fields (union across meetings)",
-        "Cirpo Cinelli matched to existing contact file — no new file created",
-        "Ben Harling matched to existing contact file — no new file created",
-        "Shelby Belak: new contact file created at contacts/Shelby Belak.md",
-        "Sara Pion: new contact file created at contacts/Sara Pion.md",
+        "Tim Cook matched to existing contact file — no new file created",
+        "Greg Joswiak matched to existing contact file — no new file created",
+        "Lisa Jackson: new contact file created at contacts/Lisa Jackson.md",
+        "Sabih Khan: new contact file created at contacts/Sabih Khan.md",
         "New Person: new contact file created at contacts/New Person.md",
         "Another Contact: new contact file created at contacts/Another Contact.md",
         "New contact files have correct frontmatter: name, company, role, influence, email, linkedin, notes",
-        "Company field defaults to account name (Samsara) for customer contacts",
+        "Company field defaults to account name (Apple) for customer contacts",
         "Company field set to 'LaunchDarkly' for LD team members (SE, AE, CSM)",
         "Contact template includes ## Meeting History section with dataview query",
         "Dataview query FROM path matches the account's meetings folder",
@@ -120,7 +120,7 @@
     },
     {
       "id": 6,
-      "prompt": "Given a BILL account with Ledger.md containing entries for 3/13 and 3/10, and two new meeting subagent results for 3/16 and 3/13, verify ledger deduplication logic.",
+      "prompt": "Given an Apple account with Ledger.md containing entries for 3/13 and 3/10, and two new meeting subagent results for 3/16 and 3/13, verify ledger deduplication logic.",
       "expected_output": "Only the 3/16 meeting gets a new ledger entry; the 3/13 entry is skipped because it already exists in the ledger",
       "files": [],
       "expectations": [
@@ -134,20 +134,20 @@
         "Every entry ends with 'Next call:' clause",
         "Entries are concise — no attendee names, product descriptions, or technical details",
         "Non-meeting content in ledger (analysis, pain points) moved to MEDDPICC section",
-        "(status) entries from /ld-weekly are removed when real meeting entries supersede them",
+        "(status) entries from /sales-weekly are removed when real meeting entries supersede them",
         "Ledger contains ONLY meeting entries — no prose or analysis"
       ]
     },
     {
       "id": 7,
-      "prompt": "Given an Aritzia account with salesforce_opportunity and salesforce_account fields in frontmatter, and salesforce_configured: true in config, verify SF deal context pull during Phase 1.5.",
+      "prompt": "Given an Apple account with salesforce_opportunity and salesforce_account fields in frontmatter, and salesforce_configured: true in config, verify SF deal context pull during Phase 1.5.",
       "expected_output": "SF deal context subagent launches in parallel with meeting subagents, reads Scan Open Mode steps 2O-5O, writes results to temp file for Phase 3 merge",
       "files": [],
       "expectations": [
         "SF deal context subagent launches in the SAME message as meeting subagents and business context subagent",
-        "Subagent reads Scan Open Mode section of /ld-salesforce SKILL.md",
+        "Subagent reads Scan Open Mode section of /sales-salesforce SKILL.md",
         "Subagent executes Steps 2O through 5O for the account",
-        "Results written to temp file (e.g., /tmp/sf_context_aritzia.json) not directly to account file",
+        "Results written to temp file (e.g., /tmp/sf_context_apple.json) not directly to account file",
         "Phase 3 merges SF context from temp file into account frontmatter",
         "Frontmatter salesforce_opportunity URLs updated if opportunity data changed",
         "If account has NO salesforce_opportunity fields, SF subagent is silently skipped",
@@ -161,7 +161,7 @@
     },
     {
       "id": 8,
-      "prompt": "Given a Vail Resorts account with an existing ## Business Context section containing 2 news items from January, and the business context subagent returns 3 items (1 duplicate from January, 2 new from March), verify merge logic.",
+      "prompt": "Given an Apple account with an existing ## Business Context section containing 2 news items from January, and the business context subagent returns 3 items (1 duplicate from January, 2 new from March), verify merge logic.",
       "expected_output": "Two new March headlines added at top of Recent News, January duplicate not duplicated, existing content preserved",
       "files": [],
       "expectations": [
@@ -180,7 +180,7 @@
     },
     {
       "id": 9,
-      "prompt": "Given a JFrog account with 5 meetings (3 already summarized with content in ## Summary, 2 with empty ## Summary sections), verify the skip-already-summarized logic.",
+      "prompt": "Given an Apple account with 5 meetings (3 already summarized with content in ## Summary, 2 with empty ## Summary sections), verify the skip-already-summarized logic.",
       "expected_output": "Only 2 subagents launched for unsummarized meetings; 3 summarized meetings skipped entirely",
       "files": [],
       "expectations": [
@@ -197,14 +197,14 @@
     },
     {
       "id": 10,
-      "prompt": "Given a Procore account with a meeting file named '2026-03-20 Call.md' and the subagent returns SUGGESTED_TITLE: 'Release Guardian Demo', verify file rename logic.",
+      "prompt": "Given an Apple account with a meeting file named '2026-03-20 Call.md' and the subagent returns SUGGESTED_TITLE: 'Release Guardian Demo', verify file rename logic.",
       "expected_output": "File renamed from 'Call' to 'Release Guardian Demo', all references in daily notes and ledger updated",
       "files": [],
       "expectations": [
         "File renamed from '2026-03-20 Call.md' to '2026-03-20 Release Guardian Demo.md' via mv command",
         "Daily notes searched around the meeting date for references to old filename",
         "All occurrences of old link text replaced with new link text in daily notes",
-        "Wiki-link paths updated: [[LaunchDarkly/Accounts/Procore/meetings/2026-03-20 Call|...]] becomes [[LaunchDarkly/Accounts/Procore/meetings/2026-03-20 Release Guardian Demo|...]]",
+        "Wiki-link paths updated: [[LaunchDarkly/Accounts/Apple/meetings/2026-03-20 Call|...]] becomes [[LaunchDarkly/Accounts/Apple/meetings/2026-03-20 Release Guardian Demo|...]]",
         "Display text in wiki-links also updated",
         "Ledger references to old filename updated",
         "Account file references to old filename updated",
@@ -215,7 +215,7 @@
     },
     {
       "id": 11,
-      "prompt": "Given a Writer account with SF Stage 3 but no POV started (still in POV scoping), verify CEP stage analysis flags overstaging.",
+      "prompt": "Given an Apple account with SF Stage 3 but no POV started (still in POV scoping), verify CEP stage analysis flags overstaging.",
       "expected_output": "CEP analysis recommends Stage 2, flags deal as overstaged since Stage 3 requires active POV",
       "files": [],
       "expectations": [
@@ -233,17 +233,17 @@
     },
     {
       "id": 12,
-      "prompt": "Given an Arlo account with an existing contact 'Nick Meshes.md' that has empty company: field and another contact 'Rod Alipour.md' with company: 'Arlo', verify existing contact update logic.",
-      "expected_output": "Nick Meshes' empty company field filled in based on context; Rod Alipour's existing company field left unchanged",
+      "prompt": "Given an Apple account with an existing contact 'Craig Federighi.md' that has empty company: field and another contact 'Deirdre O'Brien.md' with company: 'Apple', verify existing contact update logic.",
+      "expected_output": "Craig Federighi's empty company field filled in based on context; Deirdre O'Brien's existing company field left unchanged",
       "files": [],
       "expectations": [
         "After creating missing contacts, ALL existing contact files scanned",
-        "Nick Meshes' empty company: field detected",
+        "Craig Federighi's empty company: field detected",
         "Company inferred from meeting transcripts and context clues",
-        "If Nick is an account contact, company set to 'Arlo'",
-        "If Nick is a LD team member, company set to 'LaunchDarkly'",
-        "If Nick is a third party (consultant, vendor), company inferred from context",
-        "Rod Alipour's existing company: 'Arlo' NOT overwritten",
+        "If Craig is an account contact, company set to 'Apple'",
+        "If Craig is a LD team member, company set to 'LaunchDarkly'",
+        "If Craig is a third party (consultant, vendor), company inferred from context",
+        "Deirdre O'Brien's existing company: 'Apple' NOT overwritten",
         "Enrichment subagent launched for contacts with empty role: or linkedin: fields",
         "Enrichment subagent uses haiku model by default unless failure rate >50%",
         "Enrichment results do NOT overwrite existing non-empty values"
@@ -251,7 +251,7 @@
     },
     {
       "id": 13,
-      "prompt": "Run /ld-summarize-account for Sweetgreen, an account with 4 unsummarized meetings, no existing MEDDPICC content, no Salesforce opportunity link, and 2 existing contacts. Verify full end-to-end execution.",
+      "prompt": "Run /sales-summarize-account for Apple, an account with 4 unsummarized meetings, no existing MEDDPICC content, no Salesforce opportunity link, and 2 existing contacts. Verify full end-to-end execution.",
       "expected_output": "Complete end-to-end processing: meetings summarized, ledger populated, MEDDPICC/CoM/TECHMAPS built from scratch, contacts reconciled, daily note updated, self-improvement logged",
       "files": [],
       "expectations": [
@@ -277,7 +277,7 @@
         "Phase 3f: Architecture diagram created as ASCII art",
         "Phase 3g: Salesforce Updates section created with correct format",
         "Phase 4c: CEP Stage Analysis added above MEDDPICC after Phase 3 completes",
-        "Phase 5: Daily note found, /ld-summarize-account checkbox marked [x] with completion timestamp",
+        "Phase 5: Daily note found, /sales-summarize-account checkbox marked [x] with completion timestamp",
         "Phase 6a: Model performance logged to ld-config.md (success/failure counts)",
         "Phase 6a: New competitors, objections, tech patterns, feature requests logged under Discovered Patterns",
         "Phase 6b: Template drift detection (comparison of before/after if re-run)",
@@ -286,7 +286,7 @@
     },
     {
       "id": 14,
-      "prompt": "Given a Pluralsight account where the Salesforce Updates section already exists with a 3/10 latest entry and deal history, and a new 3/17 meeting is processed, verify the SF Updates section restructure.",
+      "prompt": "Given an Apple account where the Salesforce Updates section already exists with a 3/10 latest entry and deal history, and a new 3/17 meeting is processed, verify the SF Updates section restructure.",
       "expected_output": "3/17 entry becomes the new latest entry at top, 3/10 entry moves to DEAL HISTORY, all older entries preserved",
       "files": [],
       "expectations": [
@@ -306,14 +306,14 @@
     },
     {
       "id": 15,
-      "prompt": "Given a BILL account where a meeting transcript mentions 'Statsig' (spelled as 'Stats Sig' in transcript) and 'Amplitude' (not in competitors config), verify competitor handling.",
+      "prompt": "Given an Apple account where a meeting transcript mentions 'Statsig' (spelled as 'Stats Sig' in transcript) and 'Amplitude' (not in competitors config), verify competitor handling.",
       "expected_output": "Stats Sig corrected to canonical spelling 'Statsig', Amplitude auto-added to ld-config.md competitors list",
       "files": [],
       "expectations": [
         "Transcript misspelling 'Stats Sig' recognized as variant of 'Statsig' from config misspellings array",
         "Canonical spelling 'Statsig' used in all output (COMPETITION field, account file)",
         "Amplitude identified as a competitor NOT in the config",
-        "Amplitude added to competitors array in ~/.claude/skills/ld-config.md",
+        "Amplitude added to competitors array in ~/.claude/skills/sales-config.md",
         "New competitor entry includes name, brief description inferred from context, and observed misspellings",
         "NEW_COMPETITORS extraction field reports 'Amplitude' with context",
         "New competitor also logged under Discovered Patterns > Pending Review in config",
@@ -322,7 +322,7 @@
     },
     {
       "id": 16,
-      "prompt": "Given a Capital Group account with 10 meetings that all have zero content (no notes, no transcript, no external summary), verify the skill handles empty meetings gracefully.",
+      "prompt": "Given an Apple account with 10 meetings that all have zero content (no notes, no transcript, no external summary), verify the skill handles empty meetings gracefully.",
       "expected_output": "Skill detects that all meetings lack processable content, skips subagent launch, still updates account from other sources",
       "files": [],
       "expectations": [
@@ -338,7 +338,7 @@
     },
     {
       "id": 17,
-      "prompt": "Given a Tipalti account being processed and ld-config.md shows contact-enrichment has >50% failure rate on haiku, verify adaptive model selection escalation.",
+      "prompt": "Given an Apple account being processed and ld-config.md shows contact-enrichment has >50% failure rate on haiku, verify adaptive model selection escalation.",
       "expected_output": "Contact enrichment subagents use sonnet instead of haiku due to high failure rate",
       "files": [],
       "expectations": [
@@ -354,7 +354,7 @@
     },
     {
       "id": 18,
-      "prompt": "Given an account file for Aya Healthcare where salesforce_opportunity contains an /Account/ URL and salesforce_account is empty, verify the auto-correct swap logic.",
+      "prompt": "Given an account file for Apple where salesforce_opportunity contains an /Account/ URL and salesforce_account is empty, verify the auto-correct swap logic.",
       "expected_output": "The /Account/ URL moved from salesforce_opportunity to salesforce_account, salesforce_opportunity cleared, swap logged",
       "files": [],
       "expectations": [
@@ -370,7 +370,7 @@
     },
     {
       "id": 19,
-      "prompt": "Given an RingCentral account where the user previously manually reformatted the MEDDPICC section (reworded summaries, reordered fields), verify template drift detection in Phase 6b.",
+      "prompt": "Given an Apple account where the user previously manually reformatted the MEDDPICC section (reworded summaries, reordered fields), verify template drift detection in Phase 6b.",
       "expected_output": "Template drift detected: MEDDPICC section was manually edited; logged under Template Feedback in ld-config.md",
       "files": [],
       "expectations": [
@@ -379,14 +379,14 @@
         "Manually reworded MEDDPICC fields detected as drift",
         "Reordered fields detected as drift",
         "Drift logged under ## Template Feedback in ld-config.md",
-        "Log entry includes: section name (MEDDPICC), type of change (rewording/restructuring), account name (RingCentral)",
+        "Log entry includes: section name (MEDDPICC), type of change (rewording/restructuring), account name (Apple)",
         "Other drift types also detected: summary style changes, section reordering, content removal/addition",
         "Template drift detection only runs on re-runs (not first-time account processing)"
       ]
     },
     {
       "id": 20,
-      "prompt": "Given an Auditboard account where all meetings are already summarized and the ledger has a (status) entry from /ld-weekly, verify the status entry cleanup.",
+      "prompt": "Given an Apple account where all meetings are already summarized and the ledger has a (status) entry from /sales-weekly, verify the status entry cleanup.",
       "expected_output": "All meetings skipped (already summarized), (status) entry removed from ledger, account still updated from existing data",
       "files": [],
       "expectations": [
