@@ -368,6 +368,61 @@ If `pdf_export` is `true` in config, export PDFs for ALL deal accounts with meet
 
 This step runs AFTER summarize/salesforce processing so the PDFs contain the latest data.
 
+### Morning Step 5b: Prune Old PDF Folders (2 business days)
+
+Established 2026-04-24: after exporting today's PDFs, delete any dated folders under `{config.pdf_path}/` whose date is older than **2 business days** ago. This keeps the PDF archive lean — old PDFs are regenerable on demand via `/sales-pdf`, so they don't need to accumulate.
+
+**Cutoff calculation (business days only):**
+
+Walk backward from today's date, subtracting one calendar day at a time, and only count the day if it's a weekday (Mon-Fri). Stop when 2 business days have been counted. That date is the cutoff — folders dated strictly BEFORE it are deleted; folders on or after it are kept.
+
+Examples:
+- Today = Friday 2026-04-24 → cutoff = Wed 2026-04-22 (Thu 4/23, Fri 4/24 counted). Keep 4/23, 4/24. Delete 4/22 and earlier.
+- Today = Monday 2026-04-27 → cutoff = Thu 2026-04-23 (Fri 4/24, Mon 4/27 counted; skip Sat/Sun). Keep 4/24, 4/27. Delete 4/23 and earlier.
+- Today = Tuesday → cutoff = Friday of the prior week (skipping Sat/Sun).
+- Today = Wednesday → cutoff = Monday.
+
+**Pruning logic:**
+
+```bash
+python3 << 'PYEOF'
+import os, shutil
+from datetime import date, timedelta
+
+pdf_root = "{config.pdf_path}"
+today = date.today()
+# Walk back 2 business days
+counted = 0
+cutoff = today
+while counted < 2:
+    cutoff = cutoff - timedelta(days=1)
+    if cutoff.weekday() < 5:  # Mon=0..Fri=4
+        counted += 1
+
+deleted = []
+for entry in sorted(os.listdir(pdf_root)):
+    full = os.path.join(pdf_root, entry)
+    if not os.path.isdir(full): continue
+    # Match YYYY-MM-DD folder names
+    try:
+        folder_date = date.fromisoformat(entry)
+    except ValueError:
+        continue  # Skip non-date folders
+    if folder_date < cutoff:
+        shutil.rmtree(full)
+        deleted.append(entry)
+
+if deleted:
+    print(f"Pruned {len(deleted)} old PDF folder(s): {', '.join(deleted)}")
+PYEOF
+```
+
+**Rules:**
+- Only delete folders whose names match the `YYYY-MM-DD` pattern. Never touch folders with other names (user-authored, backups, etc.).
+- Use `shutil.rmtree` — delete the folder and everything in it.
+- Silent on no-ops. Only report in Step 7 if any folders were pruned.
+- This step runs every time Step 5 runs (both morning and evening) — effectively guarantees the retention policy stays enforced without a separate cron job.
+
 ### Morning Step 6: Weekly Review (if applicable)
 
 If `run_weekly` is true, run `/sales-weekly`.
@@ -438,6 +493,10 @@ If `pdf_export` is `true` in config, export PDFs for ALL deal accounts with meet
 4. PDFs go to `{config.pdf_path}/{YYYY-MM-DD}/` (using tomorrow's date)
 
 This step runs AFTER summarize/salesforce processing and calendar scan so the PDFs contain the latest data and cover tomorrow's meetings.
+
+### Evening Step 5b: Prune Old PDF Folders (2 business days)
+
+Same logic as Morning Step 5b — delete dated folders under `{config.pdf_path}/` older than 2 business days. See Morning Step 5b for the full cutoff rule and script. Runs once after evening PDF export completes.
 
 ### Evening Step 6: Weekly Review (if applicable)
 

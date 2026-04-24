@@ -1,210 +1,178 @@
 ---
-description: Generate or update a POV & Technical Validation Summary for an account. Synthesizes all meetings, transcripts, and deal context into a structured review of every POV attempt.
+description: Generate or update a POV & Technical Validation Summary for an account. Focuses on the last 30-45 days of conversations and current MEDDPICC/TECHMAPS state to surface ONLY the painful, deal-gating items that must be validated before close.
 argument-hint: <account name>
 ---
 
 # POV & Technical Validation Summary
 
-Generate or update a comprehensive POV review document for a sales account. This document synthesizes all meeting notes, transcripts, ledger entries, and deal context into a structured analysis of every POV attempt, trial, and technical validation — past and present.
-
-The output is a living document that helps the SE and deal team understand what's been tried, what worked, what failed, and what's different about the current approach.
+Generate a tight, actionable POV review for a sales account. Intentionally short. The point is to surface the 3-6 items that are **painful to the customer AND risky to closing** — not to exhaustively catalogue every feature the customer is evaluating.
 
 ## Arguments
 
-- `account`: The account name (e.g., "Acme Corp", "Globex")
+- `account`: The account name (e.g., "Acme Corp", "Acme Corp")
 
 Examples:
-- `/sales-pov Acme Corp` (generate or update POV Summary)
+- `/sales-pov Acme Corp`
 
 ## Instructions
 
-You are helping a Solutions Engineer create or update a POV review document for the account: $ARGUMENTS
+You are helping a Solutions Engineer create or update a focused POV review for: $ARGUMENTS.
 
 ### Pre-check: Read Config
 
-Read `~/.claude/skills/sales-config.md` and extract: `vault_path`, `company_folder`, `name`, `initials`, `company`, `products`, `competitors`.
+Read `~/.claude/skills/sales-config.md` and extract: `vault_path`, `company_folder`, `name`, `initials`, `company`, `products`, `competitors`, `pdf_path`.
 
 ### Pre-check: Verify Account
 
-Check that the account folder exists at `{config.vault_path}/{config.company_folder}/Accounts/{Account}/`. If not, stop: "Account not found."
+Check the account folder at `{config.vault_path}/{config.company_folder}/Accounts/{Account}/`. Stop if missing.
 
-### Step 1: Gather All Context
+### Step 1: Gather Only What Matters
 
-Read the following files to build a complete picture of the account:
+The entire point of this skill is to stay focused. Do NOT read the full history.
 
-1. **Account file** (`{Account}.md`) — MEDDPICC, Command of the Message, TECHMAPS, CEP Stage, Business Context, Tech Stack
-2. **Ledger.md** — chronological history of every meeting and milestone
-3. **ALL meeting files** in `meetings/` — read summaries, external summaries, and transcripts. For accounts with many meetings, prioritize the most recent 10-15 and any meetings with transcripts.
-4. **Contacts** — scan `contacts/` for key stakeholders, roles, and influence levels
-5. **Existing POV Summary** (`POV Summary.md`) — if it exists, read it to understand what's already documented and what needs updating
+1. **Account file** (`{Account}.md`): read ONLY these sections as the source of truth for what's at stake:
+   - CEP Stage + Salesforce Stage
+   - MEDDPICC — especially **Decision Criteria**, **Pain / Business Impact**, **Champion**, **Economic Buyer**, **Paper Process**, **Competition**
+   - TECHMAPS — especially **Technical Requirements**, **Gaps**, **Integration Points**
+   - Command of the Message — the customer's stated WHY + top pain
+   - Deal structure (amount, products, timeline) from frontmatter
+2. **Recent meetings only**: read meeting files with `date >= today - 45 days`, ordered newest first. Skip meetings with empty notes/transcript. If there are more than 8 recent meetings, cap at the 8 most recent plus any older meeting explicitly flagged as pivotal in the ledger.
+3. **Ledger.md**: read ONLY the most recent 10 entries. Use these to anchor "what's moving right now," not to build a full chronology.
+4. **Contacts**: spot-check the Champion, Economic Buyer, and any Detractor files for role and stance — don't scan the full contacts folder.
+5. **Existing POV Summary** (`POV Summary.md`), if present: read it to understand what's already captured, then incrementally update — don't rewrite sections that haven't changed.
 
-### Step 2: Identify POV Initiatives
+**If the recent-meetings window is empty** (account has been dormant 45+ days), expand to 90 days and note the dormancy in the exec summary.
 
-From the meeting history and ledger, identify every distinct POV, trial, evaluation, or technical validation initiative. Group meetings by initiative. Each initiative typically has:
+### Step 2: Identify the Painful + Risky Items
 
-- A distinct **topic/capability** being evaluated (e.g., "Feature Flags POV", "AI Configs Trial", "Experimentation Expansion")
-- A **time range** (start to end or ongoing)
-- A **set of stakeholders** involved
-- An **outcome** (SUCCESS, STALLED, ACTIVE, PLANNED, EARLY, DEEMPHASIZED)
+This is the core of the skill. Filter aggressively — most features the customer is "evaluating" don't belong in this document.
 
-Also identify:
-- **Cold outreach or failed engagements** that never progressed to evaluation
-- **Internal prep sessions** that shaped strategy
-- **On-sites or executive meetings** that were pivotal
+For each candidate capability / requirement / integration, it **only qualifies** if BOTH are true:
 
-### Step 3: Analyze Patterns
+**A. The customer has expressed actual pain about it in recent conversation.** Pain = a specific scenario, cost, or workaround they've described, ideally with a quote. Not "they're interested in feature X" — that's interest, not pain. The pain must come from:
+- A recent meeting transcript or summary (last 45 days)
+- Or an explicit entry in MEDDPICC Pain / Business Impact that's traceable to a recent conversation
 
-Across all initiatives, identify:
+**B. Not validating it puts the deal at risk.** Risk = one of:
+- Named as a Decision Criterion in MEDDPICC
+- Called out as a blocker by the Economic Buyer or Champion
+- Competitive differentiation where we lose if we can't demonstrate it
+- Technical gap in TECHMAPS that would cause the customer to choose "build" over "buy"
+- Paper-process gate (security review, procurement checklist, compliance)
 
-1. **Common success factors** — what was present when things worked (EB alignment, clear pain, specific champions)
-2. **Common failure modes** — what was missing when things stalled (no exec sponsor, champion without budget authority, organizational distraction, key skeptic not persuaded)
-3. **What's different now** — if there's an active evaluation, articulate specifically what has changed vs. prior failed attempts
-4. **Risk patterns** — recurring blockers, organizational dynamics, competitive concerns
+**Exclude** everything that is:
+- "Nice to have" or "exploring" — the customer said so or the signal is soft
+- Already validated (status VALIDATED in prior POV summary, no new challenges)
+- Generic product features we always show (basic flag creation, default SDK integration) unless the customer specifically flagged them as risky
+- Capabilities where no evaluator has been named — if no one on the customer side owns judging it, it's not gate-closing
+- Items surfaced only in older meetings with no recent mention
 
-### Step 4: Write the POV Summary
+Aim for **3-6 items** in the final table. If you find yourself writing 8+, you haven't filtered hard enough. The customer can have broad interest in a product; this document only captures what must land for the deal to close.
 
-Create or update `{config.vault_path}/{config.company_folder}/Accounts/{Account}/POV Summary.md`.
+### Step 3: Write the POV Summary
+
+Write to `{config.vault_path}/{config.company_folder}/Accounts/{Account}/POV Summary.md`.
 
 #### Document Structure
 
+The document is deliberately short — target **2-3 pages of PDF** total. No exhaustive history, no competitive landscape matrix, no exhaustive timelines.
+
 ```markdown
-# POV & Technical Validation Summary for {Account}
+# POV Technical Validation: {Account}
 
-## Executive Summary
+## Deal Status
+- **Stage:** {Salesforce stage} / {CEP stage if different}
+- **Deal:** {amount, plan tier, products}
+- **Champion:** {Name, title} — {engagement signal in 8 words}
+- **Economic Buyer:** {Name, title} — {engaged | not yet engaged | engagement gap in 8 words}
+- **Paper Process:** {status — security review, procurement, legal, MSA — only mention the ones that are live/blocking}
+- **Next committed step:** {the single next-step date and owner from the most recent meeting}
 
-- **{N} initiatives total:** {count by status — e.g., "1 clean win, 2 stalled, 1 active"}
-- **Common success factor:** {pattern}
-- **Common failure mode:** {pattern}
-- **What's different now:** {key changes that make the current attempt viable}
-- **Current approach:** {brief description of active evaluation strategy}
-- **Deal structure:** {amount, plan, products included}
-- **Key risk:** {single biggest risk to the current evaluation}
+## What's Moving Right Now
 
----
+{3-5 sentences. ONLY the last 30-45 days. What's changed, what's scheduled next, who's the current bottleneck. Cite 1-2 specific meetings by date. Do NOT recap the deal history.}
 
-## {Most Recent Initiative} ({date range})
+## Painful + Deal-Gating Items
 
-**Topic:** {what's being evaluated}
-**Stakeholders:** {customer contacts with titles}
-**LD Team:** {internal team with roles}
-**Status:** {ACTIVE | PLANNED | EARLY | SUCCESS | STALLED | DEEMPHASIZED}
+Items the customer has surfaced as pain AND that put the deal at risk if not validated. Filtered for this deal, this moment — not a feature checklist.
 
-### Timeline
-- **M/D Event:** Description of what happened and key outcomes
-- **M/D Event:** ...
+| # | Capability | Problem (customer pain) | How {Company} Helps | Evaluator | Status |
+|---|------------|-------------------------|------------------------|-----------|--------|
+| 1 | {capability required, specific to their environment} | {the concrete problem the customer is trying to solve in their own words — quote + date of meeting where they said it. Describe the *problem*, not the feature.} | {1-2 sentences on how LD's capability maps to this problem. Be specific: name the LD product / feature / integration, not a vague "we solve that." Tie directly back to the problem language.} | {name, title} | {NOT STARTED / IN PROGRESS / VALIDATED / BLOCKED} |
 
-### Current POV Approach
-{Only for ACTIVE initiatives}
-- Format, success criteria, timeline, parallel tracks
+Order by deal-gating priority. Aim for 3-6 rows. If fewer than 3 items qualify, say so explicitly (`## Painful + Deal-Gating Items` — *"No deal-gating pain surfaced in the last 45 days. Either the POV is on rails or we're under-discovering."*).
 
-### Key Findings
-{Insights from transcripts and meetings}
+**Column guidance:**
+- **Capability:** short phrase for the thing that must be proven (e.g., "Multi-LLM experimentation with auto-rollback", not "AI Configs").
+- **Problem:** the customer's stated pain, grounded in a quote or scenario from a recent meeting. Include the meeting date. If it's a scenario rather than a quote, describe it in the customer's language.
+- **How {Company} Helps:** the specific product answer. Name the product/feature (from `config.products`), the integration, the workflow — not marketing phrasing. This is where the SE's value proposition gets pinned to each pain.
+- **Evaluator:** named customer contact who owns judging whether this works. No evaluator → the row shouldn't exist.
+- **Status:** NOT STARTED / IN PROGRESS / VALIDATED / BLOCKED. Justified by evidence.
 
-### Stakeholder Dynamics
-{Who supports, who blocks, who's neutral — with specific evidence}
+## Top Risks to Close
 
-### Risk: {Top risk for this initiative}
-{Details and mitigation plan}
+Max 3-4 risks, ranked. Each is one paragraph:
 
----
+**1. {Risk name — e.g., "EB not yet engaged"}**
+What it is, evidence from recent meetings (cite date), and the single concrete mitigation.
 
-## {Previous Initiative} ({date range})
+**2. {…}**
 
-**Topic:** ...
-**Stakeholders:** ...
-**LD Team:** ...
-**Status:** STALLED | SUCCESS | etc.
+Do NOT include generic risks (competitive pressure, timeline slip) unless there's specific recent evidence.
 
-- {Key bullet points about what happened}
-- **Why it {succeeded/stalled}:**
-  - {Specific reasons with evidence from meetings/transcripts}
+## Next Steps
 
----
+Dated, owned, tied to the painful items above.
 
-## Prior Attempts ({date range})
+- **{YYYY-MM-DD}:** {Action} — {owner}
+- **{YYYY-MM-DD}:** {Action} — {owner}
 
-{For older/less detailed attempts, a consolidated section is fine}
+## Prior POV History (one-liner)
 
-### Pattern Analysis
-{What consistently failed and why}
+*{Only include if there were prior attempts. One sentence each. No full section.}*
 
----
+- **2025 Q2:** Feature Flags trial stalled when Champion moved to a different team.
 
-## POV Scoping
+## Appendix: Source Meetings
 
-Capabilities the customer needs to validate before making a purchase decision. Derived from MEDDPICC Decision Criteria, TECHMAPS Technical Requirements, and pain points surfaced in meetings.
+Tight list of the recent meetings this summary was built from. No bullets, just links:
 
-| # | Required Capability | Description | Evaluator | Status |
-|---|---------------------|-------------|-----------|--------|
-| 1 | {capability name} | {1-2 sentence description of what needs to be proven and why it matters to this customer} | {customer contact name and role who will validate} | {NOT STARTED / IN PROGRESS / VALIDATED / BLOCKED} |
-| 2 | ... | ... | ... | ... |
-
-**How to build this table:**
-- **Required Capability:** Each distinct technical or business capability the customer has identified as a decision criterion. Pull from MEDDPICC Decision Criteria, TECHMAPS Technical Requirements, and specific asks from meeting transcripts. Be specific to this customer's needs, not generic product features.
-- **Description:** What success looks like for this capability in the customer's environment. Reference their specific tech stack, scale, or workflow where relevant.
-- **Evaluator:** The specific customer contact who will judge whether this capability meets their needs. Match capabilities to the right persona: engineering leads validate technical capabilities, PMs validate workflow fit, security validates compliance, etc. Use name + title.
-- **Status:** Current validation state. NOT STARTED = hasn't been shown or tested. IN PROGRESS = demo'd or in trial. VALIDATED = customer confirmed it meets their needs. BLOCKED = external dependency preventing validation (e.g., FedRAMP gap, missing integration).
-
-Order by priority: capabilities that gate the deal decision first, nice-to-haves last.
-
----
-
-## Competitive Landscape
-
-| Competitor | Status | Risk Level |
-|------------|--------|-----------|
-| ... | ... | ... |
-
----
-
-## Success Criteria Summary
-
-### Must-Win for POV
-1. {Specific technical validation criteria}
-2. {Key stakeholder sign-off needed}
-
-### Must-Win for Deal
-1. {Deal-level requirements}
-2. {Blockers that need resolution}
+- [[{YYYY-MM-DD Meeting Name}]]
+- [[{YYYY-MM-DD Meeting Name}]]
 ```
 
 #### Writing Guidelines
 
-- **Be candid and analytical, not promotional.** This is an internal document for the deal team. Call out failures honestly. Quote stakeholders directly when possible.
-- **Ground everything in evidence.** Reference specific meetings, dates, and what was said. Don't make claims without backing them up from the meeting history.
-- **Lead with the executive summary.** A reader should understand the full deal history in 30 seconds from the exec summary alone.
-- **Chronological within each initiative, reverse-chronological across initiatives.** Most recent/active initiative first, oldest last.
-- **Use status labels consistently:** ACTIVE, PLANNED, EARLY, SUCCESS, STALLED, DEEMPHASIZED
-- **Include LD team members.** Knowing who was involved helps with continuity when SEs change.
-- **Flag what's different.** When an account has failed attempts, the most valuable analysis is articulating specifically what has changed that makes the current attempt viable.
-- **Keep prior attempts concise.** The active initiative gets the most detail. Old attempts get enough detail to understand what happened and why, not a full blow-by-blow.
+- **Ruthless brevity.** If a sentence doesn't change what the SE does tomorrow, cut it.
+- **Cite recent meetings by date** when stating pain or risk. Everything should trace back to conversation from the last 45 days.
+- **Quote stakeholders directly** when a sentence of theirs is more precise than a paraphrase.
+- **Tie every painful item to a named Evaluator.** If the item has no evaluator, it shouldn't be in the table.
+- **Never restate the product.** Don't explain what AI Configs or Guarded Releases does. This is internal — the reader already knows.
+- **Don't blend history.** Prior POV attempts get one sentence each, not a section. The active picture is what matters.
+- **Status must be justified by evidence, not aspiration.** If an item is "IN PROGRESS," name the specific next meeting or action that moves it forward.
 
-### Step 5: Export PDF
+### Step 4: Export PDF
 
-After writing the POV Summary, export it to PDF:
+After writing the POV Summary, export it:
 
-1. Create output directory: `mkdir -p "{config.pdf_path}/{YYYY-MM-DD}"`
+1. Create `mkdir -p "{config.pdf_path}/{YYYY-MM-DD}"`.
 2. Preprocess the markdown:
-   - Remove any YAML frontmatter
-   - Convert wiki-links (`[[Name]]`) to plain text
-   - Convert Obsidian callouts (`> [!type]`) to bold headers
-   - Add trailing spaces for line breaks on consecutive blockquote lines
-   - Add `*Generated {YYYY-MM-DD}*` after the H1 title
-3. Create CSS stylesheet at `/tmp/sales-pdf-style.css` (same as `/sales-pdf` skill)
-4. Convert to HTML via pandoc:
+   - Strip YAML frontmatter
+   - Convert wiki-links (`[[Name]]`) to plain text (drop the brackets, keep the alias if `[[A|B]]`)
+   - Convert Obsidian callouts (`> [!type] ...`) to bold headers
+   - Add `*Generated {YYYY-MM-DD}*` after the H1
+3. Use the shared CSS stylesheet at `/tmp/sales-pdf-style.css` (same as `/sales-pdf`).
+4. Convert via pandoc:
    ```bash
    pandoc /tmp/sales-pov-{slug}.md -f markdown -t html5 --standalone --embed-resources \
      --css /tmp/sales-pdf-style.css --metadata pagetitle="{Account} POV Summary" \
      -o /tmp/sales-pov-{slug}.html
    ```
-5. Start temp HTTP server: `cd /tmp && python3 -m http.server 18765 &`
-6. Print to PDF via Playwright MCP:
-   - Navigate to `http://localhost:18765/sales-pov-{slug}.html`
-   - Print with Letter format, 0.5in margins, printBackground: true
-   - Save to `{config.pdf_path}/{YYYY-MM-DD}/{YYYY-MM-DD} {Account} POV Summary.pdf`
-7. Clean up: kill HTTP server, remove temp files
+5. Start temp HTTP server, print to PDF via Playwright CLI (Letter, 0.5in margins, printBackground true), save to `{config.pdf_path}/{YYYY-MM-DD}/{YYYY-MM-DD} {Account} POV Summary.pdf`, then clean up.
 
-### Step 6: Report
+Target PDF length: **2-3 pages**. If it's longer, the filter in Step 2 wasn't aggressive enough — tighten and regenerate.
+
+### Step 5: Report
 
 ```
 POV Summary {created | updated} for {Account}
@@ -212,28 +180,23 @@ POV Summary {created | updated} for {Account}
 File: {Account}/POV Summary.md
 PDF: {pdf_path}/{YYYY-MM-DD}/{YYYY-MM-DD} {Account} POV Summary.pdf
 
-Initiatives documented:
-- {Initiative 1} ({date range}) — {STATUS}
-- {Initiative 2} ({date range}) — {STATUS}
-...
-
-Key insight: {single most important takeaway from the analysis}
+Pain+risky items surfaced: {N}
+Top risk: {1-line summary of #1 risk}
+Source meetings: {count} from last {window} days
 ```
 
 ### Update Mode
 
-When `POV Summary.md` already exists:
-- Read the existing document first
-- Identify what's new since the last update (new meetings, new ledger entries, status changes)
-- Update the relevant initiative sections with new data
-- Update the Executive Summary if the overall picture has changed
-- Don't rewrite sections that haven't changed — preserve existing analysis and just add new information
-- Always regenerate the PDF
+If `POV Summary.md` already exists:
+- Read it first
+- Identify what's changed in the last 45 days (new meetings, status moves, new pain surfaced)
+- Update only the Deal Status, What's Moving Right Now, table rows, and risks that changed
+- Preserve Prior POV History verbatim — it's historical, not moving
+- Regenerate the PDF
 
 ### Rules
 
-- Never fabricate meeting content. If a meeting file is empty (no notes/transcript), note that explicitly.
-- Quote stakeholders when their exact words matter (e.g., "If you want the sale, prove you can handle the AI piece quickly")
-- Use the canonical product names from config
-- Use canonical competitor spellings from config
-- If the account has never had a POV or evaluation, create a minimal document noting the current state and what would need to happen
+- Never fabricate meeting content. If a meeting file is empty (no notes/transcript), skip it — don't invent.
+- Use canonical product names from `config.products`, canonical competitor spellings from `config.competitors`.
+- If no painful+risky items qualify, say so in the table section rather than padding with soft items. That's a valid finding (and a discovery prompt).
+- If the account has never had a POV *and* nothing is surfacing in recent meetings, the document should be under 1 page and explicitly note "nothing active — recommend engagement to surface pain."
