@@ -114,11 +114,9 @@ Insert a new section `## Deal Prep` in the daily note, **after** `## Meetings`. 
 ## Deal Prep
 ### {Account} | {meeting topic}, {time}
 - [ ] Send to [[{AE Name}]], [[{Other Internal Attendee}]]
-<details>
-<summary>Prep details</summary>
 
-```markdown
-Prep: {Day of Week}, {Mon} {Date}
+```
+*Prep: {Day of Week}, {Mon} {Date}*
 
 *{Account}* | {meeting topic}, {time}
 Attendees: [{Name}]({linkedin_url}) ({Role}, Champion), *{Name}* ({Role}, EB), *{Internal Name}*, *{Internal Name}*
@@ -127,27 +125,22 @@ Attendees: [{Name}]({linkedin_url}) ({Role}, Champion), *{Name}* ({Role}, EB), *
 - {Gap or action relevant to attendee roles}
 ```
 
-</details>
-
 ### {Account 2} | {meeting topic}, {time}
 - [ ] Send to [[{AE Name}]]
-<details>
-<summary>Prep details</summary>
 
-```markdown
-Prep: {Day of Week}, {Mon} {Date}
+```
+*Prep: {Day of Week}, {Mon} {Date}*
 
 *{Account 2}* | {meeting topic}, {time}
 Attendees: *{Name}* ({Role}, Detractor)
 - *OBJECTIVE:* {What we need to walk away with}
 - {Supporting insight}
 ```
-
-</details>
 ````
 
 **Formatting rules:**
-- Each meeting gets its own `### {Account} | {topic}, {time}` heading, send checkbox, and a `<details>` block wrapping the ` ```markdown ` code block. The `<details>` tag makes the content collapsible in Obsidian — the heading and checkbox are always visible, and the user expands to see the prep content. Use `<summary>Prep details</summary>` for prep and `<summary>Recap details</summary>` for recaps. A blank line is required between `<summary>` and the code fence for Obsidian to render the markdown inside correctly
+- Each meeting gets its own `### {Account} | {topic}, {time}` heading and send checkbox, followed directly by a fenced code block holding the Slack-ready content. **Do NOT wrap the code block in a `<details>` toggle** — Slack's `*single-asterisk bold*` syntax inside a `<details>` block does not render in Obsidian's reading view, so the formatting collapses into plain text. Keeping the code block at the top level renders cleanly in Obsidian while still allowing one-click copy/paste into Slack.
+- Use a plain ` ``` ` fence (no language tag) so Obsidian doesn't try to syntax-highlight `*bold*` as Markdown italics inside.
 - The send checkbox lists the AE (always) plus any other internal team members on the calendar invite, as wiki-links: `- [ ] Send to [[AE Name]], [[CSM Name]], [[Manager Name]]`
 - Wrap each meeting's content in a ` ```markdown ` fenced code block. Copy-paste the block content directly into Slack.
 - Use Slack markdown inside code blocks: `*bold*` (single asterisk), `-` for lists
@@ -212,40 +205,56 @@ After the prep section, add a recap of the previous day's deal meetings. This go
 ## Deal Recap
 ### {Account} | {meeting topic}
 - [ ] Send to [[{AE Name}]], [[{Other Internal Attendee}]]
-<details>
-<summary>Recap details</summary>
 
-```markdown
-Recap: {Day of Week}, {Mon} {Date}
-
-*{Account}* | {meeting topic}
-- {Key outcome or learning}
-- {Deal change: new stakeholder, risk surfaced, next step locked, etc.}
 ```
+Recap: {Account} | {meeting topic} ({Day of Week}, {Mon} {Date})
+[Gong]({gong_url})
 
-</details>
+- Business updates
+   - {bullet 1: what changed in the deal}
+   - {bullet 2: new stakeholder, risk, decision}
+   - {bullet 3: outcome or learning}
+- Feature requests (omit this whole parent bullet if none surfaced)
+   - {request 1, ≤12 words}
+   - {request 2}
+- *CEP recommendation: Stage X {name}* (include only if changed or differs from current SF stage)
+- Next: {specific next step with date if known}
+```
 
 ### {Account 2} | {meeting topic}
 - [ ] Send to [[{AE Name}]]
-<details>
-<summary>Recap details</summary>
 
-```markdown
-Recap: {Day of Week}, {Mon} {Date}
-
-*{Account 2}* | {meeting topic}
-- {One-liner if nothing major changed}
 ```
+Recap: {Account 2} | {meeting topic} ({Day of Week}, {Mon} {Date})
+[Gong]({gong_url})
 
-</details>
+- Business updates
+   - {single bullet if call was uneventful}
+- Next: {next step}
+```
 ````
 
 **Recap rules:**
-- Each meeting gets its own `### {Account} | {topic}` heading with a send checkbox listing stakeholders
-- Be very concise. 1 bullet if nothing notable happened, up to 5 if the deal moved significantly.
+- **Top-level structure is fixed:** every recap has these top-level bullets in this order:
+  1. `Business updates` — every recap has this; sub-bullets carry the substance (what changed, what we learned, who decided what, who blocked what)
+  2. `Feature requests` — only when feature asks surfaced on the call; otherwise omit the parent bullet entirely (don't write "none")
+  3. `*CEP recommendation: Stage X*` — only when the recommended stage changed or differs from the SF stage; otherwise skip
+  4. `Next:` — single line, always present
+
+  Don't introduce other top-level categories (no "MEDDPICC update," no "CoM update," no "Coaching" — those belong in the account file or the daily note's coaching callout, not the Slack recap).
+
+- Each meeting gets its own `### {Account} | {topic}` heading with a send checkbox listing stakeholders, **followed directly by a fenced code block** holding the Slack-ready content. **Do NOT wrap the code block in a `<details>` toggle** — the Slack `*bold*` syntax inside a `<details>` block does not render in Obsidian's reading view, so the formatting collapses into plain text. Keeping the code block visible at the top level lets Obsidian render it cleanly while still supporting one-click copy/paste into Slack.
+- Use a plain ` ``` ` fence (no language tag) so Obsidian doesn't try to syntax-highlight `*bold*` as Markdown italics inside.
+- **Header is one line:** `Recap: {Account} | {Topic} ({Day of Week}, {Mon} {Date})`. No bolding, no separate date line. Plain text.
+- **Gong link goes immediately after the header**, on its own line, before the bullet block. Use Markdown link form when a URL exists: `[Gong]({url})`. When no URL is available, write a plain-text note instead (e.g., `Gong: not captured on Greg's account this call`) so the structure stays consistent.
+- Use Slack-native formatting inside the bullet block: `*single-asterisk bold*` for names and the `*CEP recommendation*` line, plain `-` bullets at top level, 3-space-indent nested `-` for sub-bullets, blank lines for breathing room around the Gong link.
+- **Do NOT include MEDDPICC or Command-of-Message updates as recap bullets.** Those already land in the account file's MEDDPICC / TECHMAPS / CoM blocks via `/sales-summarize-account`; duplicating them in the Slack recap is noise.
+- **Terminology:** use **PoV Plan** (capital-P, lowercase-o, capital-V) for the deal-stage artifact — never "eval success criteria," "POV scope doc," "evaluation plan," or other variants. The PoV Plan is the canonical name across the team.
+- Be concise. Sub-bullets under Business updates: 2-6 max. Feature requests: 1-3 max.
 - Focus on *what changed* and *what we learned*, not a rehash of the agenda.
-- If a meeting had no notes or transcript yet, note that: "No notes captured yet."
+- If a meeting had no notes or transcript yet, write a single bullet under Business updates: "No notes captured yet."
 - Include the recap even in morning mode (recap yesterday) and evening mode (recap today).
+- No em dashes. No `<details>`. No double-asterisk bold inside the code block.
 
 #### Coaching Tip
 

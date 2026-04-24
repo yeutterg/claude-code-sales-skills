@@ -1,5 +1,5 @@
 ---
-name: ld-cep
+name: sales-cep
 description: Analyze deal stage based on LaunchDarkly's Customer Engagement Process (CEP). Compares completed and missing activities against stage criteria to recommend the correct opportunity stage.
 ---
 

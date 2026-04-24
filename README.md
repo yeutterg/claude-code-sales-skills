@@ -19,6 +19,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
   - [`/sales-review-learnings`](#sales-review-learnings)
   - [`/sales-salesforce`](#sales-salesforce)
   - [`/sales-setup`](#sales-setup)
+  - [`/sales-slack`](#sales-slack)
   - [`/sales-summarize-account`](#sales-summarize-account)
   - [`/sales-today`](#sales-today)
   - [`/sales-weekly`](#sales-weekly)
@@ -53,11 +54,12 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 | `/sales-gong` | Import Gong calls or Granola meetings into Obsidian meeting notes, or bulk import all calls for an account |
 | `/sales-meeting` | Create meeting notes for a sales account and link them in the daily note |
 | `/sales-pdf` | Export account files to PDF with clean formatting via pandoc and Playwright |
-| `/sales-pov` | Generate or update a POV & Technical Validation Summary for an account. Focuses on the last 30-45 days of conversations and current MEDDPICC/TECHMAPS state to surface ONLY the painful, deal-gating items that must be validated before close. |
+| `/sales-pov` | Generate or update a PoV & Technical Validation Summary for an account. Focuses on the last 30-45 days of conversations and current MEDDPICC/TECHMAPS state to surface ONLY the painful, deal-gating items that must be validated before close. |
 | `/sales-ps-prep` | Generate a Solutions Architect / Professional Services prep document for an account. Creates a standalone note and exports to PDF. |
 | `/sales-review-learnings` | Review patterns and insights discovered by skills -- competitors, objections, feature requests, model performance, and template drift. Use when the daily note flags new skill learnings for review. |
 | `/sales-salesforce` | Push SE Status to Salesforce, scan accounts for opportunities and deal context, discover all your open opportunities, or generate an SE mapping report across all AEs. Use this skill whenever the user mentions Salesforce, opportunities, deal updates, SE status, SE mapping, or wants to see all their accounts. |
 | `/sales-setup` | Post-clone setup: configure vault path, name, role, company, symlinks, and optional Salesforce CLI / Playwright CLI / Google Calendar. Re-run anytime to pull upstream updates and re-apply your config. |
+| `/sales-slack` | Post deal prep or recap messages to deal-specific Slack channels. Posts to the channel listed in the account's `slack_channel` frontmatter, attaches the latest account PDF to recaps, and skips silently when no channel is configured. |
 | `/sales-summarize-account` | Summarize all meeting notes, update MEDDPICC/TECHMAPS/CoM, enrich contacts, refresh business context |
 | `/sales-today` | Daily sales workflow -- morning prep or evening wrap-up with calendar scan, Gong imports, account summaries, and Salesforce updates |
 | `/sales-weekly` | Weekly review of all accounts with open Salesforce opportunities -- pulls deal context, summarizes activity, updates ledgers and Salesforce |
@@ -78,7 +80,7 @@ Scans Google Calendar for upcoming meetings, identifies which ones map to existi
 
 **Usage:** `/sales-cep <account name>`
 
-Analyzes a deal's actual stage based on what has and hasn't happened, using the Customer Engagement Process (CEP). Contains the full CEP manual covering the complete customer lifecycle: 4 pre-pipeline stages (Targeting, Engagement, Qualification, Discovery), 7 pipeline stages (S1 Validate Fit through S7 Closed/Won), and 6 post-sale stages (Kickoff, Activation, Wrap Up, Initial Value, Scale, Evangelize). Each stage includes customer objectives, MEDDPICC priorities, handoff/handshake definitions, exit criteria, internal references, and external assets. Reads the account file (MEDDPICC, ledger, meeting notes, SF stage) and evaluates against these definitions. Outputs a concise stage recommendation with Key Risks, Completed items, and Not Yet Completed items. Enforces the POV gate: deals cannot be Stage 3+ unless a POV has started or was explicitly skipped. Also recommends Tech Validation Type and Status for Salesforce. Includes the 3 Whys framework (Why Change, Why Now, Why You), BVA thresholds ($150K+), services engagement triggers ($30K+), and reseller/marketplace handling guidance. Called automatically by `/sales-summarize-account` as Phase 4c.
+Analyzes a deal's actual stage based on what has and hasn't happened, using your company's Customer Engagement Process (CEP). Reads the account file (MEDDPICC, ledger, meeting notes, SF stage) and evaluates against your team's stage definitions. Outputs a concise stage recommendation with Key Risks, Completed items, and Not Yet Completed items. Enforces the PoV gate: deals cannot advance past tech-validation stages unless a PoV Plan has started or was explicitly skipped. Also recommends Tech Validation Type and Status for Salesforce. Includes the 3 Whys framework (Why Change, Why Now, Why You), business value thresholds, services engagement triggers, and reseller/marketplace handling guidance. Called automatically by `/sales-summarize-account` as Phase 4c.
 
 ### `/sales-create-account`
 
@@ -114,13 +116,13 @@ Creates a meeting note for a sales account and links it in today's daily note. C
 
 **Usage:** `/sales-pdf [account | all | today]`
 
-Exports account markdown files to professionally formatted PDFs. Preprocesses Obsidian-specific syntax (dataview queries, wiki-links, callouts, transclusion embeds), resolves inline field references from frontmatter, generates contacts and meetings tables, converts to HTML via pandoc, and prints to PDF via Playwright MCP. No arguments or `today` exports accounts summarized during the current `/sales-today` run. Specific account name exports just that account. `all` exports every account with substantive content. PDFs are organized into date subfolders. Requires `pandoc` (`brew install pandoc`) and Playwright MCP. Called automatically by `/sales-today` after deal prep and recap are generated.
+Exports account markdown files to professionally formatted PDFs. Preprocesses Obsidian-specific syntax (dataview queries, wiki-links, callouts, transclusion embeds), resolves inline field references from frontmatter, generates contacts and meetings tables, converts to HTML via pandoc, and prints to PDF via Playwright MCP. No arguments or `today` exports accounts summarized during the current `/sales-today` run. Specific account name exports just that account. `all` exports every account with substantive content. PDFs are organized into date subfolders. Requires `pandoc` (`brew install pandoc`) and Playwright MCP. Called automatically by `/sales-today` after deal prep and recap are generated, and the resulting PDFs are attached to recap posts by `/sales-slack`.
 
 ### `/sales-pov`
 
 **Usage:** `/sales-pov <account name>`
 
-Generates a tight, actionable POV review focused on the last 30-45 days of conversations and current MEDDPICC/TECHMAPS state. Filters aggressively to surface only items that are BOTH painful (grounded in a recent-meeting quote or scenario) AND deal-risky (Decision Criteria gate, EB blocker, TECHMAPS gap, or paper-process gate). Produces a short document (target 2-3 pages) with a "Painful + Deal-Gating Items" table showing Capability, Problem (customer pain), How {Company} Helps, Evaluator, and Status; plus Deal Status, What's Moving Right Now, Top Risks to Close, Next Steps, and a one-sentence roll-up of prior POV attempts. Deliberately omits full-deal history, competitive landscape matrix, and exhaustive success criteria. Supports update mode -- reads existing POV Summary and updates only what changed in the last 45 days. Exports to PDF via pandoc and Playwright.
+Generates a tight, actionable PoV review focused on the last 30-45 days of conversations and current MEDDPICC/TECHMAPS state. Filters aggressively to surface only items that are BOTH painful (grounded in a recent-meeting quote or scenario) AND deal-risky (Decision Criteria gate, EB blocker, TECHMAPS gap, or paper-process gate). Produces a short document (target 2-3 pages) with a "Painful + Deal-Gating Items" table showing Capability, Problem (customer pain), How {Company} Helps, Evaluator, and Status; plus Deal Status, What's Moving Right Now, Top Risks to Close, Next Steps, and a one-sentence roll-up of prior PoV attempts. Deliberately omits full-deal history, competitive landscape matrix, and exhaustive success criteria. Supports update mode -- reads existing PoV Plan and updates only what changed in the last 45 days. Exports to PDF via pandoc and Playwright.
 
 ### `/sales-ps-prep`
 
@@ -146,6 +148,12 @@ Five modes for Salesforce integration. **Push** (default): pushes the Salesforce
 
 Guided onboarding for the Obsidian sales skills. Re-run anytime to pull upstream updates and re-apply your config. Walks through role, company, name, vault path, and company folder configuration. Searches the web for your company's products and competitors, lets you review and edit the list. Creates persistent config at `~/.claude/skills/sales-config.md` with all integration settings. Creates symlinks in `~/.claude/skills/` so Claude Code can find the skills. Optionally configures Salesforce CLI (with custom field auto-discovery for MEDDPICC, deal health, and SE lookup fields), Playwright CLI, Google Calendar, and call recording tools (Gong and/or Enterpret). Sub-arguments (`salesforce`, `playwright`, `calendar`) run only that specific setup.
 
+### `/sales-slack`
+
+**Usage:** `/sales-slack <account> <prep|recap>`
+
+Posts deal prep or recap messages to the deal-specific Slack channel listed in an account's `slack_channel` frontmatter. Designed to be called automatically by `/sales-today` at the END of the workflow after `/sales-summarize-account` and `/sales-pdf` have run. Skips silently when the account has no `slack_channel` configured. **Prep mode** posts a stakeholder-tagged objective bullet, 2-3 discover bullets, and 3-4 open-ended questions sourced from the meeting file's `## Prep`, `## Agenda`, and `### Questions to Ask` sections plus MEDDPICC gaps. **Recap mode** posts a Slack-native message with a fixed top-level structure: `Business updates` (always present, sub-bullets carry the substance), `Feature requests` (only when feature asks surfaced; omit otherwise), an optional `*CEP recommendation: Stage X*` callout when the recommended stage differs from current SF stage, and a single-line `Next:` step. The Gong link sits as a plain `[Gong](url)` markdown link on the line immediately after the header. Recap mode also uploads the latest account PDF (`{config.pdf_path}/{date}/{date} {Account}.pdf`) as a file attachment to the same channel via the Slack `files.getUploadURLExternal` / `files.completeUploadExternal` API. Uses `*single-asterisk bold*`, plain `-` bullets, and 3-space-indented sub-bullets so Slack renders the message correctly. Never duplicates MEDDPICC or CoM updates as recap bullets -- those already land in the account file via `/sales-summarize-account`. Uses **PoV Plan** (capital-P, lowercase-o, capital-V) as the canonical name for the deal-stage artifact. Reads `slack_bot_token` from `sales-config.md`; falls back to stdout for manual copy-paste if the token isn't set.
+
 ### `/sales-summarize-account`
 
 **Usage:** `/sales-summarize-account <account name>`
@@ -156,7 +164,7 @@ Summarizes all meeting notes for an account and updates the account page. Proces
 
 **Usage:** `/sales-today [morning | evening] [no gong]`
 
-Orchestrates the daily sales workflow based on time of day. Designed to run as a scheduled task in Claude Desktop. **Morning** (before noon): scans today's calendar, creates meeting notes, generates per-call deal prep with stakeholder send lists, adds a daily coaching tip, processes outstanding items from previous days. **Evening** (noon or later): processes today's meetings (Enterpret/Gong, summaries, Salesforce), scans tomorrow's calendar, generates deal prep for tomorrow. Transcript import tries `/sales-enterpret` first (faster, no browser needed), falling back to `/sales-gong` when Enterpret has no results. The `no gong` flag skips all transcript import steps (both Enterpret and Gong). Deal Prep includes attendees, MEDDPICC annotations, and 3-4 actionable bullets. Coaching Tip analyzes the SE's actual speaking turns in recent call transcripts and surfaces one specific, actionable improvement grounded in a real moment from a real call, with a persistent coaching log. Friday evening through Monday morning also runs `/sales-weekly`. Auto-creates accounts for unrecognized external meetings.
+Orchestrates the daily sales workflow based on time of day. Designed to run as a scheduled task in Claude Desktop. **Morning** (before noon): scans today's calendar, creates meeting notes, generates per-call deal prep with stakeholder send lists, adds a daily coaching tip, processes outstanding items from previous days. **Evening** (noon or later): processes today's meetings (Enterpret/Gong, summaries, Salesforce), scans tomorrow's calendar, generates deal prep for tomorrow. Transcript import tries `/sales-enterpret` first (faster, no browser needed), falling back to `/sales-gong` when Enterpret has no results. The `no gong` flag skips all transcript import steps (both Enterpret and Gong). Deal Prep and Deal Recap are emitted as Slack-ready fenced code blocks (no `<details>` toggles) using `*single-asterisk bold*` so Obsidian and Slack both render them cleanly. Recap blocks follow a fixed top-level order -- `Business updates` -> `Feature requests` -> optional `*CEP recommendation*` callout -> `Next:` -- and never include MEDDPICC or CoM bullets (those live in the account file). Uses **PoV Plan** as the canonical deal-stage artifact name. After PDFs are exported, calls `/sales-slack` for each deal meeting to post prep and recap content (and attach the PDF for recaps) to the account's configured Slack channel. Coaching Tip analyzes the SE's actual speaking turns in recent call transcripts and surfaces one specific, actionable improvement grounded in a real moment from a real call, with a persistent coaching log. Friday evening through Monday morning also runs `/sales-weekly`. Auto-creates accounts for unrecognized external meetings.
 
 ### `/sales-weekly`
 
@@ -198,6 +206,10 @@ graph TD
         psprep["/sales-ps-prep"]
     end
 
+    subgraph "Communication"
+        slack["/sales-slack"]
+    end
+
     subgraph "Periodic Reviews"
         weekly["/sales-weekly"]
         review["/sales-review-learnings"]
@@ -217,6 +229,7 @@ graph TD
     today --> create
     today --> weekly
     today --> pdf
+    today --> slack
 
     calendar --> meeting
     calendar --> create
@@ -238,6 +251,7 @@ graph TD
     summarize --> pov
     pov --> pdf
     psprep --> pdf
+    slack -.-> pdf
 ```
 
 ### `/sales-summarize-account` Internal Phases
@@ -272,13 +286,15 @@ graph TD
     mnew --> mprep["Generate Deal Prep & Recap"]
     mprep --> mpast["Process past outstanding items"]
     mpast --> mpdf["Export PDFs (if enabled)"]
-    mpdf --> mweekly{Weekend?}
+    mpdf --> mslack["Post Slack prep/recap (/sales-slack)"]
+    mslack --> mweekly{Weekend?}
 
     egong --> ecal["Scan tomorrow's calendar"]
     ecal --> enew["Handle new accounts"]
     enew --> eprep["Generate Deal Prep & Recap"]
     eprep --> epdf["Export PDFs (if enabled)"]
-    epdf --> eweekly{Weekend?}
+    epdf --> eslack["Post Slack prep/recap (/sales-slack)"]
+    eslack --> eweekly{Weekend?}
 
     mweekly -->|Yes| weekly["/sales-weekly"]
     mweekly -->|No| done["Report"]
@@ -300,6 +316,7 @@ graph TD
     - Enable **Set done date on every completed task** -- useful for tracking when action items were completed
 - *Optional, for `/sales-salesforce`:* [Homebrew](https://brew.sh) and [Salesforce CLI](https://developer.salesforce.com/tools/salesforcecli) (`brew install sf`)
 - *Optional, for `/sales-gong`:* [Homebrew](https://brew.sh) and [Playwright MCP](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md) (`claude mcp add playwright -- npx @playwright/mcp@latest --browser chromium`)
+- *Optional, for `/sales-slack`:* A Slack bot token (set as `slack_bot_token` in `sales-config.md`) with `chat:write` and `files:write` scopes, plus a `slack_channel` field in each account's frontmatter
 
 ## Obsidian Vault Setup
 
@@ -399,6 +416,7 @@ The recommended way to use these skills is to run `/sales-today` as a daily sche
 - Generates per-call deal prep with stakeholder send lists for tomorrow's meetings
 - Adds a daily coaching tip based on recent call patterns (tracked in `Resources/Coaching Log.md`)
 - Exports updated account PDFs if PDF export is enabled (via `/sales-pdf`)
+- Posts deal prep and recap messages (with PDF attachments) to deal-specific Slack channels via `/sales-slack` for any account that has a `slack_channel` configured
 - Creates accounts for any new companies (prompts you to add Salesforce/Gong URLs)
 - Runs `/sales-weekly` on Friday evenings (includes Deal Risk Radar with Red/Yellow/Green scoring)
 
@@ -473,7 +491,7 @@ What technical objections have come up so far?
 ```
 What's Acme Corp's current tech stack?
 Which accounts are evaluating us against a competitor?
-How far along is the Globex POV?
+How far along is the Globex PoV Plan?
 ```
 
 ### Fixing formatting
@@ -521,12 +539,12 @@ Here are some directions you could take this:
 - ~~**Google Calendar integration**~~ (done)
 - ~~**Competitive intelligence**~~ (done -- `/sales-calendar` now generates competitive probing questions from cross-account learnings)
 - ~~**Deal health scoring**~~ (done -- `/sales-weekly` scores deals Red/Yellow/Green and pushes to Salesforce)
+- ~~**Slack integration**~~ (done -- `/sales-slack` posts prep/recap messages and PDF attachments to deal-specific channels)
 - **Pipeline dashboard:** Create a skill that reads all account files and generates a summary table with deal stage, next call, and MEDDPICC completeness
 - **Stakeholder map gaps:** Analyze contacts and MEDDPICC to identify missing personas (e.g., no Economic Buyer contact, single-threaded deals)
 - **Win/loss pattern matching:** Compare new account profiles against past accounts to surface winning strategies and common failure modes
-- **POV tracking:** Add a skill for managing proof-of-value timelines, success criteria, and milestone tracking
 - **Email drafts:** Generate follow-up emails or internal updates from the latest meeting summary and next steps
-- **Email and Slack context:** Pull in relevant email threads and Slack messages as additional context for account summaries, using MCP servers for [Gmail](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md) and [Slack](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md)
+- **Email context:** Pull in relevant email threads as additional context for account summaries, using an MCP server for [Gmail](https://github.com/anthropics/claude-code/blob/main/docs/mcp.md)
 - **Static site hosting:** Publish account files as static pages (e.g., via [Obsidian Publish](https://obsidian.md/publish), [Quartz](https://quartz.jzhao.xyz/), or GitHub Pages) so stakeholders can view live account summaries in a browser instead of receiving PDF exports
 
 If you build something useful, consider contributing it back. See [Contributing](#contributing) below.

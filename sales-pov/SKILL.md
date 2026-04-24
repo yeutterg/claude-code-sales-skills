@@ -9,10 +9,10 @@ Generate a tight, actionable POV review for a sales account. Intentionally short
 
 ## Arguments
 
-- `account`: The account name (e.g., "Acme Corp", "Acme Corp")
+- `account`: The account name (e.g., "Acme Corp", "Smartsheet")
 
 Examples:
-- `/sales-pov Acme Corp`
+- `/sales-pov Smartsheet`
 
 ## Instructions
 
@@ -45,29 +45,38 @@ The entire point of this skill is to stay focused. Do NOT read the full history.
 
 ### Step 2: Identify the Painful + Risky Items
 
-This is the core of the skill. Filter aggressively — most features the customer is "evaluating" don't belong in this document.
+This is the core of the skill. Filter aggressively — most features the customer is "evaluating" don't belong in this document. Think critically about what is truly blocking the deal vs. nice-to-have.
 
-For each candidate capability / requirement / integration, it **only qualifies** if BOTH are true:
+**Scope — this is a POV / technical-validation document, not a deal-status dashboard.** The table captures **technical capabilities the SE must prove work in the customer's environment**. Full stop. Do NOT include:
 
-**A. The customer has expressed actual pain about it in recent conversation.** Pain = a specific scenario, cost, or workaround they've described, ideally with a quote. Not "they're interested in feature X" — that's interest, not pain. The pain must come from:
-- A recent meeting transcript or summary (last 45 days)
-- Or an explicit entry in MEDDPICC Pain / Business Impact that's traceable to a recent conversation
+- **Commercial / pricing / procurement items** (discount, pricing negotiation, tier selection) — those belong in deal notes, not POV.
+- **Compliance / certification checkpoints** (FedRAMP, SOC2, HIPAA, security review) — those are **paper-process gates**, not technical validations. Mention them in "Top Risks to Close" if they're active blockers; do NOT put them in the POV table.
+- **Professional Services / RSA / PS scoping** — those are commercial scope discussions, not technical validation. Mention in "Top Risks to Close" if the PS gap threatens close.
+- **Stakeholder engagement / executive sponsor meetings** — those are deal-motion items. Put in "Top Risks to Close" or ledger, not POV.
+- **Integration or training follow-through commitments** that happen AFTER purchase decision.
 
-**B. Not validating it puts the deal at risk.** Risk = one of:
+For a candidate technical capability to qualify, BOTH must be true:
+
+**A. The customer has expressed actual pain about it in recent conversation.** Pain = a specific scenario, cost, or workaround they've described. Not "they're interested in feature X" — that's interest, not pain. The pain must come from a recent meeting transcript / summary (last 45 days), or an explicit MEDDPICC Pain entry traceable to a recent conversation. Quote the customer's words when you can.
+
+**B. Not validating the capability puts the deal at risk.** Technical-risk only, per the scope above. Risk signals:
 - Named as a Decision Criterion in MEDDPICC
-- Called out as a blocker by the Economic Buyer or Champion
-- Competitive differentiation where we lose if we can't demonstrate it
-- Technical gap in TECHMAPS that would cause the customer to choose "build" over "buy"
-- Paper-process gate (security review, procurement checklist, compliance)
+- Technical gap in TECHMAPS that drives the customer toward "build" over "buy"
+- Competitive differentiation where we lose the eval if we can't demonstrate it
+- Champion or Economic Buyer has personally called out the capability as a must-prove
 
 **Exclude** everything that is:
-- "Nice to have" or "exploring" — the customer said so or the signal is soft
-- Already validated (status VALIDATED in prior POV summary, no new challenges)
-- Generic product features we always show (basic flag creation, default SDK integration) unless the customer specifically flagged them as risky
-- Capabilities where no evaluator has been named — if no one on the customer side owns judging it, it's not gate-closing
-- Items surfaced only in older meetings with no recent mention
+- "Nice to have" or "exploring" — soft signal, not a gate
+- Already validated with no new challenges surfacing
+- Generic product features we always show unless the customer flagged them specifically
+- No named evaluator on the customer side
+- Surfaced only in older meetings with no recent reinforcement
 
-Aim for **3-6 items** in the final table. If you find yourself writing 8+, you haven't filtered hard enough. The customer can have broad interest in a product; this document only captures what must land for the deal to close.
+Aim for **3-5 items**. If you find 6+, filter harder — you probably captured interest items, not deal-gates. If <3 qualify, that's a finding: say so rather than padding.
+
+**Order the table by product maturity, from foundational to frontier.** This reflects how the customer will and should validate: core plumbing first, advanced/newer capabilities last. Foundational capabilities (core feature management, SDK/API correctness, flag delivery semantics) come first because they anchor trust and must be rock-solid before evaluating newer pieces. Newer products (AI Configs, Guarded Releases, o11y) come last because they layer on top.
+
+Within the same maturity tier, break ties by deal-gating severity.
 
 ### Step 3: Write the POV Summary
 
@@ -94,20 +103,22 @@ The document is deliberately short — target **2-3 pages of PDF** total. No exh
 
 ## Painful + Deal-Gating Items
 
-Items the customer has surfaced as pain AND that put the deal at risk if not validated. Filtered for this deal, this moment — not a feature checklist.
+Technical capabilities the customer has surfaced as pain AND that put the deal at risk if not validated in their environment. **Ordered by product maturity (foundational → frontier), not by recency or internal priority.**
 
-| # | Capability | Problem (customer pain) | How {Company} Helps | Evaluator | Status |
-|---|------------|-------------------------|------------------------|-----------|--------|
-| 1 | {capability required, specific to their environment} | {the concrete problem the customer is trying to solve in their own words — quote + date of meeting where they said it. Describe the *problem*, not the feature.} | {1-2 sentences on how LD's capability maps to this problem. Be specific: name the LD product / feature / integration, not a vague "we solve that." Tie directly back to the problem language.} | {name, title} | {NOT STARTED / IN PROGRESS / VALIDATED / BLOCKED} |
+| # | Capability | Problem | How {Company} Helps | Evaluator | Status |
+|---|------------|---------|---------------------|-----------|--------|
+| 1 | {short phrase in customer's language} | {≤15 words, customer's own phrasing or a close paraphrase of their scenario, with meeting date} | {≤15 words, name the specific {Company} product/feature from config.products — no marketing fluff} | {name, title} | {NOT STARTED / IN PROGRESS / VALIDATED / BLOCKED} |
 
-Order by deal-gating priority. Aim for 3-6 rows. If fewer than 3 items qualify, say so explicitly (`## Painful + Deal-Gating Items` — *"No deal-gating pain surfaced in the last 45 days. Either the POV is on rails or we're under-discovering."*).
+Aim for 3-5 rows. If <3 qualify, write instead: *"No deal-gating technical pain surfaced in the last 45 days. Either the POV is on rails or we're under-discovering."*
 
 **Column guidance:**
-- **Capability:** short phrase for the thing that must be proven (e.g., "Multi-LLM experimentation with auto-rollback", not "AI Configs").
-- **Problem:** the customer's stated pain, grounded in a quote or scenario from a recent meeting. Include the meeting date. If it's a scenario rather than a quote, describe it in the customer's language.
-- **How {Company} Helps:** the specific product answer. Name the product/feature (from `config.products`), the integration, the workflow — not marketing phrasing. This is where the SE's value proposition gets pinned to each pain.
+- **Capability:** short phrase using the customer's vocabulary, not {Company}-product marketing. If they call it "the CFS replacement" or "our homegrown portal parity," use that. Avoid product names like "Guarded Releases" or "AI Configs" in this column — put those in the How-{Company}-Helps column instead.
+- **Problem:** ≤15 words. The customer's concrete pain in their words. Preferably a direct quote or close paraphrase. Include the meeting date.
+- **How {Company} Helps:** ≤15 words. The specific product/feature answer, named directly (e.g., "Guarded Releases with metric-driven auto-rollback"). No "we empower teams to…" phrasing. Tie back to the problem language.
 - **Evaluator:** named customer contact who owns judging whether this works. No evaluator → the row shouldn't exist.
 - **Status:** NOT STARTED / IN PROGRESS / VALIDATED / BLOCKED. Justified by evidence.
+
+**Ordering rule — product maturity:** foundational capabilities first (core feature management, SDK/API behavior, flag delivery semantics), then advanced targeting/workflow features, then newer products (Guarded Releases, AI Configs, o11y). This is the order the customer will actually validate in — trust in the core must land before the frontier capabilities carry weight. Within the same maturity tier, break ties by deal-gating severity.
 
 ## Top Risks to Close
 

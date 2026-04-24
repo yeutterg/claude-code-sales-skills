@@ -1,5 +1,5 @@
 ---
-name: ld-architecture-diagram
+name: sales-architecture-diagram
 description: Generate a Mermaid architecture diagram for an account showing tools, services, and integration points
 argument-hint: <account>
 ---
