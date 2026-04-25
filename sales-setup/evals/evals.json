@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "/ld-setup",
+      "prompt": "/sales-setup",
       "expected_output": "Full initial setup: asks for role, company, name, vault path, creates config and symlinks",
       "files": [],
       "expectations": [
@@ -12,7 +12,7 @@
         "Asks for SE name and initials",
         "Asks for Obsidian vault path",
         "Searches the web for company products and presents for review",
-        "Creates config file at ~/.claude/skills/ld-config.md with all values",
+        "Creates config file at ~/.claude/skills/sales-config.md with all values",
         "Creates symlinks in ~/.claude/skills/ for each ld-* skill directory",
         "Creates vault folder structure (Daily/, {config.company_folder}/Accounts/)",
         "Checks for old commands in ~/.claude/commands/ and migrates if found",
@@ -24,7 +24,7 @@
     },
     {
       "id": 2,
-      "prompt": "/ld-setup salesforce",
+      "prompt": "/sales-setup salesforce",
       "expected_output": "Salesforce CLI setup only, does not ask for name/vault/company",
       "files": [],
       "expectations": [
@@ -40,7 +40,7 @@
     },
     {
       "id": 3,
-      "prompt": "/ld-setup playwright",
+      "prompt": "/sales-setup playwright",
       "expected_output": "Playwright CLI setup only",
       "files": [],
       "expectations": [
@@ -53,7 +53,7 @@
     },
     {
       "id": 4,
-      "prompt": "/ld-setup calendar",
+      "prompt": "/sales-setup calendar",
       "expected_output": "Google Calendar setup only",
       "files": [],
       "expectations": [
@@ -66,7 +66,7 @@
     },
     {
       "id": 5,
-      "prompt": "/ld-setup (re-run with existing config)",
+      "prompt": "/sales-setup (re-run with existing config)",
       "expected_output": "Re-running setup preserves existing config values and pulls upstream updates",
       "files": [],
       "expectations": [

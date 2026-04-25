@@ -1,5 +1,5 @@
 {
-  "skill_name": "sales-today",
+  "skill_name": "ld-today",
   "evals": [
     {
       "id": 1,
@@ -355,7 +355,7 @@
       "expected_output": "Warns about missing calendar config but continues with non-calendar steps",
       "files": ["~/.claude/skills/sales-today/SKILL.md", "~/.claude/skills/sales-config.md"],
       "expectations": [
-        "Reads ld-config.md and checks for calendar_configured",
+        "Reads sales-config.md and checks for calendar_configured",
         "Detects calendar_configured is not true",
         "Warns: 'Google Calendar is not configured. Run /sales-setup calendar first. Skipping calendar scan.'",
         "Continues with non-calendar steps (processing outstanding items, etc.)",
@@ -368,7 +368,7 @@
       "expected_output": "Skips all Gong imports and notes in warnings when Playwright not configured",
       "files": ["~/.claude/skills/sales-today/SKILL.md", "~/.claude/skills/sales-config.md"],
       "expectations": [
-        "Reads ld-config.md and checks playwright_configured",
+        "Reads sales-config.md and checks playwright_configured",
         "Detects playwright_configured is not true",
         "Skips all /sales-gong import steps for every account",
         "Includes warning: 'Gong imports skipped: Playwright CLI not configured.'",

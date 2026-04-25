@@ -75,12 +75,12 @@
     {
       "id": 5,
       "name": "today-mode-daily-note-scan",
-      "prompt": "/ld-pdf today",
-      "expected_output": "Reads today's daily note, finds accounts with checked /ld-summarize-account tasks, exports only those accounts",
+      "prompt": "/sales-pdf today",
+      "expected_output": "Reads today's daily note, finds accounts with checked /sales-summarize-account tasks, exports only those accounts",
       "files": [],
       "expectations": [
         "Today's daily note read at {vault_path}/Daily/{YYYY-MM-DD}.md",
-        "Lines with '[x] Run /ld-summarize-account' parsed to extract account names",
+        "Lines with '[x] Run /sales-summarize-account' parsed to extract account names",
         "Only accounts with checked summarize task are exported",
         "If no accounts were summarized today, reports 'No accounts were summarized today' and stops",
         "Each matched account verified to have substantive content before export"
@@ -89,7 +89,7 @@
     {
       "id": 6,
       "name": "all-mode-content-filter",
-      "prompt": "/ld-pdf all",
+      "prompt": "/sales-pdf all",
       "expected_output": "Exports all accounts with real content, skips template-only accounts",
       "files": [],
       "expectations": [

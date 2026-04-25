@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "/ld-meeting Acme Corp Experimentation Sync",
+      "prompt": "/sales-meeting Acme Corp Experimentation Sync",
       "expected_output": "Creates meeting file in Acme Corp account folder, updates daily note with full-path links and 4-item checklist",
       "files": [],
       "expectations": [
@@ -15,7 +15,7 @@
         "Daily note updated with FULL PATH links (not short links)",
         "Account link format: [[{config.company_folder}/Accounts/Acme Corp/Acme Corp|Acme Corp]]",
         "Meeting link format: [[{config.company_folder}/Accounts/Acme Corp/meetings/YYYY-MM-DD Experimentation Sync|YYYY-MM-DD Experimentation Sync]]",
-        "All 4 checklist items present: Gong Transcript, /ld-summarize-account, /ld-salesforce, stakeholders",
+        "All 4 checklist items present: Gong Transcript, /sales-summarize-account, /sales-salesforce, stakeholders",
         "Gong URL pulled from account frontmatter",
         "AE and CSM names pulled from account frontmatter for stakeholders line",
         "No blank line between heading and first bullet"
@@ -23,7 +23,7 @@
     },
     {
       "id": 2,
-      "prompt": "/ld-meeting Acme Corp",
+      "prompt": "/sales-meeting Acme Corp",
       "expected_output": "Creates meeting with default topic 'Call' when no topic specified",
       "files": [],
       "expectations": [
@@ -33,7 +33,7 @@
     },
     {
       "id": 3,
-      "prompt": "/ld-meeting Acme Corp prep call 2026-01-15",
+      "prompt": "/sales-meeting Acme Corp prep call 2026-01-15",
       "expected_output": "Creates past meeting file, does NOT update daily note",
       "files": [],
       "expectations": [
@@ -45,7 +45,7 @@
     },
     {
       "id": 4,
-      "prompt": "/ld-meeting Acme Corp Discovery (with agenda and prep content passed)",
+      "prompt": "/sales-meeting Acme Corp Discovery (with agenda and prep content passed)",
       "expected_output": "Creates meeting file with agenda and prep sections populated from passed arguments",
       "files": [],
       "expectations": [
@@ -57,20 +57,20 @@
     },
     {
       "id": 5,
-      "prompt": "/ld-meeting Acme Corp Demo (account has multiple Salesforce opportunities)",
+      "prompt": "/sales-meeting Acme Corp Demo (account has multiple Salesforce opportunities)",
       "expected_output": "Daily note checklist includes all Salesforce opportunity links with labels from field suffixes",
       "files": [],
       "expectations": [
         "Account frontmatter read for salesforce_opportunity and salesforce_opportunity_* fields",
         "Primary salesforce_opportunity linked as 'Salesforce' label",
         "Additional opps linked with suffix labels (e.g., salesforce_opportunity_renewal -> 'renewal')",
-        "Checklist item 3 format: Run /ld-salesforce Acme Corp ([Salesforce](url1), [renewal](url2))",
+        "Checklist item 3 format: Run /sales-salesforce Acme Corp ([Salesforce](url1), [renewal](url2))",
         "If no opportunity URLs in frontmatter, checklist shows command without links"
       ]
     },
     {
       "id": 6,
-      "prompt": "/ld-meeting NewCo Discovery (account folder does not exist)",
+      "prompt": "/sales-meeting NewCo Discovery (account folder does not exist)",
       "expected_output": "Asks before creating the account folder rather than silently creating it",
       "files": [],
       "expectations": [
@@ -82,7 +82,7 @@
     },
     {
       "id": 7,
-      "prompt": "/ld-meeting Acme Corp Demo 2026-04-01 (future meeting)",
+      "prompt": "/sales-meeting Acme Corp Demo 2026-04-01 (future meeting)",
       "expected_output": "Creates meeting file with future date, adds to Upcoming subsection in daily note",
       "files": [],
       "expectations": [

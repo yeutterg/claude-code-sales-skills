@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "/ld-review-learnings",
+      "prompt": "/sales-review-learnings",
       "expected_output": "Shows pending discoveries grouped by category, asks for action, processes decisions, shows alerts",
       "files": [],
       "expectations": [
@@ -23,7 +23,7 @@
     },
     {
       "id": 2,
-      "prompt": "/ld-review-learnings (no pending items)",
+      "prompt": "/sales-review-learnings (no pending items)",
       "expected_output": "Reports no pending learnings and stops",
       "files": [],
       "expectations": [

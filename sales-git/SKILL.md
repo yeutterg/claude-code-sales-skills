@@ -60,10 +60,10 @@ Proprietary information found in skill files:
 
 | File | Line | Type | Value | Suggested Fix |
 |------|------|------|-------|---------------|
-| sales-meeting/SKILL.md | 32 | Customer name | "Globex" | Replace with generic example |
-| sales-summarize-account/evals/evals.json | 35 | Customer name | "Acme" | Replace with "Apple" |
-| sales-summarize-account/evals/evals.json | 96 | Contact name | "Jane Doe" | Replace with Apple exec (e.g., Tim Cook) |
-| sales-salesforce/SKILL.md | 106 | SF username | "user@company.com" | Use {config.salesforce_username} |
+| ld-meeting/SKILL.md | 32 | Customer name | "Globex" | Replace with generic example |
+| ld-summarize-account/evals/evals.json | 35 | Customer name | "{Real Customer}" | Replace with "Apple" |
+| ld-summarize-account/evals/evals.json | 96 | Contact name | "{Real Contact}" | Replace with Apple exec (e.g., Tim Cook) |
+| ld-salesforce/SKILL.md | 106 | SF username | "user@company.com" | Use {config.salesforce_username} |
 ...
 ```
 

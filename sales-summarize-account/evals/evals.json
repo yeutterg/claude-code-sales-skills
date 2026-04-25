@@ -1,5 +1,5 @@
 {
-  "skill_name": "sales-summarize-account",
+  "skill_name": "ld-summarize-account",
   "evals": [
     {
       "id": 1,
@@ -278,7 +278,7 @@
         "Phase 3g: Salesforce Updates section created with correct format",
         "Phase 4c: CEP Stage Analysis added above MEDDPICC after Phase 3 completes",
         "Phase 5: Daily note found, /sales-summarize-account checkbox marked [x] with completion timestamp",
-        "Phase 6a: Model performance logged to ld-config.md (success/failure counts)",
+        "Phase 6a: Model performance logged to sales-config.md (success/failure counts)",
         "Phase 6a: New competitors, objections, tech patterns, feature requests logged under Discovered Patterns",
         "Phase 6b: Template drift detection (comparison of before/after if re-run)",
         "Output includes: meetings updated, ledger additions, business context updates, MEDDPICC fields, TECHMAPS fields, CoM fields, architecture, SF Updates, contacts created, contact roster table, next call info, daily note confirmation, learnings logged"
@@ -307,7 +307,7 @@
     {
       "id": 15,
       "prompt": "Given an Apple account where a meeting transcript mentions 'Statsig' (spelled as 'Stats Sig' in transcript) and 'Amplitude' (not in competitors config), verify competitor handling.",
-      "expected_output": "Stats Sig corrected to canonical spelling 'Statsig', Amplitude auto-added to ld-config.md competitors list",
+      "expected_output": "Stats Sig corrected to canonical spelling 'Statsig', Amplitude auto-added to sales-config.md competitors list",
       "files": [],
       "expectations": [
         "Transcript misspelling 'Stats Sig' recognized as variant of 'Statsig' from config misspellings array",
@@ -331,18 +331,18 @@
         "No subagents launched for meetings with no processable content",
         "If ALL meetings are empty/already summarized, Phase 2 subagents skipped entirely",
         "Phase 3 still runs to update account from Ledger, SF context, business context, and other sources",
-        "Issue logged under Recurring Issues in ld-config.md noting the empty meeting files",
+        "Issue logged under Recurring Issues in sales-config.md noting the empty meeting files",
         "Business context subagent still launches (independent of meeting content)",
         "SF deal context subagent still launches if salesforce_opportunity exists"
       ]
     },
     {
       "id": 17,
-      "prompt": "Given an Apple account being processed and ld-config.md shows contact-enrichment has >50% failure rate on haiku, verify adaptive model selection escalation.",
+      "prompt": "Given an Apple account being processed and sales-config.md shows contact-enrichment has >50% failure rate on haiku, verify adaptive model selection escalation.",
       "expected_output": "Contact enrichment subagents use sonnet instead of haiku due to high failure rate",
       "files": [],
       "expectations": [
-        "ld-config.md Model Performance table read before launching subagents",
+        "sales-config.md Model Performance table read before launching subagents",
         "contact-enrichment failure rate calculated from success/failure counts",
         "If >50% failure rate on haiku, sonnet model selected for contact enrichment subagents",
         "If meeting-summary has >30% failure rate on current model, next tier model selected",
@@ -371,14 +371,14 @@
     {
       "id": 19,
       "prompt": "Given an Apple account where the user previously manually reformatted the MEDDPICC section (reworded summaries, reordered fields), verify template drift detection in Phase 6b.",
-      "expected_output": "Template drift detected: MEDDPICC section was manually edited; logged under Template Feedback in ld-config.md",
+      "expected_output": "Template drift detected: MEDDPICC section was manually edited; logged under Template Feedback in sales-config.md",
       "files": [],
       "expectations": [
         "Account file re-read after Phase 3 writes complete",
         "Content compared against expected template patterns",
         "Manually reworded MEDDPICC fields detected as drift",
         "Reordered fields detected as drift",
-        "Drift logged under ## Template Feedback in ld-config.md",
+        "Drift logged under ## Template Feedback in sales-config.md",
         "Log entry includes: section name (MEDDPICC), type of change (rewording/restructuring), account name (Apple)",
         "Other drift types also detected: summary style changes, section reordering, content removal/addition",
         "Template drift detection only runs on re-runs (not first-time account processing)"

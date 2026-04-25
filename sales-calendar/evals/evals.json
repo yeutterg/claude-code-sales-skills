@@ -3,11 +3,11 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "/ld-calendar",
+      "prompt": "/sales-calendar",
       "expected_output": "Scans today or tomorrow's calendar (based on time of day), creates meeting notes for deal meetings, updates daily notes",
       "files": [],
       "expectations": [
-        "Config read from ld-config.md, calendar_configured checked",
+        "Config read from sales-config.md, calendar_configured checked",
         "Current time determined to select today (morning) or tomorrow (afternoon)",
         "Events fetched from Google Calendar via mcp__claude_ai_Google_Calendar__gcal_list_events",
         "All-day events, declined events, cancelled events, and no-attendee events filtered out",
@@ -17,13 +17,13 @@
         "Attendees populated from calendar event display names, user's own email excluded",
         "Daily note updated with full wiki-link paths and 4-item checklist",
         "Existing meeting files not overwritten",
-        "Unrecognized external meetings listed with suggested /ld-create-account commands",
+        "Unrecognized external meetings listed with suggested /sales-create-account commands",
         "Report table shows deal meetings, prep, internal, skipped, and unrecognized"
       ]
     },
     {
       "id": 2,
-      "prompt": "/ld-calendar week",
+      "prompt": "/sales-calendar week",
       "expected_output": "Scans Monday through Friday of the current week, creates meeting notes for all days",
       "files": [],
       "expectations": [
@@ -35,7 +35,7 @@
     },
     {
       "id": 3,
-      "prompt": "/ld-calendar next week",
+      "prompt": "/sales-calendar next week",
       "expected_output": "Scans Monday through Friday of the following week",
       "files": [],
       "expectations": [
@@ -46,7 +46,7 @@
     },
     {
       "id": 4,
-      "prompt": "/ld-calendar 2026-04-15",
+      "prompt": "/sales-calendar 2026-04-15",
       "expected_output": "Scans a specific date",
       "files": [],
       "expectations": [
@@ -56,7 +56,7 @@
     },
     {
       "id": 5,
-      "prompt": "/ld-calendar tomorrow",
+      "prompt": "/sales-calendar tomorrow",
       "expected_output": "Scans tomorrow regardless of time of day",
       "files": [],
       "expectations": [
@@ -66,7 +66,7 @@
     },
     {
       "id": 6,
-      "prompt": "/ld-calendar (event with agenda in description)",
+      "prompt": "/sales-calendar (event with agenda in description)",
       "expected_output": "Extracts agenda from calendar event description, strips video conferencing boilerplate, populates meeting note Agenda section",
       "files": [],
       "expectations": [
@@ -79,7 +79,7 @@
     },
     {
       "id": 7,
-      "prompt": "/ld-calendar (deal meeting with MEDDPICC gaps and competitor mentions)",
+      "prompt": "/sales-calendar (deal meeting with MEDDPICC gaps and competitor mentions)",
       "expected_output": "Generates targeted questions based on framework gaps and competitive intelligence, populates Questions to Ask section",
       "files": [],
       "expectations": [
@@ -89,13 +89,13 @@
         "Questions tailored to meeting type (discovery vs demo vs POV review)",
         "Competitor mentions in account Ledger and Competition section cross-referenced",
         "Competitive question added if competitor previously mentioned in account",
-        "ld-config.md learnings checked for [competitor] patterns from other accounts",
+        "sales-config.md learnings checked for [competitor] patterns from other accounts",
         "Questions formatted as bullet points under ### Questions to Ask section"
       ]
     },
     {
       "id": 8,
-      "prompt": "/ld-calendar (deals-only mode with calendar_mode='deals')",
+      "prompt": "/sales-calendar (deals-only mode with calendar_mode='deals')",
       "expected_output": "Only creates meeting notes for deal meetings and deal prep, skips internal and external non-deal events",
       "files": [],
       "expectations": [
@@ -109,7 +109,7 @@
     },
     {
       "id": 9,
-      "prompt": "/ld-calendar (two events same account same day same topic)",
+      "prompt": "/sales-calendar (two events same account same day same topic)",
       "expected_output": "Creates separate meeting files with numbered disambiguation when account, topic, and date collide",
       "files": [],
       "expectations": [
@@ -121,13 +121,13 @@
     },
     {
       "id": 10,
-      "prompt": "/ld-calendar (legacy config with calendar_accounts list instead of calendar_id)",
-      "expected_output": "Uses first account from legacy list and warns user to re-run /ld-setup calendar",
+      "prompt": "/sales-calendar (legacy config with calendar_accounts list instead of calendar_id)",
+      "expected_output": "Uses first account from legacy list and warns user to re-run /sales-setup calendar",
       "files": [],
       "expectations": [
         "Detects calendar_accounts (list) instead of calendar_id (string) in config",
         "Uses the first account in the list as the calendar ID",
-        "Note shown to user recommending /ld-setup calendar to update config format"
+        "Note shown to user recommending /sales-setup calendar to update config format"
       ]
     }
   ]

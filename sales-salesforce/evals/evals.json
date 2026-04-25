@@ -3,12 +3,12 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "/ld-salesforce Acme Corp",
+      "prompt": "/sales-salesforce Acme Corp",
       "expected_output": "Pushes SE Status to Salesforce — no deal context pull, just push",
       "files": [],
       "expectations": [
         "Checks sf CLI is installed and authenticated",
-        "Reads config from ~/.claude/skills/ld-config.md and extracts all required values",
+        "Reads config from ~/.claude/skills/sales-config.md and extracts all required values",
         "Account file read from {config.company_folder}/Accounts/Acme Corp/Acme Corp.md",
         "Auto-correct check performed for swapped salesforce_account/salesforce_opportunity URLs",
         "Opportunity ID extracted from salesforce_opportunity frontmatter field",
@@ -21,13 +21,13 @@
         "HTTP 204 interpreted as success",
         "Temp files /tmp/sf_update.txt and /tmp/sf_update.json cleaned up after update",
         "Ledger.md checked for (status) entry and removed if found",
-        "Daily note checkbox for /ld-salesforce Acme Corp marked complete with [completion:: YYYY-MM-DD]",
+        "Daily note checkbox for /sales-salesforce Acme Corp marked complete with [completion:: YYYY-MM-DD]",
         "Success report includes Opportunity ID, label, and first 5 lines of content preview"
       ]
     },
     {
       "id": 2,
-      "prompt": "/ld-salesforce NonExistentAccount",
+      "prompt": "/sales-salesforce NonExistentAccount",
       "expected_output": "Reports error when account file doesn't exist",
       "files": [],
       "expectations": [
@@ -38,7 +38,7 @@
     },
     {
       "id": 3,
-      "prompt": "/ld-salesforce AccountWithNoOpps",
+      "prompt": "/sales-salesforce AccountWithNoOpps",
       "expected_output": "Warns user when no opportunity URLs are in frontmatter",
       "files": [],
       "expectations": [
@@ -50,7 +50,7 @@
     },
     {
       "id": 4,
-      "prompt": "/ld-salesforce scan Initech",
+      "prompt": "/sales-salesforce scan Initech",
       "expected_output": "Imports all opportunities with historical deal context, creates files, builds Dataview table",
       "files": [],
       "expectations": [
@@ -83,7 +83,7 @@
     },
     {
       "id": 5,
-      "prompt": "/ld-salesforce scan AccountWithNoSalesforceUrl",
+      "prompt": "/sales-salesforce scan AccountWithNoSalesforceUrl",
       "expected_output": "Falls back to extracting Account ID from an existing opportunity URL when salesforce_account is missing",
       "files": [],
       "expectations": [
@@ -98,7 +98,7 @@
     },
     {
       "id": 6,
-      "prompt": "/ld-salesforce scan AccountWithNoIds",
+      "prompt": "/sales-salesforce scan AccountWithNoIds",
       "expected_output": "Asks user for Salesforce Account URL when no IDs can be determined",
       "files": [],
       "expectations": [
@@ -112,7 +112,7 @@
     },
     {
       "id": 7,
-      "prompt": "/ld-salesforce scan Initech",
+      "prompt": "/sales-salesforce scan Initech",
       "expected_output": "Handles account with all closed opportunities correctly — notes discrepancy if account is an existing customer",
       "files": [],
       "expectations": [
@@ -126,7 +126,7 @@
     },
     {
       "id": 8,
-      "prompt": "/ld-salesforce scan AccountWithMultipleOpenOpps",
+      "prompt": "/sales-salesforce scan AccountWithMultipleOpenOpps",
       "expected_output": "Multiple open opportunities are correctly linked in frontmatter with type-based suffixes",
       "files": [],
       "expectations": [
@@ -139,7 +139,7 @@
     },
     {
       "id": 9,
-      "prompt": "/ld-salesforce scan AccountWithMixedHistory",
+      "prompt": "/sales-salesforce scan AccountWithMixedHistory",
       "expected_output": "Granularity scales with recency — recent opps get detailed timelines, old opps get one-liners",
       "files": [],
       "expectations": [
@@ -153,7 +153,7 @@
     },
     {
       "id": 10,
-      "prompt": "/ld-salesforce scan AccountWithDuplicateOppNames",
+      "prompt": "/sales-salesforce scan AccountWithDuplicateOppNames",
       "expected_output": "Disambiguates opportunity files when multiple opps share the same name",
       "files": [],
       "expectations": [
@@ -166,7 +166,7 @@
     },
     {
       "id": 11,
-      "prompt": "/ld-salesforce scan open Acme Corp",
+      "prompt": "/sales-salesforce scan open Acme Corp",
       "expected_output": "Pulls deal context from open opportunities, updates MEDDPICC and ledger, flags stale fields",
       "files": [],
       "expectations": [
@@ -191,20 +191,20 @@
     },
     {
       "id": 12,
-      "prompt": "/ld-salesforce scan open AccountWithNoOpps",
+      "prompt": "/sales-salesforce scan open AccountWithNoOpps",
       "expected_output": "Warns user to run scan first when no opportunity URLs exist",
       "files": [],
       "expectations": [
         "Mode detected as scan open",
         "Account file read successfully",
         "No salesforce_opportunity fields found or all empty",
-        "Warning tells user to run /ld-salesforce scan {Account} first",
+        "Warning tells user to run /sales-salesforce scan {Account} first",
         "No SOQL queries executed"
       ]
     },
     {
       "id": 13,
-      "prompt": "/ld-salesforce scan open Acme Corp",
+      "prompt": "/sales-salesforce scan open Acme Corp",
       "expected_output": "Filters noise from AE/CSM notes — includes milestones, excludes routine outreach",
       "files": [],
       "expectations": [
@@ -217,7 +217,7 @@
     },
     {
       "id": 14,
-      "prompt": "/ld-salesforce Acme Corp",
+      "prompt": "/sales-salesforce Acme Corp",
       "expected_output": "Validates that the Salesforce Updates section has correct structure: latest entry at top, older entries in DEAL HISTORY",
       "files": [],
       "expectations": [
@@ -236,7 +236,7 @@
     },
     {
       "id": 15,
-      "prompt": "/ld-salesforce MultiOppAccount",
+      "prompt": "/sales-salesforce MultiOppAccount",
       "expected_output": "Pushes to ALL linked opportunities (primary + expansion + renewal) and reports per-opp results",
       "files": [],
       "expectations": [
@@ -250,7 +250,7 @@
     },
     {
       "id": 16,
-      "prompt": "/ld-salesforce Acme Corp (where SE field on opp is assigned to another SE)",
+      "prompt": "/sales-salesforce Acme Corp (where SE field on opp is assigned to another SE)",
       "expected_output": "Skips opportunities assigned to other SEs, only pushes to own or unmapped opps",
       "files": [],
       "expectations": [
@@ -266,7 +266,7 @@
     },
     {
       "id": 17,
-      "prompt": "/ld-salesforce AccountWhereAllOppsAssignedToOtherSEs",
+      "prompt": "/sales-salesforce AccountWhereAllOppsAssignedToOtherSEs",
       "expected_output": "All opportunities skipped, user warned, no updates pushed",
       "files": [],
       "expectations": [
@@ -280,7 +280,7 @@
     },
     {
       "id": 18,
-      "prompt": "/ld-salesforce MixedOwnershipAccount (2 opps mine, 1 opp another SE, 1 unmapped)",
+      "prompt": "/sales-salesforce MixedOwnershipAccount (2 opps mine, 1 opp another SE, 1 unmapped)",
       "expected_output": "Pushes to own opps and unmapped, skips other SE's opp, reports all",
       "files": [],
       "expectations": [
@@ -294,7 +294,7 @@
     },
     {
       "id": 19,
-      "prompt": "/ld-salesforce my accounts",
+      "prompt": "/sales-salesforce my accounts",
       "expected_output": "Discovers all open opportunities where user is SE, cross-references with Obsidian, onboards missing accounts",
       "files": [],
       "expectations": [
@@ -307,15 +307,15 @@
         "Cross-reference with existing Obsidian account folders (case-insensitive, strips Inc/LLC/Corp)",
         "Accounts separated into: existing, missing (actionable), skipped (renewal-only)",
         "Renewal-only accounts identified by Type field containing 'renewal' (case-insensitive)",
-        "Actionable missing accounts auto-created via /ld-create-account with SF Account URL",
-        "Each account scanned via /ld-salesforce scan open after creation",
+        "Actionable missing accounts auto-created via /sales-create-account with SF Account URL",
+        "Each account scanned via /sales-salesforce scan open after creation",
         "Daily note todos added for newly created accounts (Gong import + summarize)",
         "Comprehensive summary report with counts by category"
       ]
     },
     {
       "id": 20,
-      "prompt": "/ld-salesforce my accounts (with renewal-only accounts)",
+      "prompt": "/sales-salesforce my accounts (with renewal-only accounts)",
       "expected_output": "Renewal-only accounts listed but not onboarded",
       "files": [],
       "expectations": [
@@ -323,27 +323,27 @@
         "Skipped accounts listed in report for visibility but NO folder created",
         "Accounts with at least one non-renewal opp treated as actionable",
         "Skipped section in report shows account name, opp count, type, amount",
-        "No /ld-create-account invoked for renewal-only accounts",
+        "No /sales-create-account invoked for renewal-only accounts",
         "No daily note todos added for renewal-only accounts"
       ]
     },
     {
       "id": 21,
-      "prompt": "/ld-salesforce my accounts (all accounts already in Obsidian)",
+      "prompt": "/sales-salesforce my accounts (all accounts already in Obsidian)",
       "expected_output": "All accounts found in Obsidian, scanned for deal context, no new accounts created",
       "files": [],
       "expectations": [
         "All Salesforce accounts matched to existing Obsidian folders",
-        "No /ld-create-account invocations (none missing)",
+        "No /sales-create-account invocations (none missing)",
         "'In Obsidian?' column shows 'Yes' for all accounts",
-        "Each account scanned via /ld-salesforce scan open for latest deal context",
+        "Each account scanned via /sales-salesforce scan open for latest deal context",
         "No daily note todos added (no new accounts)",
         "Report shows 0 newly created, lists existing accounts with opp counts"
       ]
     },
     {
       "id": 22,
-      "prompt": "/ld-salesforce mapping",
+      "prompt": "/sales-salesforce mapping",
       "expected_output": "Generates SE mapping report across all open opportunities grouped by AE",
       "files": [],
       "expectations": [
@@ -365,7 +365,7 @@
     },
     {
       "id": 23,
-      "prompt": "/ld-salesforce mapping (with duplicate Account IDs across Obsidian folders)",
+      "prompt": "/sales-salesforce mapping (with duplicate Account IDs across Obsidian folders)",
       "expected_output": "Flags duplicate Account IDs as data issues, matches correctly by SF Account Name",
       "files": [],
       "expectations": [
@@ -378,7 +378,7 @@
     },
     {
       "id": 24,
-      "prompt": "/ld-salesforce mapping (with accounts that have no SF ID)",
+      "prompt": "/sales-salesforce mapping (with accounts that have no SF ID)",
       "expected_output": "Falls back to name matching for accounts without salesforce_account field",
       "files": [],
       "expectations": [
@@ -392,7 +392,7 @@
     },
     {
       "id": 25,
-      "prompt": "/ld-salesforce Acme Corp (account has ## CEP Stage Analysis with Tech Validation)",
+      "prompt": "/sales-salesforce Acme Corp (account has ## CEP Stage Analysis with Tech Validation)",
       "expected_output": "Pushes Tech Validation Type and Status fields to Salesforce after SE Status push",
       "files": [],
       "expectations": [
@@ -409,7 +409,7 @@
     },
     {
       "id": 26,
-      "prompt": "/ld-salesforce Acme Corp (account has NO ## CEP Stage Analysis section)",
+      "prompt": "/sales-salesforce Acme Corp (account has NO ## CEP Stage Analysis section)",
       "expected_output": "Skips Tech Validation push silently, only pushes SE Status",
       "files": [],
       "expectations": [
@@ -423,7 +423,7 @@
     },
     {
       "id": 27,
-      "prompt": "/ld-salesforce Acme Corp (CEP has Tech Validation: Guided POV - In-Progress)",
+      "prompt": "/sales-salesforce Acme Corp (CEP has Tech Validation: Guided POV - In-Progress)",
       "expected_output": "Correctly maps Guided POV type and In-Progress status to Salesforce field values",
       "files": [],
       "expectations": [
@@ -436,7 +436,7 @@
     },
     {
       "id": 28,
-      "prompt": "/ld-salesforce Acme Corp (CEP has Tech Validation: Skipped)",
+      "prompt": "/sales-salesforce Acme Corp (CEP has Tech Validation: Skipped)",
       "expected_output": "Maps Skipped type correctly, no POV Status needed",
       "files": [],
       "expectations": [
@@ -448,11 +448,11 @@
     },
     {
       "id": 29,
-      "prompt": "/ld-salesforce Acme Corp (Deal Health assessed as part of weekly review, pushed via salesforce_deal_health_field)",
+      "prompt": "/sales-salesforce Acme Corp (Deal Health assessed as part of weekly review, pushed via salesforce_deal_health_field)",
       "expected_output": "Deal Health color pushed to correct Salesforce field based on deal state signals",
       "files": [],
       "expectations": [
-        "Config value {config.salesforce_deal_health_field} (SE_Opportunity_Health__c) read from ld-config.md",
+        "Config value {config.salesforce_deal_health_field} (SE_Opportunity_Health__c) read from sales-config.md",
         "Deal health assessed using holistic signals: days since last meeting, champion engagement, MEDDPICC completeness, stage velocity, close date movement, stakeholder breadth, technical validation status, competitive pressure, next steps clarity",
         "Green assigned when: most signals positive, champion engaged, timeline on track",
         "Yellow assigned when: 1-2 risk signals (slowing momentum, MEDDPICC gap, pushed close date) but deal still viable",
@@ -464,7 +464,7 @@
     },
     {
       "id": 30,
-      "prompt": "/ld-salesforce Acme Corp (Deal Health: champion gone dark 30+ days, single-threaded)",
+      "prompt": "/sales-salesforce Acme Corp (Deal Health: champion gone dark 30+ days, single-threaded)",
       "expected_output": "Red deal health assigned with appropriate justification",
       "files": [],
       "expectations": [
@@ -477,7 +477,7 @@
     },
     {
       "id": 31,
-      "prompt": "/ld-salesforce Acme Corp (Deal Health: active POV, close date pushed once, one MEDDPICC gap)",
+      "prompt": "/sales-salesforce Acme Corp (Deal Health: active POV, close date pushed once, one MEDDPICC gap)",
       "expected_output": "Yellow deal health assigned — viable but needs attention",
       "files": [],
       "expectations": [
@@ -489,7 +489,7 @@
     },
     {
       "id": 32,
-      "prompt": "/ld-salesforce Acme Corp (Deal Health: POV complete, multi-threaded, close date on track)",
+      "prompt": "/sales-salesforce Acme Corp (Deal Health: POV complete, multi-threaded, close date on track)",
       "expected_output": "Green deal health assigned — deal progressing well",
       "files": [],
       "expectations": [
@@ -501,7 +501,7 @@
     },
     {
       "id": 33,
-      "prompt": "/ld-salesforce Acme Corp (Deal Health: salesforce_deal_health_field NOT configured)",
+      "prompt": "/sales-salesforce Acme Corp (Deal Health: salesforce_deal_health_field NOT configured)",
       "expected_output": "Health score generated locally but not pushed to Salesforce",
       "files": [],
       "expectations": [
@@ -515,7 +515,7 @@
     },
     {
       "id": 34,
-      "prompt": "/ld-salesforce Acme Corp (sf org display returns auth error / token expired)",
+      "prompt": "/sales-salesforce Acme Corp (sf org display returns auth error / token expired)",
       "expected_output": "Detects token expiry and instructs user to re-authenticate",
       "files": [],
       "expectations": [
@@ -528,7 +528,7 @@
     },
     {
       "id": 35,
-      "prompt": "/ld-salesforce Acme Corp (REST API returns HTTP 400 — bad field name)",
+      "prompt": "/sales-salesforce Acme Corp (REST API returns HTTP 400 — bad field name)",
       "expected_output": "Detects field name error and suggests verification via describe",
       "files": [],
       "expectations": [
@@ -541,7 +541,7 @@
     },
     {
       "id": 36,
-      "prompt": "/ld-salesforce Acme Corp (REST API returns HTTP 404 — wrong Opportunity ID)",
+      "prompt": "/sales-salesforce Acme Corp (REST API returns HTTP 404 — wrong Opportunity ID)",
       "expected_output": "Detects invalid Opportunity ID and advises user to check frontmatter URL",
       "files": [],
       "expectations": [
@@ -554,68 +554,68 @@
     },
     {
       "id": 37,
-      "prompt": "/ld-salesforce Acme Corp (sf CLI not installed)",
-      "expected_output": "Detects missing sf CLI and directs user to /ld-setup",
+      "prompt": "/sales-salesforce Acme Corp (sf CLI not installed)",
+      "expected_output": "Detects missing sf CLI and directs user to /sales-setup",
       "files": [],
       "expectations": [
         "which sf returns not found",
-        "Error message: 'Salesforce CLI is not installed. Run /ld-setup salesforce to install and configure it.'",
+        "Error message: 'Salesforce CLI is not installed. Run /sales-setup salesforce to install and configure it.'",
         "No further steps attempted",
         "No REST API calls, no file reads beyond dependency check"
       ]
     },
     {
       "id": 38,
-      "prompt": "/ld-salesforce Acme Corp (sf CLI installed but not authenticated)",
-      "expected_output": "Detects unauthenticated CLI and directs user to /ld-setup",
+      "prompt": "/sales-salesforce Acme Corp (sf CLI installed but not authenticated)",
+      "expected_output": "Detects unauthenticated CLI and directs user to /sales-setup",
       "files": [],
       "expectations": [
         "which sf succeeds",
         "sf org list shows no connected orgs or returns auth error",
-        "Error message: 'Salesforce CLI is not authenticated. Run /ld-setup salesforce to log in.'",
+        "Error message: 'Salesforce CLI is not authenticated. Run /sales-setup salesforce to log in.'",
         "No further steps attempted"
       ]
     },
     {
       "id": 39,
-      "prompt": "/ld-salesforce Acme Corp (config file missing salesforce_username)",
-      "expected_output": "Detects missing required config and directs user to /ld-setup",
+      "prompt": "/sales-salesforce Acme Corp (config file missing salesforce_username)",
+      "expected_output": "Detects missing required config and directs user to /sales-setup",
       "files": [],
       "expectations": [
-        "Config file at ~/.claude/skills/ld-config.md read",
+        "Config file at ~/.claude/skills/sales-config.md read",
         "Required field salesforce_username missing or empty",
-        "Error message: 'Salesforce is not configured. Run /ld-setup salesforce to set it up.'",
+        "Error message: 'Salesforce is not configured. Run /sales-setup salesforce to set it up.'",
         "No sf CLI commands attempted"
       ]
     },
     {
       "id": 40,
-      "prompt": "/ld-salesforce Acme Corp (Salesforce Updates section exists but code block is empty)",
-      "expected_output": "Warns user to run /ld-summarize-account first to populate content",
+      "prompt": "/sales-salesforce Acme Corp (Salesforce Updates section exists but code block is empty)",
+      "expected_output": "Warns user to run /sales-summarize-account first to populate content",
       "files": [],
       "expectations": [
         "## Salesforce Updates section found in account file",
         "Code block between triple backticks is empty",
-        "Warning: 'The Salesforce Updates code block is empty for Acme Corp. Run /ld-summarize-account Acme Corp first to populate it.'",
+        "Warning: 'The Salesforce Updates code block is empty for Acme Corp. Run /sales-summarize-account Acme Corp first to populate it.'",
         "No push attempted",
         "No temp files created"
       ]
     },
     {
       "id": 41,
-      "prompt": "/ld-salesforce Acme Corp (no ## Salesforce Updates section in account file)",
-      "expected_output": "Warns user that section is missing and suggests /ld-summarize-account",
+      "prompt": "/sales-salesforce Acme Corp (no ## Salesforce Updates section in account file)",
+      "expected_output": "Warns user that section is missing and suggests /sales-summarize-account",
       "files": [],
       "expectations": [
         "Account file read successfully",
         "## Salesforce Updates section not found",
-        "Warning: 'No ## Salesforce Updates section found in Acme Corp.md. Run /ld-summarize-account Acme Corp first to generate it.'",
+        "Warning: 'No ## Salesforce Updates section found in Acme Corp.md. Run /sales-summarize-account Acme Corp first to generate it.'",
         "No push attempted"
       ]
     },
     {
       "id": 42,
-      "prompt": "/ld-salesforce Acme Corp (salesforce_opportunity contains /Account/ URL, salesforce_account is empty)",
+      "prompt": "/sales-salesforce Acme Corp (salesforce_opportunity contains /Account/ URL, salesforce_account is empty)",
       "expected_output": "Auto-corrects swapped URLs: moves Account URL to salesforce_account, clears salesforce_opportunity",
       "files": [],
       "expectations": [
@@ -628,7 +628,7 @@
     },
     {
       "id": 43,
-      "prompt": "/ld-salesforce Acme Corp (salesforce_account contains /Opportunity/ URL)",
+      "prompt": "/sales-salesforce Acme Corp (salesforce_account contains /Opportunity/ URL)",
       "expected_output": "Auto-corrects swapped URLs: moves Opportunity URL to salesforce_opportunity",
       "files": [],
       "expectations": [
@@ -641,7 +641,7 @@
     },
     {
       "id": 44,
-      "prompt": "/ld-salesforce Acme Corp (push succeeds, Ledger.md has (status) entry from /ld-weekly)",
+      "prompt": "/sales-salesforce Acme Corp (push succeeds, Ledger.md has (status) entry from /sales-weekly)",
       "expected_output": "Removes the (status) ledger entry after successful push",
       "files": [],
       "expectations": [
@@ -655,12 +655,12 @@
     },
     {
       "id": 45,
-      "prompt": "/ld-salesforce Acme Corp (daily note has unchecked checkbox with SF links in parentheses)",
+      "prompt": "/sales-salesforce Acme Corp (daily note has unchecked checkbox with SF links in parentheses)",
       "expected_output": "Marks daily note checkbox complete, preserving existing Salesforce links",
       "files": [],
       "expectations": [
         "Today's daily note found at {config.vault_path}/Daily/YYYY-MM-DD.md",
-        "Unchecked checkbox line found containing '/ld-salesforce Acme Corp' (case-insensitive)",
+        "Unchecked checkbox line found containing '/sales-salesforce Acme Corp' (case-insensitive)",
         "Line may contain Salesforce opportunity links in parentheses after account name",
         "Checkbox changed from '- [ ]' to '- [x]'",
         "Completion timestamp appended: [completion:: YYYY-MM-DD]",
@@ -670,7 +670,7 @@
     },
     {
       "id": 46,
-      "prompt": "/ld-salesforce Acme Corp (push succeeds, sf CLI update available)",
+      "prompt": "/sales-salesforce Acme Corp (push succeeds, sf CLI update available)",
       "expected_output": "Offers CLI update after successful push",
       "files": [],
       "expectations": [
@@ -683,7 +683,7 @@
     },
     {
       "id": 47,
-      "prompt": "/ld-salesforce (no arguments)",
+      "prompt": "/sales-salesforce (no arguments)",
       "expected_output": "Reports error when no account name or mode is provided",
       "files": [],
       "expectations": [
@@ -696,7 +696,7 @@
     },
     {
       "id": 48,
-      "prompt": "/ld-salesforce my accounts (SE lookup fields fail, falls back to name-based query)",
+      "prompt": "/sales-salesforce my accounts (SE lookup fields fail, falls back to name-based query)",
       "expected_output": "Falls back to broader query when configured SE lookup fields don't work",
       "files": [],
       "expectations": [
@@ -708,7 +708,7 @@
     },
     {
       "id": 49,
-      "prompt": "/ld-salesforce scan open Acme Corp (one opp returns HTTP error, another succeeds)",
+      "prompt": "/sales-salesforce scan open Acme Corp (one opp returns HTTP error, another succeeds)",
       "expected_output": "Reports per-opportunity query results, continues despite partial failure",
       "files": [],
       "expectations": [
@@ -722,7 +722,7 @@
     },
     {
       "id": 50,
-      "prompt": "/ld-salesforce scan Initech (existing opportunity files in opportunities/ folder)",
+      "prompt": "/sales-salesforce scan Initech (existing opportunity files in opportunities/ folder)",
       "expected_output": "Updates existing opportunity files with latest SF data, preserves manual content",
       "files": [],
       "expectations": [
@@ -735,7 +735,7 @@
     },
     {
       "id": 51,
-      "prompt": "/ld-salesforce Acme Corp (HTML conversion of Salesforce Updates content)",
+      "prompt": "/sales-salesforce Acme Corp (HTML conversion of Salesforce Updates content)",
       "expected_output": "Content correctly converted to HTML with proper formatting for Salesforce rich text field",
       "files": [],
       "expectations": [
@@ -751,7 +751,7 @@
     },
     {
       "id": 52,
-      "prompt": "/ld-salesforce scan Initech (Opportunity History section already exists in account file)",
+      "prompt": "/sales-salesforce scan Initech (Opportunity History section already exists in account file)",
       "expected_output": "Leaves existing Opportunity History section, updates Salesforce Deal History subsection",
       "files": [],
       "expectations": [
@@ -764,15 +764,15 @@
     },
     {
       "id": 53,
-      "prompt": "/ld-salesforce my accounts (newly created account gets daily note todos)",
+      "prompt": "/sales-salesforce my accounts (newly created account gets daily note todos)",
       "expected_output": "Daily note todos added for newly created accounts with Gong import and summarize steps",
       "files": [],
       "expectations": [
         "Today's daily note found at {config.vault_path}/Daily/YYYY-MM-DD.md",
         "Todos added under ### Today in ## Meetings section",
-        "First todo marked complete: [x] Run /ld-salesforce my accounts [completion:: YYYY-MM-DD]",
-        "Second todo unchecked: [ ] Run /ld-gong {Account} {gong_url} (historical import)",
-        "Third todo unchecked: [ ] Run /ld-summarize-account {Account}",
+        "First todo marked complete: [x] Run /sales-salesforce my accounts [completion:: YYYY-MM-DD]",
+        "Second todo unchecked: [ ] Run /sales-gong {Account} {gong_url} (historical import)",
+        "Third todo unchecked: [ ] Run /sales-summarize-account {Account}",
         "Gong URL included from account file if gong_url frontmatter exists",
         "If no gong_url: todo says 'find account in Gong first'",
         "Todos only added for NEWLY created accounts, not existing ones"
@@ -780,7 +780,7 @@
     },
     {
       "id": 54,
-      "prompt": "/ld-salesforce scan open Acme Corp (SOQL uses Python urllib to avoid shell escaping)",
+      "prompt": "/sales-salesforce scan open Acme Corp (SOQL uses Python urllib to avoid shell escaping)",
       "expected_output": "SOQL queries executed via Python urllib, not raw curl with shell-escaped tokens",
       "files": [],
       "expectations": [
