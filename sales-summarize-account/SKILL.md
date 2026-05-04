@@ -171,7 +171,7 @@ ATTENDEES: {comma-separated list of names}
 SUMMARY: {2-4 sentence summary}
 LEDGER_ENTRY: {Format: "M/D {config.initials}: {concise ~15-25 word summary}. Next call: M/D {type}" or "Next call: TBD". Use M/D/YY if different year.}
 NEXT_CALL: {date and type if mentioned, or "none"}
-METRICS: {any business metrics, KPIs, success criteria mentioned}
+METRICS: {business metrics / KPIs / success criteria the customer measures their business by — revenue, conversion rate, MAU, NPS, deployment frequency tied to revenue, time-to-market, churn, etc. DO NOT capture your product/platform usage stats here (flag counts, environment counts, MAU on your platform, seat counts) — those go in Tech Stack or Environment.}
 ECONOMIC_BUYER: {budget holder info if mentioned}
 DECISION_CRITERIA: {technical requirements, must-haves mentioned}
 DECISION_PROCESS: {how they make decisions, approval chain}
@@ -188,7 +188,7 @@ TECH_REQUIREMENTS: {technical needs, performance requirements}
 ENVIRONMENT: {tech stack, systems, integrations}
 TECH_COMPETITORS: {competitors' capabilities and gaps}
 HERO: {technical champion name and influence}
-TECH_METRICS: {how they measure technical success}
+TECH_METRICS: {business metrics / KPIs / success criteria the customer measures their business by — same flavor as MEDDPICC METRICS. Examples: revenue, conversion rate, MAU, NPS, deployment frequency tied to revenue, time-to-market, churn. DO NOT put your product/platform usage stats here (flag counts, environment counts, MAU on your platform, seat counts) — those belong in Tech Stack or Environment, not as the customer's success metrics.}
 ALIGNMENT: {connection to business value}
 TECH_VALIDATION_PLAN: {POV, workshop, demo plans}
 SUPPORT: {post-sale needs}
@@ -298,7 +298,7 @@ Example correct format for MEDDPICC:
 ## MEDDPICC
 
 > [!summary] Summary
-> - **Metrics:** 500+ flags, 2M MAU, targeting 10M experiment keys
+> - **Metrics:** $400M ARR, 12% YoY revenue growth, 3.4% checkout conversion target, NPS 42
 > - **Economic Buyer:** John Smith (VP Eng), prefers usage-based pricing
 > - **Decision Criteria:** Mobile-first, Datadog integration required
 > - **Decision Process:** Technical POV → business case → procurement
@@ -308,9 +308,10 @@ Example correct format for MEDDPICC:
 > - **Competition:** Firebase (legacy), Split.io (evaluated)
 
 ### Metrics
-- 500+ feature flags in production
-- 2M monthly active users
-- etc.
+- $400M ARR with 12% YoY growth target
+- Checkout conversion rate: 3.4% target (currently 2.9%)
+- NPS 42, want to push to 50
+- (Business KPIs only — your product/platform usage stats like flag counts go in Tech Stack/Environment)
 
 ### Economic Buyer
 - **John Smith** - VP Engineering, budget holder
@@ -324,6 +325,7 @@ Example correct format for MEDDPICC:
 
 **TECHMAPS sections** - Fill in from extracted TECH_REQUIREMENTS, ENVIRONMENT, TECH_COMPETITORS, HERO, TECH_METRICS, ALIGNMENT, TECH_VALIDATION_PLAN, SUPPORT fields:
 - Technical Requirements & Scalability, Environment, Competitors, Hero, Metrics, Alignment, Plan for Tech Validation, Support
+- **TECHMAPS Metrics = business metrics, same as MEDDPICC Metrics** (revenue, conversion, MAU, NPS, time-to-market, churn — what the customer measures their business by). NOT your product/platform usage stats like flag counts, environment counts, seat counts, or platform MAU; those go in Tech Stack or Environment.
 
 **Tech Stack section** - Aggregate from extracted TECH_STACK fields. Use categories:
 - Languages, Frameworks, Cloud, Infrastructure, AI/ML, Data, Observability, CI/CD, Feature Flags, Other Tools
