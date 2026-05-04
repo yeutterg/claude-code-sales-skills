@@ -171,7 +171,7 @@ ATTENDEES: {comma-separated list of names}
 SUMMARY: {2-4 sentence summary}
 LEDGER_ENTRY: {Format: "M/D {config.initials}: {concise ~15-25 word summary}. Next call: M/D {type}" or "Next call: TBD". Use M/D/YY if different year.}
 NEXT_CALL: {date and type if mentioned, or "none"}
-METRICS: {business metrics / KPIs / success criteria the customer measures their business by — revenue, conversion rate, MAU, NPS, deployment frequency tied to revenue, time-to-market, churn, etc. DO NOT capture your product/platform usage stats here (flag counts, environment counts, MAU on your platform, seat counts) — those go in Tech Stack or Environment.}
+METRICS: {business metrics / KPIs / success criteria the customer measures their business by — revenue, conversion rate, MAU, NPS, deployment frequency tied to revenue, time-to-market, churn, etc. DO NOT capture your product/platform usage stats here (flag counts, environment counts, MAU on your platform, seat counts) — those go in Tech Stack or Environment. **CRITICAL: only capture metrics the customer themselves has stated in this meeting.** If no business KPIs were discussed, return "none". DO NOT hallucinate or proxy from external sources — public earnings, press releases, news articles, web search, the Business Context section, or your own inference. Customer-confirmed metrics ONLY. Empty is correct when the customer hasn't told us what they measure.}
 ECONOMIC_BUYER: {budget holder info if mentioned}
 DECISION_CRITERIA: {technical requirements, must-haves mentioned}
 DECISION_PROCESS: {how they make decisions, approval chain}
@@ -188,7 +188,7 @@ TECH_REQUIREMENTS: {technical needs, performance requirements}
 ENVIRONMENT: {tech stack, systems, integrations}
 TECH_COMPETITORS: {competitors' capabilities and gaps}
 HERO: {technical champion name and influence}
-TECH_METRICS: {business metrics / KPIs / success criteria the customer measures their business by — same flavor as MEDDPICC METRICS. Examples: revenue, conversion rate, MAU, NPS, deployment frequency tied to revenue, time-to-market, churn. DO NOT put your product/platform usage stats here (flag counts, environment counts, MAU on your platform, seat counts) — those belong in Tech Stack or Environment, not as the customer's success metrics.}
+TECH_METRICS: {business metrics / KPIs / success criteria the customer measures their business by — same flavor as MEDDPICC METRICS. Examples: revenue, conversion rate, MAU, NPS, deployment frequency tied to revenue, time-to-market, churn. DO NOT put your product/platform usage stats here (flag counts, environment counts, MAU on your platform, seat counts) — those belong in Tech Stack or Environment, not as the customer's success metrics. **CRITICAL: only capture metrics the customer themselves has stated in this meeting.** If no business KPIs were discussed, return "none". DO NOT hallucinate or proxy from external sources — public earnings, press releases, news articles, web search, the Business Context section, or your own inference. Customer-confirmed metrics ONLY.}
 ALIGNMENT: {connection to business value}
 TECH_VALIDATION_PLAN: {POV, workshop, demo plans}
 SUPPORT: {post-sale needs}
@@ -320,12 +320,38 @@ Example correct format for MEDDPICC:
 
 **MEDDPICC sections** - Fill in from extracted METRICS, ECONOMIC_BUYER, DECISION_CRITERIA, DECISION_PROCESS, PAPER_PROCESS, IDENTIFIED_PAIN, CHAMPION, COMPETITION fields.
 
+**Metrics provenance rule (NO HALLUCINATION):** Every Metrics value must be sourced and labeled. Three valid sources, in priority order:
+
+1. **Customer-stated** (best): The prospect explicitly named this KPI in a meeting, transcript, Slack thread, or email. Render as plain bullets, no provenance suffix needed.
+2. **Public-company earnings reports** (acceptable for public companies, but MUST be labeled): If the account is publicly traded and you have direct article links to specific earnings releases (BusinessWire, PRNewswire, investor.{company}.com, etc.), you may pull headline business KPIs (revenue, growth rate, RPO, EPS, customer count, segment revenue). Append `(from {Quarter FY} earnings, {short-source})` so the reader can never confuse it with prospect-confirmed signal. Example: `- $4.83B RPO, up 15% YoY (from Q4 FY26 earnings, BusinessWire)`.
+3. **Discovery gap** (correct default when neither above applies): Render as the explicit gap flag below.
+
+**If no meeting subagent extracted customer-confirmed metrics AND no earnings data is available** (private company, or no usable sources), the Metrics field MUST be rendered as a discovery-gap flag, NOT filled in from anything else:
+
+- Summary callout line: `> **Metrics:** Not yet established with customer (discovery gap)`
+- `### Metrics` body: a single bullet `- Not yet established with customer — no business KPIs surfaced in any meeting to date. Discovery needed: what does success look like to the customer in $$, hours, conversion, MAU, NPS, deployment frequency, time-to-market, or churn?`
+- Optionally also add a Key Risk to the next `## CEP Stage Analysis` run: `- No customer-confirmed business KPIs (S{current_stage})` — this surfaces the gap so it shows up in /sales-meeting prep.
+
+**Mixed case** (some customer-stated, some earnings, some still missing): list all valid sources with their provenance labels, AND keep the discovery-gap acknowledgment visible. Example:
+```
+### Metrics
+**Customer-confirmed:** none yet — discovery gap
+**From public earnings (not prospect-confirmed):**
+- $761M Q4 revenue, +12% YoY (Q4 FY26 earnings, BusinessWire)
+- $4.83B RPO, +15% YoY (Q4 FY26 earnings, BusinessWire)
+```
+
+DO NOT fill the Metrics field with: news article stats unrelated to financials, deal sizing inputs (e.g., service connections, integration scope), product-side service credits (e.g., professional services hours, seats, usage counts), or your own inference. Public earnings ARE allowed for public companies but ONLY with the explicit provenance label.
+
+If a value already exists in the file from a prior run that DOES NOT match this rule (e.g., contains product service credits, integration scope numbers, / unlabeled earnings numbers), treat it as polluted: move legitimate scope numbers to TECHMAPS > Environment or Technical Requirements, move product service credits to TECHMAPS > Support, relabel any earnings figures with their provenance suffix, and add the discovery-gap acknowledgment if no customer-confirmed metrics exist.
+
 **Command of the Message sections** - Fill in from extracted REQUIRED_CAPABILITIES, BUSINESS_VALUE, POSITIVE_OUTCOMES, NEGATIVE_CONSEQUENCES, BEFORE_AFTER fields:
 - Required Capabilities, Business Value, Positive Business Outcomes, Negative Consequences, Before/After Scenarios
 
 **TECHMAPS sections** - Fill in from extracted TECH_REQUIREMENTS, ENVIRONMENT, TECH_COMPETITORS, HERO, TECH_METRICS, ALIGNMENT, TECH_VALIDATION_PLAN, SUPPORT fields:
 - Technical Requirements & Scalability, Environment, Competitors, Hero, Metrics, Alignment, Plan for Tech Validation, Support
 - **TECHMAPS Metrics = business metrics, same as MEDDPICC Metrics** (revenue, conversion, MAU, NPS, time-to-market, churn — what the customer measures their business by). NOT your product/platform usage stats like flag counts, environment counts, seat counts, or platform MAU; those go in Tech Stack or Environment.
+- **Same NO-HALLUCINATION rule applies.** If no customer-confirmed business KPIs were extracted, render the discovery-gap flag (same shape as MEDDPICC Metrics above). Never proxy from public earnings, press releases, scope numbers, or service credits.
 
 **Tech Stack section** - Aggregate from extracted TECH_STACK fields. Use categories:
 - Languages, Frameworks, Cloud, Infrastructure, AI/ML, Data, Observability, CI/CD, Feature Flags, Other Tools
