@@ -53,6 +53,36 @@ Example: `/sales-meeting Acme Corp` → creates "2026-02-26 Call.md"
 - If no date provided, use today's date
 - Format: YYYY-MM-DD
 
+### Step 2.5: Pull CEP Risk Areas from the Account File
+
+Before creating the meeting file, read the account file at `{config.vault_path}/{config.company_folder}/Accounts/{Account}/{Account}.md` and look for a `## CEP Stage Analysis` section.
+
+If it exists, extract the `**Key Risks:**` bullets verbatim (the short fragments like `- Champion not yet identified (S1)` or `- POV success criteria undefined (S3)`). These are the deal-gating gaps `/sales-cep` flagged the last time it ran. The meeting is one of the few chances to close them, so the meeting note should surface them as concrete discovery questions.
+
+For EACH risk bullet, generate ONE crisp question the rep could ask the customer (or himself if it's an internal prep call) to close the gap. Mapping heuristic — keep it tight, no fluff:
+
+| Risk fragment pattern | Question template |
+|---|---|
+| Champion missing / not identified | Who internally cares most about this outcome and has influence on the buying committee? |
+| Economic Buyer not engaged / unknown | Who has final budget authority, and what would it take to get a meeting with them? |
+| Identified Pain shallow / business value not quantified | What's the cost of doing nothing for another quarter, in dollars or in time? |
+| Decision Criteria undefined | What does a "yes" look like for you technically and commercially? |
+| Decision Process unclear | Walk me through every approval gate from here to signature, with names. |
+| Paper Process not started / unknown | Who handles security review, redlines, and procurement, and what's their typical turnaround? |
+| Competition unknown / unaddressed | Who else are you evaluating, and what would tip you toward them over us? |
+| POV success criteria undefined / not aligned | What's the one measurable outcome that, if hit, makes this a clear win for your team? |
+| POV not started / scoping stalled | What needs to be true on your side for the POV to start by {next milestone date}? |
+| Timeline / Compelling Event missing | What's the date by which not having this in place becomes a real problem, and why? |
+| Multithreading / single-threaded | Beyond {known champion}, who else on your team would feel this pain or use the platform? |
+| Tech Validation stalled | What blocked the validation work last sprint, and what unblocks it this sprint? |
+| Stakeholder X not engaged | What would make {stakeholder} willing to spend 30 minutes with us before {next gate}? |
+
+If a risk doesn't match any pattern, fall back to the generic form: *"What would it take to resolve {risk fragment} in the next {N} days?"*
+
+Cap at 6 questions total. If there are more risks, pick the highest-leverage ones (Stage gating > stakeholder gaps > nice-to-haves). Drop the `(S{N})` stage suffix from the rendered question — it's noise on the meeting note.
+
+If there is no `## CEP Stage Analysis` section in the account file, OR the Key Risks list is empty, skip this step and leave the new Conviction bullet (see template below) blank — do NOT invent risks.
+
 ### Step 3: Create Meeting File
 
 **IMPORTANT: Always capitalize the topic in Title Case before creating the file.**
@@ -82,6 +112,13 @@ attendees: []
 {If agenda was provided, insert it here as bullet points. Otherwise, leave empty below the heading.}
 ## Prep
 {If prep content was provided, insert it here. Otherwise, leave empty below the heading.}
+## Conviction
+- **What I believe is best for this customer/deal:** 
+- **Strong recommendation if asked "what should we do next?":** 
+- **What I'm NOT willing to hedge on:** 
+- **Where I might be wrong (steelman the counter):** 
+- **Two questions I'll ask that signal I've already formed a view:** 
+- **Questions to close CEP risk gaps:** {auto-populated from Step 2.5 — one question per Key Risk bullet, up to 6. Leave empty if no CEP analysis exists.}
 ## Attendees
 ```dataview
 TABLE WITHOUT ID file.link AS "Name", default(account, team) AS "Company/Team", role AS "Role", notes AS "Notes"
@@ -95,6 +132,21 @@ WHERE contains(this.attendees, file.link)
 ## External Summary
 ## Transcript
 ```
+
+**CRITICAL — the FIRST FIVE Conviction bullets must be left BLANK.** The five strategic Conviction bullets ("What I believe is best…" through "Two questions I'll ask…") are scaffolding for the rep's own reasoning. Do NOT pre-fill them, even if account context, MEDDPICC state, or prior meetings would give you enough information to draft an answer. The cognitive rep of forming the position is the entire point of these — pre-filling defeats it. Leave each prompt with an empty value (after the colon) and let the rep fill them in before the meeting.
+
+**EXCEPTION: the sixth bullet — "Questions to close CEP risk gaps:" — IS pre-populated.** That bullet is tactical scaffolding derived from `/sales-cep`'s objective gap analysis (the `**Key Risks:**` list in the `## CEP Stage Analysis` section), not from the rep's own conviction. Pre-filling it gives the rep a ready-made discovery checklist for the meeting without short-circuiting the rep's strategic thinking.
+
+**Format for the CEP-risk-questions bullet** — render as a nested bullet list directly under the prompt, one question per line, no stage suffix, no preamble:
+
+```
+- **Questions to close CEP risk gaps:**
+	- Who has final budget authority, and what would it take to get a meeting with them?
+	- What's the one measurable outcome that, if hit, makes this a clear win for your team?
+	- Beyond Susan, who else on your team would feel this pain or use the platform?
+```
+
+If Step 2.5 found no CEP analysis or no Key Risks, render the bullet as `- **Questions to close CEP risk gaps:** ` (empty after the colon) — same convention as the other five.
 
 ### Step 4: Get Account URLs and Team Names
 
