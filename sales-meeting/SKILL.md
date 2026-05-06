@@ -59,7 +59,7 @@ Before creating the meeting file, read the account file at `{config.vault_path}/
 
 If it exists, extract the `**Key Risks:**` bullets verbatim (the short fragments like `- Champion not yet identified (S1)` or `- POV success criteria undefined (S3)`). These are the deal-gating gaps `/sales-cep` flagged the last time it ran. The meeting is one of the few chances to close them, so the meeting note should surface them as concrete discovery questions.
 
-For EACH risk bullet, generate ONE crisp question the rep could ask the customer (or himself if it's an internal prep call) to close the gap. Mapping heuristic — keep it tight, no fluff:
+For EACH risk bullet, generate ONE crisp question Greg could ask the customer (or himself if it's an internal prep call) to close the gap. Mapping heuristic — keep it tight, no fluff:
 
 | Risk fragment pattern | Question template |
 |---|---|
@@ -133,9 +133,9 @@ WHERE contains(this.attendees, file.link)
 ## Transcript
 ```
 
-**CRITICAL — the FIRST FIVE Conviction bullets must be left BLANK.** The five strategic Conviction bullets ("What I believe is best…" through "Two questions I'll ask…") are scaffolding for the rep's own reasoning. Do NOT pre-fill them, even if account context, MEDDPICC state, or prior meetings would give you enough information to draft an answer. The cognitive rep of forming the position is the entire point of these — pre-filling defeats it. Leave each prompt with an empty value (after the colon) and let the rep fill them in before the meeting.
+**CRITICAL — the FIRST FIVE Conviction bullets must be left BLANK.** The five strategic Conviction bullets ("What I believe is best…" through "Two questions I'll ask…") are scaffolding for Greg's own reasoning. Do NOT pre-fill them, even if account context, MEDDPICC state, or prior meetings would give you enough information to draft an answer. The cognitive rep of forming the position is the entire point of these — pre-filling defeats it. Leave each prompt with an empty value (after the colon) and let Greg fill them in himself before the meeting.
 
-**EXCEPTION: the sixth bullet — "Questions to close CEP risk gaps:" — IS pre-populated.** That bullet is tactical scaffolding derived from `/sales-cep`'s objective gap analysis (the `**Key Risks:**` list in the `## CEP Stage Analysis` section), not from the rep's own conviction. Pre-filling it gives the rep a ready-made discovery checklist for the meeting without short-circuiting the rep's strategic thinking.
+**EXCEPTION: the sixth bullet — "Questions to close CEP risk gaps:" — IS pre-populated.** That bullet is tactical scaffolding derived from `/sales-cep`'s objective gap analysis (the `**Key Risks:**` list in the `## CEP Stage Analysis` section), not from Greg's own conviction. Pre-filling it gives Greg a ready-made discovery checklist for the meeting without short-circuiting his strategic thinking.
 
 **Format for the CEP-risk-questions bullet** — render as a nested bullet list directly under the prompt, one question per line, no stage suffix, no preamble:
 

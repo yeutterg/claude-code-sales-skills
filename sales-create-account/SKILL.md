@@ -250,31 +250,59 @@ WHERE !completed
 
 ## TECHMAPS
 
-> [!summary] TECHMAPS Summary
-> **Technical Requirements:**
-> **Environment:**
-> **Competitors:**
-> **Hero:**
-> **Metrics:**
-> **Alignment:**
-> **Plan:**
-> **Support:**
+*Canonical framework: `~/.claude/skills/sales-techmaps/SKILL.md`. Run `/sales-techmaps {Account} draft` after meetings accumulate to populate. Eight dimensions in order: T, E, C, H, M, A, P, S. Each dimension has Status (🟢 Strong / 🟡 Adequate / 🔴 Thin / ⚫ Not yet captured), Findings, and Risks.*
 
-### Technical Requirements & Scalability
+> [!summary] Summary
+> - **T - Technical Requirements & Scalability:** ⚫ Not yet captured
+> - **E - Environment:** ⚫ Not yet captured
+> - **C - Competitors:** ⚫ Not yet captured
+> - **H - Hero (Technical Champion):** ⚫ Not yet captured
+> - **M - Metrics:** ⚫ Not yet captured
+> - **A - Alignment:** ⚫ Not yet captured
+> - **P - Plan for Tech Validation:** ⚫ Not yet captured
+> - **S - Support:** ⚫ Not yet captured
 
-### Environment
+### T - Technical Requirements & Scalability
+**Status:** ⚫ Not yet captured
+**Findings:**
+**Risks:**
 
-### Competitors
+### E - Environment
+**Status:** ⚫ Not yet captured
+**Findings:**
+**Risks:**
 
-### Hero (Technical Champion)
+### C - Competitors
+**Status:** ⚫ Not yet captured
+**Findings:**
+**Risks:**
 
-### Metrics
+### H - Hero (Technical Champion)
+**Status:** ⚫ Not yet captured
+**Findings:**
+**Risks:**
 
-### Alignment
+### M - Metrics
+**Status:** ⚫ Not yet captured
+**Findings:**
+**Risks:**
 
-### Plan for Tech Validation
+### A - Alignment
+**Status:** ⚫ Not yet captured
+**Findings:**
+**Risks:**
 
-### Support
+### P - Plan for Tech Validation
+**Status:** ⚫ Not yet captured
+**Findings:**
+**Risks:**
+
+### S - Support
+**Status:** ⚫ Not yet captured
+**Findings:**
+**Risks:**
+
+**Summary:** Tech-win readiness not yet assessed.
 
 ---
 

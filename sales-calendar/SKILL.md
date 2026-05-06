@@ -93,11 +93,13 @@ List all account folders in `{config.vault_path}/{config.company_folder}/Account
 2. **Event title contains an account alias**: e.g., "Globex Inc Demo" matches alias "Globex Inc"
 3. **External attendee email domain matches a known account**: Read account frontmatter `website` or `domain` fields if available. Also try matching the company name against the domain (e.g., attendee `@globex.com` → "Globex")
 
+**Internal-vendor filter (apply BEFORE classification):** Read the `known_internal_vendors` list from `~/.claude/skills/sales-config.md`. For each attendee whose email domain matches an entry's `domain` field (or whose display name / event title matches a `name_pattern` entry), tag that attendee as an **internal-vendor attendee** rather than an external prospect. These are tools/services LaunchDarkly uses internally (e.g., Homerun Presales coaching, Chrome Industries) — their reps appearing on the calendar means an internal LD training/working session, NOT a customer deal. Internal-vendor attendees do NOT count toward the "has external attendees" determination below.
+
 **Categories:**
-- **Deal meeting**: Event matches an existing account AND has external attendees (people not in `calendar_user_emails` and not from `{config.company}` email domain)
+- **Deal meeting**: Event matches an existing account AND has external attendees (people not in `calendar_user_emails`, not from `{config.company}` email domain, AND not flagged as internal-vendor attendees)
 - **Deal prep meeting**: Event matches an existing account but has NO external attendees (internal prep/debrief for a deal). Common patterns: title contains "prep", "debrief", "internal", "sync" alongside an account name
-- **Internal meeting**: No account match, no external attendees (team standup, 1:1s, all-hands, etc.)
-- **External non-deal**: Has external attendees but doesn't match any account (potential new account or non-deal meeting)
+- **Internal meeting**: No account match AND no external attendees (team standup, 1:1s, all-hands, etc.) — events whose only "external" attendees are internal-vendor attendees fall here, NOT under External non-deal
+- **External non-deal**: Has external attendees but doesn't match any account (potential new account or non-deal meeting). Does NOT include events where every external attendee is an internal-vendor attendee.
 
 #### 3b: Apply Mode Filter
 

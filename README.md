@@ -21,6 +21,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
   - [`/sales-setup`](#sales-setup)
   - [`/sales-slack`](#sales-slack)
   - [`/sales-summarize-account`](#sales-summarize-account)
+  - [`/sales-techmaps`](#sales-techmaps)
   - [`/sales-today`](#sales-today)
   - [`/sales-weekly`](#sales-weekly)
 - [Skill Dependency Graph](#skill-dependency-graph)
@@ -61,6 +62,7 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 | `/sales-setup` | Post-clone setup: configure vault path, name, role, company, symlinks, and optional Salesforce CLI / Playwright CLI / Google Calendar. Re-run anytime to pull upstream updates and re-apply your config. |
 | `/sales-slack` | Post deal prep or recap messages to deal-specific Slack channels. Posts to the channel listed in the account's `slack_channel` frontmatter, attaches the latest account PDF to recaps, and skips silently when no channel is configured. |
 | `/sales-summarize-account` | Summarize all meeting notes, update MEDDPICC/TECHMAPS/CoM, enrich contacts, refresh business context |
+| `/sales-techmaps` | Canonical TECHMAPS framework for sales engineers. Drafts, scores, gap-analyzes, or coaches on a per-account TECHMAPS assessment using the locked eight-dimension framework with explicit Status / Findings / Risks per dimension. Invoked by /sales-summarize-account during account refresh, or runnable standalone for a focused review. |
 | `/sales-today` | Daily sales workflow -- morning prep or evening wrap-up with calendar scan, Gong imports, account summaries, and Salesforce updates |
 | `/sales-weekly` | Weekly review of all accounts with open Salesforce opportunities -- pulls deal context, summarizes activity, updates ledgers and Salesforce |
 
@@ -158,7 +160,13 @@ Posts deal prep or recap messages to the deal-specific Slack channel listed in a
 
 **Usage:** `/sales-summarize-account <account name>`
 
-Summarizes all meeting notes for an account and updates the account page. Processes unsummarized meeting notes via parallel subagents (each meeting is handled independently). Simultaneously pulls the latest deal context from Salesforce (Scan Open mode) and refreshes business context via web search. Updates deal ledger, MEDDPICC, Command of the Message, TECHMAPS, tech stack, architecture diagram, and Salesforce Updates section. Enriches contacts with LinkedIn profiles and job titles via parallel subagents. Renames generic meeting files to descriptive titles based on what was discussed. Supports adaptive model selection, pattern discovery, and template drift detection.
+Summarizes all meeting notes for an account and updates the account page. Processes unsummarized meeting notes via parallel subagents (each meeting is handled independently). Simultaneously pulls the latest deal context from Salesforce (Scan Open mode) and refreshes business context via web search. Updates deal ledger, MEDDPICC, Command of the Message, TECHMAPS (delegated to `/sales-techmaps`), tech stack, architecture diagram, and Salesforce Updates section. Enriches contacts with LinkedIn profiles and job titles via parallel subagents. Renames generic meeting files to descriptive titles based on what was discussed. Supports adaptive model selection, pattern discovery, and template drift detection.
+
+### `/sales-techmaps`
+
+**Usage:** `/sales-techmaps <account> [draft | score | gaps | coach]`
+
+Canonical TECHMAPS framework for sales engineers. Encodes the locked eight-dimension framework (T - Technical Requirements & Scalability, E - Environment, C - Competitors, H - Hero, M - Metrics, A - Alignment, P - Plan for Tech Validation, S - Support) with explicit Status (🟢 Strong / 🟡 Adequate / 🔴 Thin / ⚫ Not yet captured), Findings, and Risks per dimension. Four modes: `draft` writes the `## TECHMAPS` section into the account file, `score` returns per-dimension verdicts with one-line justifications, `gaps` ranks dimensions threatening the tech win with concrete next actions, and `coach` produces dimension-by-dimension question prompts for the next customer conversation. Enforces anti-hallucination rules (Hero is **H** not Champion, eight letters only, never conflate with MEDDPICC). Metrics special rule: business KPIs only, with provenance (customer-confirmed, public earnings with source label, or explicit discovery-gap flag); never proxy from product-side scope numbers. Invoked by `/sales-summarize-account` during account refresh; also runnable standalone.
 
 ### `/sales-today`
 
@@ -198,6 +206,7 @@ graph TD
         cep["/sales-cep"]
         archdiag["/sales-architecture-diagram"]
         pov["/sales-pov"]
+        techmaps["/sales-techmaps"]
     end
 
     subgraph "CRM & Export"
@@ -241,6 +250,7 @@ graph TD
     gong --> meeting
     summarize --> cep
     summarize --> archdiag
+    summarize --> techmaps
     summarize --> salesforce
     salesforce -.-> create
     weekly --> summarize

@@ -139,7 +139,7 @@ For each open request, look for status evidence:
 - `open`: customer asked, no LD-side response committed.
 - `unknown`: can't tell.
 
-Default to `open` if unclear. Note any status evidence with a meeting reference so the rep can verify.
+Default to `open` if unclear. Note any status evidence with a meeting reference so Greg can verify.
 
 ### Step 6: Write to Account File
 
@@ -240,9 +240,9 @@ Logged: {N} requests to ~/.claude/skills/sales-feature-request/requests.jsonl
 
 - **Customer-asked, not SE-positioned.** Only catalog what the customer raised. If the SE pitched it and the customer nodded, that's not a feature request — that's qualification.
 - **Don't hallucinate features.** If a meeting transcript is thin and you can't tie the request to a quote or paraphrase from the customer, mark it unclassified and let merge/cross-reference upgrade it (or drop it).
-- **Default to nice-to-have on ambiguity.** The rep can promote later. Inflating must-have count makes the section noise.
+- **Default to nice-to-have on ambiguity.** Greg can promote later. Inflating must-have count makes the section noise.
 - **Quote the customer.** Paraphrase if no quote, but always show the source — meeting + speaker. This is the audit trail the SE needs when an open must-have stalls a deal.
 - **Status defaults to `open`.** Don't claim a feature is shipped or on-roadmap without explicit evidence in a meeting.
 - **Surface, don't filter.** Even if a feature is small / weird, list it. The cross-account log finds patterns.
-- **Re-runnable.** This skill should overwrite the `## Feature Requests` section cleanly on each run. the rep's manual additions in that section will be lost — note this in the section header.
+- **Re-runnable.** This skill should overwrite the `## Feature Requests` section cleanly on each run. Greg's manual additions in that section will be lost — note this in the section header.
 - **No write to ## Tasks**. Same rule as `/sales-summarize-account`.

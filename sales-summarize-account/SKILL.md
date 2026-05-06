@@ -171,7 +171,7 @@ ATTENDEES: {comma-separated list of names}
 SUMMARY: {2-4 sentence summary}
 LEDGER_ENTRY: {Format: "M/D {config.initials}: {concise ~15-25 word summary}. Next call: M/D {type}" or "Next call: TBD". Use M/D/YY if different year.}
 NEXT_CALL: {date and type if mentioned, or "none"}
-METRICS: {business metrics / KPIs / success criteria the customer measures their business by — revenue, conversion rate, MAU, NPS, deployment frequency tied to revenue, time-to-market, churn, etc. DO NOT capture your product/platform usage stats here (flag counts, environment counts, MAU on your platform, seat counts) — those go in Tech Stack or Environment. **CRITICAL: only capture metrics the customer themselves has stated in this meeting.** If no business KPIs were discussed, return "none". DO NOT hallucinate or proxy from external sources — public earnings, press releases, news articles, web search, the Business Context section, or your own inference. Customer-confirmed metrics ONLY. Empty is correct when the customer hasn't told us what they measure.}
+METRICS: {business metrics / KPIs / success criteria the customer measures their business by — revenue, conversion rate, MAU, NPS, deployment frequency tied to revenue, time-to-market, churn, etc. DO NOT capture LaunchDarkly usage stats here (flag counts, environment counts, MAU on the LD platform, seat counts) — those go in Tech Stack or Environment. **CRITICAL: only capture metrics the customer themselves has stated in this meeting.** If no business KPIs were discussed, return "none". DO NOT hallucinate or proxy from external sources — public earnings, press releases, news articles, web search, the Business Context section, or your own inference. Customer-confirmed metrics ONLY. Empty is correct when the customer hasn't told us what they measure.}
 ECONOMIC_BUYER: {budget holder info if mentioned}
 DECISION_CRITERIA: {technical requirements, must-haves mentioned}
 DECISION_PROCESS: {how they make decisions, approval chain}
@@ -188,7 +188,7 @@ TECH_REQUIREMENTS: {technical needs, performance requirements}
 ENVIRONMENT: {tech stack, systems, integrations}
 TECH_COMPETITORS: {competitors' capabilities and gaps}
 HERO: {technical champion name and influence}
-TECH_METRICS: {business metrics / KPIs / success criteria the customer measures their business by — same flavor as MEDDPICC METRICS. Examples: revenue, conversion rate, MAU, NPS, deployment frequency tied to revenue, time-to-market, churn. DO NOT put your product/platform usage stats here (flag counts, environment counts, MAU on your platform, seat counts) — those belong in Tech Stack or Environment, not as the customer's success metrics. **CRITICAL: only capture metrics the customer themselves has stated in this meeting.** If no business KPIs were discussed, return "none". DO NOT hallucinate or proxy from external sources — public earnings, press releases, news articles, web search, the Business Context section, or your own inference. Customer-confirmed metrics ONLY.}
+TECH_METRICS: {business metrics / KPIs / success criteria the customer measures their business by — same flavor as MEDDPICC METRICS. Examples: revenue, conversion rate, MAU, NPS, deployment frequency tied to revenue, time-to-market, churn. DO NOT put LaunchDarkly usage stats here (flag counts, environment counts, MAU on the LD platform, seat counts) — those belong in Tech Stack or Environment, not as the customer's success metrics. **CRITICAL: only capture metrics the customer themselves has stated in this meeting.** If no business KPIs were discussed, return "none". DO NOT hallucinate or proxy from external sources — public earnings, press releases, news articles, web search, the Business Context section, or your own inference. Customer-confirmed metrics ONLY.}
 ALIGNMENT: {connection to business value}
 TECH_VALIDATION_PLAN: {POV, workshop, demo plans}
 SUPPORT: {post-sale needs}
@@ -311,7 +311,7 @@ Example correct format for MEDDPICC:
 - $400M ARR with 12% YoY growth target
 - Checkout conversion rate: 3.4% target (currently 2.9%)
 - NPS 42, want to push to 50
-- (Business KPIs only — your product/platform usage stats like flag counts go in Tech Stack/Environment)
+- (Business KPIs only — LaunchDarkly usage stats like flag counts go in Tech Stack/Environment)
 
 ### Economic Buyer
 - **John Smith** - VP Engineering, budget holder
@@ -341,17 +341,24 @@ Example correct format for MEDDPICC:
 - $4.83B RPO, +15% YoY (Q4 FY26 earnings, BusinessWire)
 ```
 
-DO NOT fill the Metrics field with: news article stats unrelated to financials, deal sizing inputs (e.g., service connections, integration scope), product-side service credits (e.g., professional services hours, seats, usage counts), or your own inference. Public earnings ARE allowed for public companies but ONLY with the explicit provenance label.
+DO NOT fill the Metrics field with: news article stats unrelated to financials, deal sizing inputs (e.g., service connections, integration scope), LD-side service credits (RSA hours, seats, flag counts), or your own inference. Public earnings ARE allowed for public companies but ONLY with the explicit provenance label.
 
-If a value already exists in the file from a prior run that DOES NOT match this rule (e.g., contains product service credits, integration scope numbers, / unlabeled earnings numbers), treat it as polluted: move legitimate scope numbers to TECHMAPS > Environment or Technical Requirements, move product service credits to TECHMAPS > Support, relabel any earnings figures with their provenance suffix, and add the discovery-gap acknowledgment if no customer-confirmed metrics exist.
+If a value already exists in the file from a prior run that DOES NOT match this rule (e.g., contains "RSA hours" / "service connections" / unlabeled earnings numbers), treat it as polluted: move legitimate scope numbers to TECHMAPS > Environment or Technical Requirements, move LD-side service credits to TECHMAPS > Support, relabel any earnings figures with their provenance suffix, and add the discovery-gap acknowledgment if no customer-confirmed metrics exist.
 
 **Command of the Message sections** - Fill in from extracted REQUIRED_CAPABILITIES, BUSINESS_VALUE, POSITIVE_OUTCOMES, NEGATIVE_CONSEQUENCES, BEFORE_AFTER fields:
 - Required Capabilities, Business Value, Positive Business Outcomes, Negative Consequences, Before/After Scenarios
 
-**TECHMAPS sections** - Fill in from extracted TECH_REQUIREMENTS, ENVIRONMENT, TECH_COMPETITORS, HERO, TECH_METRICS, ALIGNMENT, TECH_VALIDATION_PLAN, SUPPORT fields:
-- Technical Requirements & Scalability, Environment, Competitors, Hero, Metrics, Alignment, Plan for Tech Validation, Support
-- **TECHMAPS Metrics = business metrics, same as MEDDPICC Metrics** (revenue, conversion, MAU, NPS, time-to-market, churn — what the customer measures their business by). NOT your product/platform usage stats like flag counts, environment counts, seat counts, or platform MAU; those go in Tech Stack or Environment.
-- **Same NO-HALLUCINATION rule applies.** If no customer-confirmed business KPIs were extracted, render the discovery-gap flag (same shape as MEDDPICC Metrics above). Never proxy from public earnings, press releases, scope numbers, or service credits.
+**TECHMAPS section** : delegate to `/sales-techmaps`.
+
+The canonical TECHMAPS framework (locked eight-dimension definitions, Status / Findings / Risks per dimension, anti-hallucination rules, Metrics provenance rule) lives in `~/.claude/skills/sales-techmaps/SKILL.md`. Do NOT re-implement the framework here.
+
+Invoke `/sales-techmaps {Account} draft` after the meeting subagents have extracted TECH_REQUIREMENTS, ENVIRONMENT, TECH_COMPETITORS, HERO, TECH_METRICS, ALIGNMENT, TECH_VALIDATION_PLAN, and SUPPORT fields. Pass the extracted findings as input. The skill writes the `## TECHMAPS` section into `{Account}.md` per the canonical template (eight dimensions T → S, each with 🟢/🟡/🔴/⚫ Status, Findings, Risks; plus an at-a-glance `> [!summary] Summary` callout and a closing one-line summary).
+
+Key rules `/sales-techmaps` enforces (do not duplicate logic, just trust the delegate):
+- Eight letters in order: **T, E, C, H, M, A, P, S**. Use the exact locked names. **Hero (H)** is the LD term, not Champion.
+- Every dimension has a Risks field. Risk is built into TECHMAPS, not a separate dimension.
+- TECHMAPS Metrics = business metrics (revenue, conversion, MAU, NPS, churn). Never LD-side usage stats. If no customer-confirmed KPIs and no public earnings, render the discovery-gap flag.
+- TECHMAPS does NOT replace MEDDPICC. Do not rewrite an AE's MEDDPICC notes into TECHMAPS letters.
 
 **Tech Stack section** - Aggregate from extracted TECH_STACK fields. Use categories:
 - Languages, Frameworks, Cloud, Infrastructure, AI/ML, Data, Observability, CI/CD, Feature Flags, Other Tools
