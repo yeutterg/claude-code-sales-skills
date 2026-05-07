@@ -595,6 +595,32 @@ Read `~/.claude/skills/sales-config.md`. Append observations to the appropriate 
 
 These pending items will be surfaced in the daily note for review.
 
+#### 6a.1: Product Knowledge Learning (writes to `/sales-product/learnings.md`)
+
+For each meeting processed, also extract LD-product-specific signal and append candidate updates to `~/.claude/skills/sales-product/learnings.md` per the schema at the top of that file. Categories to look for in the meeting transcript / summary:
+
+- **`capability-gap`**: customer asked for a feature LD doesn't have. E.g., "We need prerequisite flag dependency visibility before we can sign" or ".NET agent-graph SDK is a blocker for our C#-first chatbot." Log the LD-side response (e.g., "confirmed roadmap, no firm timeline") if captured.
+- **`competitor-encounter`**: customer mentioned a competitor by name. Capture: which competitor, what they said about it (likes / dislikes / state of evaluation), how the LD team responded.
+- **`pricing-pushback`**: customer pushed back on price, PS hours, or licensing tier. E.g., "PS hours at $400/hr rejected as 'way above what leadership would ever approve.'" Capture the verbatim quote when possible.
+- **`customer-confusion`**: customer conflated two LD products or misunderstood a capability boundary. E.g., customer says "we need workflows for auto-rollback" (conflating Workflows with Guarded Releases). Recurring confusion patterns become positioning issues worth fixing in collateral.
+- **`tradeoff-revelation`**: customer surfaced a real-world tradeoff that isn't explicit in `~/.claude/skills/sales-product/knowledge.md`. E.g., "AI Configs adds latency for the eval write-back" or "Guarded Releases auto-rollback can over-trigger when metric variance is high."
+- **`new-use-case`**: customer is using or planning to use an LD product in a way that isn't in `knowledge.md`. E.g., a payment-platform customer using Segments to drive 8-cohort progressive rollouts is now a documented pattern.
+- **`roadmap-mention`**: customer asked about a future capability AND the LD team gave a roadmap-grounded response. Capture both the ask and the response.
+
+**Append to `learnings.md` using the entry schema documented at the top of that file.** Each entry should:
+- Have a unique entry ID: `{YYYY-MM-DD}-{NNN}` (NNN is a 3-digit zero-padded counter; check existing entries that day to increment)
+- Cite the source as `[[{Account}]] / [[{meeting file basename without extension}]]`
+- Include the customer quote verbatim when available (preserves grounding for future review)
+- Set `status: pending-review` and `status-date: {today}`
+- Propose a specific, actionable update to a named section of `knowledge.md` (the proposed update is what `/sales-review-learnings` shows Greg when he reviews the queue)
+
+**Quality bar:**
+- Only log signals that are *generalizable beyond this one account* (account-specific context belongs in the account file, not in product learnings)
+- Skip entries that duplicate an existing pending-review entry (check the queue first; if same pattern + same source, don't duplicate)
+- Skip if the signal is already represented in `knowledge.md` (e.g., "customer asked about Workflows-vs-Guarded-Releases distinction" is already in the Common Confusions Index; don't re-log)
+
+This step runs as part of the meeting subagent extraction; subagents emit a `PRODUCT_LEARNINGS` field alongside the existing extraction fields, and the aggregator writes those entries to `learnings.md`. If a meeting produces no product-knowledge signal, the field is empty and nothing gets appended.
+
 #### 6b: Detect Template Drift
 
 After writing the account file, compare what you wrote against what was there before (if this is a re-run, not a first run):

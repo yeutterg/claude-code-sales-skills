@@ -51,12 +51,14 @@ Claude Code skills for managing sales accounts, meeting notes, and deal document
 | `/sales-cep` | Analyze deal stage based on your company's Customer Engagement Process (CEP). Compares completed and missing activities against stage criteria to recommend the correct opportunity stage. |
 | `/sales-create-account` | Create a new account folder structure with template files and business context |
 | `/sales-enterpret` | Import Gong call transcripts from Enterpret (via wisdom MCP) into Obsidian meeting notes. Faster than /sales-gong -- no browser needed. |
+| `/sales-exec-summary` | Generate a 1-page executive summary for an account, anchored on customer-confirmed signal and tied to canonical product capabilities. Four modes (migration / pov-recap / deal-brief / exec-readout). Reads MEDDPICC + TECHMAPS + recent meetings from the account file, plus /sales-product/knowledge.md for product capability mappings and inline doc URLs. |
 | `/sales-git` | Commit and push skill changes and auto-regenerate the README |
 | `/sales-gong` | Import Gong calls or Granola meetings into Obsidian meeting notes, or bulk import all calls for an account |
 | `/sales-meeting` | Create meeting notes for a sales account and link them in the daily note |
 | `/sales-pdf` | Export account files to PDF with clean formatting via pandoc and Playwright |
-| `/sales-pov` | Generate or update a PoV & Technical Validation Summary for an account. Focuses on the last 30-45 days of conversations and current MEDDPICC/TECHMAPS state to surface ONLY the painful, deal-gating items that must be validated before close. |
-| `/sales-ps-prep` | Generate a Solutions Architect / Professional Services prep document for an account. Creates a standalone note and exports to PDF. |
+| `/sales-pov` | Generate or update a PoV & Technical Validation Summary for an account. Focuses on the last 30-45 days of conversations and current MEDDPICC/TECHMAPS state to surface ONLY the painful, deal-gating items that must be validated before close. Includes an opinionated Recommended Validation Sequence (now / next / before close) with named wedge item. |
+| `/sales-product` | Canonical product knowledge base. Per-product capability descriptions, doc URLs, common confusions, competitive positioning, and integrations. Read by /sales-pov, /sales-ps-prep, /sales-summarize-account, /sales-meeting prep, /sales-architecture-diagram, /sales-exec-summary. Auto-extends from customer call signal via /sales-summarize-account → learnings.md → review queue → promotion to knowledge.md. |
+| `/sales-ps-prep` | Generate a Solutions Architect / Professional Services prep document for an account. Creates a standalone note and exports to PDF. Includes an opinionated Recommended Implementation Sequence (foundation → highest-leverage capability → frontier) with phase-level co-signed success criteria. |
 | `/sales-review-learnings` | Review patterns and insights discovered by skills -- competitors, objections, feature requests, model performance, and template drift. Use when the daily note flags new skill learnings for review. |
 | `/sales-salesforce` | Push SE Status to Salesforce, scan accounts for opportunities and deal context, discover all your open opportunities, or generate an SE mapping report across all AEs. Use this skill whenever the user mentions Salesforce, opportunities, deal updates, SE status, SE mapping, or wants to see all their accounts. |
 | `/sales-setup` | Post-clone setup: configure vault path, name, role, company, symlinks, and optional Salesforce CLI / Playwright CLI / Google Calendar. Re-run anytime to pull upstream updates and re-apply your config. |
@@ -207,6 +209,8 @@ graph TD
         archdiag["/sales-architecture-diagram"]
         pov["/sales-pov"]
         techmaps["/sales-techmaps"]
+        product["/sales-product"]
+        execsum["/sales-exec-summary"]
     end
 
     subgraph "CRM & Export"
@@ -251,6 +255,7 @@ graph TD
     summarize --> cep
     summarize --> archdiag
     summarize --> techmaps
+    summarize --> product
     summarize --> salesforce
     salesforce -.-> create
     weekly --> summarize
@@ -259,8 +264,12 @@ graph TD
     weekly --> create
     weekly --> review
     summarize --> pov
+    pov --> product
     pov --> pdf
+    psprep --> product
     psprep --> pdf
+    execsum --> product
+    execsum --> pdf
     slack -.-> pdf
 ```
 

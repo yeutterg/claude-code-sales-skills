@@ -138,19 +138,51 @@ Create `{config.vault_path}/{config.company_folder}/Accounts/{Account}/SA Prep.m
 
 ## What {Product/Service} Solves for Them
 
-{Table mapping pain → solution. Be specific to their environment, not generic product marketing.}
+{Table mapping pain → solution. Be specific to their environment, not generic product marketing. Pull canonical product names + doc URLs from `~/.claude/skills/sales-product/knowledge.md` so every solution cell links to the right docs page.}
 
 | Pain | Solution |
 |------|----------|
-| ... | ... |
+| ... | [Capability]({url-from-/sales-product}) doing X for this customer's environment |
 
 ---
 
+## Recommended Implementation Sequence
+
+This is the SE/SA prescription, not a status report. The SA should walk in with a point of view about what to deploy first, what to deploy second, what to defer, and which risk to plan around — not arrive ready to discover. Pull canonical capability info + doc URLs from `~/.claude/skills/sales-product/knowledge.md`.
+
+**Sequencing rule:** foundation first, value-bearing capability second, frontier last. Specifically:
+1. **SDK + targeting + segments** before anything else. Without the substrate, downstream capabilities don't deliver.
+2. **The single highest-leverage capability for THIS customer** second. Pick the one that addresses their #1 stated pain (from MEDDPICC > Identified Pain) AND has the named champion ready to validate it.
+3. **Frontier capabilities** (Guarded Releases for metric-driven safety; AI Configs for AI feature delivery; Experimentation for variant testing) last. These compound on the substrate; they don't replace it.
+
+### Phase 1 (0-{N} weeks): Foundation
+- **Deploy in order:** [SDK]({sdk-url}) → [contexts]({contexts-url}) → [segments]({segments-url})
+- **Customer-side prerequisites:** {what the customer's eng team needs to do first; cite from TECHMAPS > Environment}
+- **Success criteria (co-signed pre-kickoff):** SDK integrated in {N} services; first flag evaluated in production; user context streaming validated
+- **{Account} effort:** {team size + sprint estimate based on TECHMAPS > Environment}
+
+### Phase 2 ({N1}-{N2} weeks): Highest-leverage capability
+- **Anchor:** {the customer's #1 stated pain from MEDDPICC, named in their language}
+- **Deploy in order:** {capability + URL} + {supporting capability + URL}
+- **Success criteria:** {falsifiable outcome that proves Phase 2 worked, in customer-language}
+- **Risk to plan around:** {the implementation risk most likely to derail this phase, with mitigation}
+
+### Phase 3 ({N2}+ weeks): Layered capabilities
+- **What lands here:** {remaining capabilities the customer is buying, deferred to Phase 3 because they layer on Phase 1+2}
+- **Deploy in order:** {list capabilities with URLs in the order they should ship}
+- **What we'd hold back / not deploy unless customer specifically asks:** {capabilities the customer hasn't engaged with on calls; mention only if asked}
+
+**Out of scope for this engagement** (explicit):
+- {capabilities mentioned in Decision Criteria but lower priority for THIS engagement; flag for follow-on}
+- {legacy items the customer wants to migrate eventually but aren't critical for go-live}
+
+**Why this sequence and not others:** one-line rationale tying back to the customer's compelling event + named champion. (e.g., "Phase 2 leads with Guarded Releases because the env-misalignment incident is what surfaces in every meeting; the champion is engaged on this specifically; without it, Phase 3 capabilities have nothing to gate.")
+
 ## Key Technical Considerations for SA
 
-{Numbered list of the most important technical topics the SA needs to be prepared for. Each should be 2-3 sentences explaining what it is, why it matters for this account, and any known context.}
+{Numbered list of the most important technical topics the SA needs to be prepared for. Each should be 2-3 sentences explaining what it is, why it matters for this account, and any known context. Reference Common Confusions Index from `~/.claude/skills/sales-product/knowledge.md` — if the customer has confused two LD products on calls, the SA needs to walk in calibrated.}
 
-1. **{Topic}.** {Why it matters for this specific account. What's known so far.}
+1. **{Topic}.** {Why it matters for this specific account. What's known so far. If a Common Confusion applies, name it explicitly: e.g., "Customer conflated Workflows with Guarded Releases on 4/29 — SA should clarify the distinction early."}
 2. ...
 
 ---

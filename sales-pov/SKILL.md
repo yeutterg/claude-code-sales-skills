@@ -103,22 +103,40 @@ The document is deliberately short — target **2-3 pages of PDF** total. No exh
 
 ## Painful + Deal-Gating Items
 
-Technical capabilities the customer has surfaced as pain AND that put the deal at risk if not validated in their environment. **Ordered by product maturity (foundational → frontier), not by recency or internal priority.**
+Technical capabilities the customer has surfaced as pain AND that put the deal at risk if not validated in their environment. **Ordered by product maturity (foundational → frontier), not by recency or internal priority.** Pull canonical product names + doc URLs from `~/.claude/skills/sales-product/knowledge.md` so every row's "How LaunchDarkly Helps" cell links to the right docs page.
 
 | # | Capability | Problem | How {Company} Helps | Evaluator | Status |
 |---|------------|---------|---------------------|-----------|--------|
-| 1 | {short phrase in customer's language} | {≤15 words, customer's own phrasing or a close paraphrase of their scenario, with meeting date} | {≤15 words, name the specific {Company} product/feature from config.products — no marketing fluff} | {name, title} | {NOT STARTED / IN PROGRESS / VALIDATED / BLOCKED} |
+| 1 | {short phrase in customer's language} | {≤15 words, customer's own phrasing or a close paraphrase of their scenario, with meeting date} | {≤15 words, name the specific {Company} product/feature with [inline doc link]({url-from-/sales-product})} | {name, title} | {NOT STARTED / IN PROGRESS / VALIDATED / BLOCKED} |
 
 Aim for 3-5 rows. If <3 qualify, write instead: *"No deal-gating technical pain surfaced in the last 45 days. Either the POV is on rails or we're under-discovering."*
 
 **Column guidance:**
 - **Capability:** short phrase using the customer's vocabulary, not {Company}-product marketing. If they call it "the CFS replacement" or "our homegrown portal parity," use that. Avoid product names like "Guarded Releases" or "AI Configs" in this column — put those in the How-{Company}-Helps column instead.
 - **Problem:** ≤15 words. The customer's concrete pain in their words. Preferably a direct quote or close paraphrase. Include the meeting date.
-- **How {Company} Helps:** ≤15 words. The specific product/feature answer, named directly (e.g., "Guarded Releases with metric-driven auto-rollback"). No "we empower teams to…" phrasing. Tie back to the problem language.
+- **How {Company} Helps:** ≤15 words. The specific product/feature answer with inline doc link, named directly (e.g., "[Guarded Releases](https://launchdarkly.com/docs/home/releases/guarded-rollouts) with metric-driven auto-rollback"). No "we empower teams to…" phrasing. Tie back to the problem language.
 - **Evaluator:** named customer contact who owns judging whether this works. No evaluator → the row shouldn't exist.
 - **Status:** NOT STARTED / IN PROGRESS / VALIDATED / BLOCKED. Justified by evidence.
 
 **Ordering rule — product maturity:** foundational capabilities first (core feature management, SDK/API behavior, flag delivery semantics), then advanced targeting/workflow features, then newer products (Guarded Releases, AI Configs, o11y). This is the order the customer will actually validate in — trust in the core must land before the frontier capabilities carry weight. Within the same maturity tier, break ties by deal-gating severity.
+
+## Recommended Validation Sequence
+
+This is the SE's prescription, not a status report. Three things, ordered, with concrete time windows. The reader should walk away knowing exactly what to do this week, this month, and before close.
+
+**The single highest-leverage item to crack open first:** name it explicitly. Pick the row from the table above where (a) status is NOT STARTED or BLOCKED, AND (b) unblocking it would unblock 1-2 downstream rows AND (c) the named evaluator is already engaged. This is the wedge. Without naming the wedge, the document reads as analysis; with it, the document reads as a plan.
+
+**Sequence:**
+- **Now (next 7-14 days):** {wedge item from above}. Specific deploy: {capability + URL}. Specific evaluator action: {what {evaluator name} owns this week}. Validation gate: {falsifiable signal we'll see if this lands}.
+- **Next (15-45 days):** {second item, dependent on the wedge clearing}. Specific deploy: {capability + URL}. Validation gate: {what proves this works in customer's environment}.
+- **Before close (45+ days):** {remaining items, can be parallelized}. Specific deploy: {list capabilities + URLs}. Validation gate: {final co-signed success criteria for POV close}.
+
+**Out of scope for this POV** (explicit, not implicit):
+- {capability the customer mentioned but isn't deal-gating} : flag for post-close adoption, not POV scope
+- {legacy / dormant / hypothetical capability} : not in current decision-criteria
+- {anything we'd want them to buy that they haven't named as required} : do not surface in POV
+
+**Why these three and not others:** one-line rationale. The wedge unblocks 2 downstream items. Items #X and #Y are validated in 2 hours of demo + a doc, not weeks of POV time. Item #Z is post-close.
 
 ## Top Risks to Close
 
